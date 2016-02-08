@@ -12,7 +12,6 @@ import com.opencredo.concourse.data.tuples.TupleSlot;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +22,7 @@ public class TupleSerialiserTest {
     private final TupleSchema personSchema = TupleSchema.of(
             TupleSlot.of("name", String.class),
             TupleSlot.of("age", Integer.class),
-            TupleSlot.of("addresses", new TypeToken<Map<String, Tuple>>() {}.getType())
+            TupleSlot.ofMap("addresses", String.class, Tuple.class)
     );
 
     private final TupleSchema addressSchema = TupleSchema.of(
@@ -46,10 +45,10 @@ public class TupleSerialiserTest {
 
     @Test
     public void serialisesTupleWithTupleSchemaNameFromRegistry() throws JsonProcessingException {
-        Tuple person = personSchema.make("Dominic", 41,
+        Tuple person = personSchema.makeWith("Dominic", 41,
                 ImmutableMap.of(
-                        "current", addressSchema.make(asList("23 Acacia Avenue", "Sunderland"), "VB6 5UX"),
-                        "previous", addressSchema.make(asList("63 Penguin Lane", "Walsall"), "RA8 81T")));
+                        "current", addressSchema.makeWith(asList("23 Acacia Avenue", "Sunderland"), "VB6 5UX"),
+                        "previous", addressSchema.makeWith(asList("63 Penguin Lane", "Walsall"), "RA8 81T")));
 
         assertThat(mapper.writeValueAsString(person), equalTo(
             "{\"_tupleType\":\"person\"," +

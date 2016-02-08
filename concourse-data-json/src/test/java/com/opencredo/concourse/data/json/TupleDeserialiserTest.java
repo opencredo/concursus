@@ -58,10 +58,10 @@ public class TupleDeserialiserTest {
                 "\"postcode\":\"RA8 81T\"}}}";
 
         assertThat(mapper.readValue(json, Tuple.class), equalTo(
-                personSchema.make("Dominic", 41,
+                personSchema.makeWith("Dominic", 41,
                         ImmutableMap.of(
-                                "current", addressSchema.make(asList("23 Acacia Avenue", "Sunderland"), "VB6 5UX"),
-                                "previous", addressSchema.make(asList("63 Penguin Lane", "Walsall"), "RA8 81T")))));
+                                "current", addressSchema.makeWith(asList("23 Acacia Avenue", "Sunderland"), "VB6 5UX"),
+                                "previous", addressSchema.makeWith(asList("63 Penguin Lane", "Walsall"), "RA8 81T")))));
     }
 
 }

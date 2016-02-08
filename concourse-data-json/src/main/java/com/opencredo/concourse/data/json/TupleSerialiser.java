@@ -1,7 +1,6 @@
 package com.opencredo.concourse.data.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.opencredo.concourse.data.tuples.Tuple;
@@ -21,7 +20,7 @@ public class TupleSerialiser extends JsonSerializer<Tuple> {
     }
 
     @Override
-    public void serialize(Tuple tuple, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+    public void serialize(Tuple tuple, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeStartObject();
         writeSchemaName(jsonGenerator, tuple.getSchema());
 

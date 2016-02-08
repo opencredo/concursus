@@ -1,7 +1,6 @@
 package com.opencredo.concourse.data.json;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -28,7 +27,7 @@ public final class TupleDeserialiser extends JsonDeserializer<Tuple> {
     }
 
     @Override
-    public Tuple deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public Tuple deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
         Map<String, JsonNode> topLevel = getJsonMap(parser);
 
         String tupleType = Optional.ofNullable(topLevel.get("_tupleType"))

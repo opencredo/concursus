@@ -2,6 +2,8 @@ package com.opencredo.concourse.data.tuples;
 
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -45,5 +47,30 @@ public class TupleSlotTest {
 
         assertTrue(slot.accepts("name"));
         assertFalse(slot.accepts(4));
+    }
+
+    @Test
+    public void testsOptionalValuesForConformity() {
+        TupleSlot slot = TupleSlot.ofOptional("name", String.class);
+
+        assertTrue(slot.accepts(Optional.empty()));
+        assertTrue(slot.accepts(Optional.of("name")));
+        assertFalse(slot.accepts(Optional.of(4)));
+    }
+
+    @Test
+    public void testsListTypesForConformity() {
+        TupleSlot slot = TupleSlot.ofList("things", String.class);
+
+        assertTrue(slot.acceptsType(Types.listOf(String.class).getType()));
+        assertFalse(slot.acceptsType(Types.listOf(Integer.class).getType()));
+    }
+
+    @Test
+    public void testsMapTypesForConformity() {
+        TupleSlot slot = TupleSlot.ofMap("things", String.class, Integer.class);
+
+        assertTrue(slot.acceptsType(Types.mapOf(String.class, Integer.class).getType()));
+        assertFalse(slot.acceptsType(Types.mapOf(String.class, String.class).getType()));
     }
 }

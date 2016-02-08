@@ -1,5 +1,9 @@
 package com.opencredo.concourse.data.tuples;
 
+import java.util.Objects;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * A key that can be used to retrieve a value directly from a tuple, in a type-safe way.
  * @param <T>
@@ -8,18 +12,21 @@ public class TupleKey<T> {
 
     private final TupleSchema schema;
     private final String name;
-    private final Class<T> type;
     private final int index;
 
-    TupleKey(TupleSchema schema, String name, Class<T> type, int index) {
+    TupleKey(TupleSchema schema, String name, int index) {
         this.schema = schema;
         this.name = name;
-        this.type = type;
         this.index = index;
     }
 
+    @SuppressWarnings("unchecked")
     T get(Object[] values) {
-        return type.cast(values[index]);
+        return (T) values[index];
+    }
+
+    void set(Object[] values, Object value) {
+        values[index] = value;
     }
 
     boolean belongsToSchema(TupleSchema schema) {
@@ -31,8 +38,22 @@ public class TupleKey<T> {
      * @param value The value to add to the tuple.
      * @return The tuple builder.
      */
-    public TupleBuilder of(T value) {
-        return map -> map.put(name, value);
+    public TupleKeyValue of(T value) {
+        checkNotNull(value, "value must not be null");
+        return new TupleKeyValue(this, value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o
+                || (o instanceof TupleKey
+                    && ((TupleKey<?>) o).schema.equals(schema)
+                    && ((TupleKey<?>) o).index == index);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(schema, index);
     }
 
     @Override

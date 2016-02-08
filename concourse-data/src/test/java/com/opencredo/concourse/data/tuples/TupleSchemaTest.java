@@ -18,7 +18,7 @@ public class TupleSchemaTest {
                 TupleSlot.of("x", Integer.class),
                 TupleSlot.of("y", Integer.class));
 
-        Tuple coordinate = coordinateSchema.make(12, 34);
+        Tuple coordinate = coordinateSchema.makeWith(12, 34);
 
         assertThat(coordinate.get("x"), equalTo(12));
         assertThat(coordinate.get("y"), equalTo(34));
@@ -29,7 +29,7 @@ public class TupleSchemaTest {
         TupleSchema.of(
                 TupleSlot.of("x", Integer.class),
                 TupleSlot.of("y", Integer.class))
-        .make(1, 2, 3);
+        .makeWith(1, 2, 3);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -37,7 +37,7 @@ public class TupleSchemaTest {
         TupleSchema.of(
                 TupleSlot.of("x", Integer.class),
                 TupleSlot.of("y", Integer.class))
-                .make(1, 12.5);
+                .makeWith(1, 12.5);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class TupleSchemaTest {
             TupleSchema.of(
                     TupleSlot.of("x", Integer.class),
                     TupleSlot.of("y", Integer.class))
-                    .make("p", 12.5);
+                    .makeWith("p", 12.5);
             fail("Should throw exception");
         } catch (IllegalArgumentException e) {
             assertThat(e.getMessage(),
@@ -105,8 +105,8 @@ public class TupleSchemaTest {
                 TupleSlot.of("x", Integer.class),
                 TupleSlot.of("y", Integer.class));
 
-        assertThat(coordinateSchema.fromMap(ImmutableMap.of("y", 34, "x", 12)),
-                equalTo(coordinateSchema.make(12, 34)));
+        assertThat(coordinateSchema.make(ImmutableMap.of("y", 34, "x", 12)),
+                equalTo(coordinateSchema.makeWith(12, 34)));
     }
 
     @Test
@@ -120,6 +120,6 @@ public class TupleSchemaTest {
         assertThat(coordinateSchema.deserialise(deserialiser, ImmutableMap.of(
                 "y", "34",
                 "x", "12")),
-                equalTo(coordinateSchema.make(12, 34)));
+                equalTo(coordinateSchema.makeWith(12, 34)));
     }
 }

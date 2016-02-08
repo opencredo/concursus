@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface TupleBuilder extends Consumer<Map<String, Object>> {
+public interface NamedValue extends Consumer<Map<String, Object>> {
 
-    static TupleBuilder of(String name, Object value) {
+    static NamedValue of(String name, Object value) {
         return m -> m.put(name, value);
     }
 
