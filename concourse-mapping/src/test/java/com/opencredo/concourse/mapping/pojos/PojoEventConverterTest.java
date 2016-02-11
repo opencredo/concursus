@@ -7,7 +7,6 @@ import com.opencredo.concourse.domain.StreamTimestamp;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.mapping.annotations.Name;
-import com.opencredo.concourse.mapping.annotations.Version;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -44,8 +43,7 @@ public class PojoEventConverterTest {
 
     public interface Purchased extends OrderEvent {}
 
-    @Name("purchased")
-    @Version("2")
+    @Name(value="purchased", version="2")
     public interface PurchasedV2 extends OrderEvent {
         BigDecimal getSalesTaxPercent();
     }

@@ -1,4 +1,4 @@
-package com.opencredo.concourse.domain.events;
+package com.opencredo.concourse.domain.events.collection;
 
 import java.util.function.BiFunction;
 

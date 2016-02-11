@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.mapping.annotations.Name;
-import com.opencredo.concourse.mapping.annotations.Version;
 
 import java.util.Collection;
 import java.util.Map;
@@ -31,13 +30,13 @@ public class PojoEventConverter<B> implements Function<Event, PojoEvent<? extend
     }
 
     private static VersionedName getVersionedName(Class<?> klass) {
-        String name = klass.isAnnotationPresent(Name.class)
-                ? klass.getAnnotation(Name.class).value()
-                : klass.getSimpleName().substring(0, 1).toLowerCase() + klass.getSimpleName().substring(1);
-        String version = klass.isAnnotationPresent(Version.class)
-                ? klass.getAnnotation(Version.class).value()
-                : "0";
-        return VersionedName.of(name, version);
+        return klass.isAnnotationPresent(Name.class)
+                ? VersionedName.of(
+                    klass.getAnnotation(Name.class).value(),
+                    klass.getAnnotation(Name.class).version())
+                : VersionedName.of(
+                    klass.getSimpleName().substring(0, 1).toLowerCase() + klass.getSimpleName().substring(1),
+                    "0");
     }
 
     private final Map<VersionedName, Class<? extends B>> classLookup;

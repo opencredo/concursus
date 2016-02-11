@@ -5,8 +5,8 @@ import org.junit.Test;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.opencredo.concourse.domain.events.EventStreamCollector.toNewState;
-import static com.opencredo.concourse.domain.events.EventStreamCollector.toState;
+import static com.opencredo.concourse.domain.events.collection.EventStreamCollector.toNewState;
+import static com.opencredo.concourse.domain.events.collection.EventStreamCollector.toState;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
