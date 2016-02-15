@@ -1,6 +1,6 @@
 package com.opencredo.concourse.mapping.methods;
 
-import com.opencredo.concourse.domain.StreamTimestamp;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;

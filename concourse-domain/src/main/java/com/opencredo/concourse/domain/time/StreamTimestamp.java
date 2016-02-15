@@ -1,4 +1,4 @@
-package com.opencredo.concourse.domain;
+package com.opencredo.concourse.domain.time;
 
 import java.time.Instant;
 import java.util.Comparator;

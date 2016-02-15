@@ -1,6 +1,6 @@
 package com.opencredo.concourse.mapping.methods;
 
-import com.opencredo.concourse.domain.StreamTimestamp;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
 import org.junit.Test;

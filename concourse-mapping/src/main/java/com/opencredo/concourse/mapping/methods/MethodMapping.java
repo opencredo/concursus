@@ -1,11 +1,8 @@
 package com.opencredo.concourse.mapping.methods;
 
-import com.opencredo.concourse.data.tuples.Tuple;
-import com.opencredo.concourse.data.tuples.TupleKey;
-import com.opencredo.concourse.data.tuples.TupleKeyValue;
-import com.opencredo.concourse.data.tuples.TupleSchema;
+import com.opencredo.concourse.data.tuples.*;
 import com.opencredo.concourse.domain.AggregateId;
-import com.opencredo.concourse.domain.StreamTimestamp;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
@@ -84,6 +81,10 @@ public final class MethodMapping {
         populateArgsFromTuple(event, args);
 
         return args;
+    }
+
+    public void registerSchema(TupleSchemaRegistry registry) {
+        registry.add(tupleSchema);
     }
 
     private void populateArgsFromTuple(Event event, Object[] args) {

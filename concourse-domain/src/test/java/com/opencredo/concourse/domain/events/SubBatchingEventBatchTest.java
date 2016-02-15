@@ -2,7 +2,7 @@ package com.opencredo.concourse.domain.events;
 
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.AggregateId;
-import com.opencredo.concourse.domain.StreamTimestamp;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
 import com.opencredo.concourse.domain.events.batching.SubBatchingEventBatch;
