@@ -18,37 +18,34 @@ import static java.util.stream.Collectors.joining;
  */
 public final class TupleSchema {
 
-    private static final TupleSchema empty = TupleSchema.of();
-
-    /**
-     * Returns the empty TupleSchema
-     * @return The empty TupleSchema
-     */
-    public static TupleSchema empty() {
-        return empty;
-    }
-
     /**
      * Create a TupleSchema having the supplied TupleSlots.
      * @param slots The TupleSlots in the schema.
      * @return The created TupleSchema.
      */
-    public static TupleSchema of(TupleSlot...slots) {
+    public static TupleSchema of(String name, TupleSlot...slots) {
+        checkNotNull(name, "name must not be null");
         checkNotNull(slots, "slots must not be null");
 
         Map<String, Integer> slotLookup = IntStream.range(0, slots.length)
                 .collect(HashMap::new, (m, i) -> m.put(slots[i].getName(), i), Map::putAll);
 
         checkArgument(slots.length == slotLookup.size(), "Slot names are not unique");
-        return new TupleSchema(slots, slotLookup);
+        return new TupleSchema(name, slots, slotLookup);
     }
 
+    private final String name;
     private final TupleSlot[] slots;
     private final Map<String, Integer> slotLookup;
 
-    private TupleSchema(TupleSlot[] slots, Map<String, Integer> slotLookup) {
+    private TupleSchema(String name, TupleSlot[] slots, Map<String, Integer> slotLookup) {
+        this.name = name;
         this.slots = slots;
         this.slotLookup = slotLookup;
+    }
+
+    public String getName() {
+        return name;
     }
 
     /**
@@ -191,21 +188,22 @@ public final class TupleSchema {
     public boolean equals(Object o) {
         return this == o
                 || (o instanceof TupleSchema
+                    && name.equals(((TupleSchema) o).name)
                     && Arrays.deepEquals(((TupleSchema) o).slots, slots));
     }
 
     @Override
     public int hashCode() {
-        return Arrays.deepHashCode(slots);
+        return Objects.hash(name, Arrays.deepHashCode(slots));
     }
 
     @Override
     public String toString() {
-        return Stream.of(slots).map(Object::toString).collect(joining(",", "[", "]"));
+        return name + Stream.of(slots).map(Object::toString).collect(joining(",", "{", "}"));
     }
 
     String format(Object[] values) {
-        return getIndices()
+        return name + getIndices()
                 .mapToObj(i -> slots[i].getName() + "=" + values[i])
                 .collect(joining(", ", "{", "}"));
     }

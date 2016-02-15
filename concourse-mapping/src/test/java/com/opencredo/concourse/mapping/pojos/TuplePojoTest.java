@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class TuplePojoTest {
 
-    private final TupleSchema schema = TupleSchema.of(
+    private final TupleSchema schema = TupleSchema.of("person",
             TupleSlot.of("name", String.class),
             TupleSlot.of("age", int.class),
             TupleSlot.ofMap("telephoneNumbers", String.class, String.class)

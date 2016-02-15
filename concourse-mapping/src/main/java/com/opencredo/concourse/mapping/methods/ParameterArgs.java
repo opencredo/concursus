@@ -45,8 +45,8 @@ public final class ParameterArgs {
                 .toArray(TupleSlot[]::new);
     }
 
-    public TupleSchema getTupleSchema() {
-        return TupleSchema.of(getTupleSlots());
+    public TupleSchema getTupleSchema(String name) {
+        return TupleSchema.of(name, getTupleSlots());
     }
 
     public TupleKey[] getTupleKeys(TupleSchema schema) {

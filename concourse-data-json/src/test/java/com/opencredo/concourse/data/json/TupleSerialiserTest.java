@@ -19,22 +19,18 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class TupleSerialiserTest {
 
-    private final TupleSchema personSchema = TupleSchema.of(
+    private final TupleSchema personSchema = TupleSchema.of("person",
             TupleSlot.of("name", String.class),
             TupleSlot.of("age", Integer.class),
             TupleSlot.ofMap("addresses", String.class, Tuple.class)
     );
 
-    private final TupleSchema addressSchema = TupleSchema.of(
+    private final TupleSchema addressSchema = TupleSchema.of("address",
             TupleSlot.of("addressLines", new TypeToken<List<String>>() {}.getType()),
             TupleSlot.of("postcode", String.class)
     );
 
-    private final TupleSchemaRegistry registry = new TupleSchemaRegistry()
-            .add("person", personSchema)
-            .add("address", addressSchema);
-
-    private final TupleSerialiser serialiser = new TupleSerialiser(registry);
+    private final TupleSerialiser serialiser = new TupleSerialiser();
 
     private final ObjectMapper mapper = new ObjectMapper();
     {

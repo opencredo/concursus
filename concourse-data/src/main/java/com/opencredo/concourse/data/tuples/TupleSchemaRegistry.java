@@ -10,14 +10,14 @@ public final class TupleSchemaRegistry {
     private final BiMap<String, TupleSchema> nameToSchema = HashBiMap.create();
     private final BiMap<TupleSchema, String> schemaToName = nameToSchema.inverse();
 
-    public TupleSchemaRegistry add(String name, TupleSchema tupleSchema) {
-        nameToSchema.put(name, tupleSchema);
+    public TupleSchemaRegistry add(TupleSchema tupleSchema) {
+        nameToSchema.put(tupleSchema.getName(), tupleSchema);
         return this;
     }
 
     public TupleSchema create(String name, TupleSlot...tupleSlots) {
-        TupleSchema schema = TupleSchema.of(tupleSlots);
-        add(name, schema);
+        TupleSchema schema = TupleSchema.of(name, tupleSlots);
+        add(schema);
         return schema;
     }
 

@@ -6,12 +6,15 @@ import com.opencredo.concourse.domain.StreamTimestamp;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.consuming.EventLog;
+import com.opencredo.concourse.domain.events.consuming.LoggingEventLog;
 import com.opencredo.concourse.domain.events.publishing.EventPublisher;
 import com.opencredo.concourse.domain.events.publishing.LoggingEventPublisher;
 import org.junit.Test;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,40 +23,41 @@ import static org.hamcrest.Matchers.contains;
 
 public class EventBusTest {
 
-    private final List<Event> loggedEvents = new ArrayList<>();
+    private final List<Collection<Event>> loggedEvents = new ArrayList<>();
     private final List<Event> publishedEvents = new ArrayList<>();
 
-    private final EventLog eventLog = loggedEvents::addAll;
+    private final EventLog eventLog = loggedEvents::add;
     private final EventPublisher eventPublisher = publishedEvents::add;
 
-    private final EventBus bus = () ->
+    private final EventBus bus = EventBus.of(() ->
             SimpleEventBatch.writingTo(
                     eventLog.filter(LoggingEventLog::logging)
-                            .andPublish(eventPublisher.filter(LoggingEventPublisher::logging)))
-            .filter(LoggingEventBatch::logging);
+                            .publishingTo(eventPublisher.filter(LoggingEventPublisher::logging)))
+            .filter(LoggingEventBatch::logging))
+            .filter(LoggingEventBus::logging);
 
 
     @Test
     public void dispatchesEventsSinglyToLogAndPublisher() {
-
         Event event1 = Event.of(
                 AggregateId.of("widget", UUID.randomUUID()),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
-                TupleSchema.empty().makeWith()
+                TupleSchema.of("test").makeWith()
         );
 
         Event event2 = Event.of(
                 AggregateId.of("widget", UUID.randomUUID()),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
-                TupleSchema.empty().makeWith()
+                TupleSchema.of("test").makeWith()
         );
 
         bus.accept(event1);
         bus.accept(event2);
 
-        assertThat(loggedEvents, contains(event1, event2));
+        assertThat(loggedEvents.get(0), contains(event1));
+        assertThat(loggedEvents.get(1), contains(event2));
         assertThat(publishedEvents, contains(event1, event2));
     }
 
@@ -63,14 +67,14 @@ public class EventBusTest {
                 AggregateId.of("widget", UUID.randomUUID()),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
-                TupleSchema.empty().makeWith()
+                TupleSchema.of("test").makeWith()
         );
 
         Event event2 = Event.of(
                 AggregateId.of("widget", UUID.randomUUID()),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
-                TupleSchema.empty().makeWith()
+                TupleSchema.of("test").makeWith()
         );
 
         bus.dispatch(batch -> {
@@ -78,7 +82,7 @@ public class EventBusTest {
             batch.accept(event2);
         });
 
-        assertThat(loggedEvents, contains(event1, event2));
+        assertThat(loggedEvents.get(0), contains(event1, event2));
         assertThat(publishedEvents, contains(event1, event2));
     }
 

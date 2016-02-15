@@ -20,20 +20,20 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class TupleDeserialiserTest {
 
-    private final TupleSchema personSchema = TupleSchema.of(
+    private final TupleSchema personSchema = TupleSchema.of("person",
             TupleSlot.of("name", String.class),
             TupleSlot.of("age", Integer.class),
             TupleSlot.of("addresses", new TypeToken<Map<String, Tuple>>() {}.getType())
     );
 
-    private final TupleSchema addressSchema = TupleSchema.of(
+    private final TupleSchema addressSchema = TupleSchema.of("address",
             TupleSlot.of("addressLines", new TypeToken<List<String>>() {}.getType()),
             TupleSlot.of("postcode", String.class)
     );
 
     private final TupleSchemaRegistry registry = new TupleSchemaRegistry()
-            .add("person", personSchema)
-            .add("address", addressSchema);
+            .add(personSchema)
+            .add(addressSchema);
 
     private final TupleDeserialiser deserialiser = new TupleDeserialiser(registry);
 

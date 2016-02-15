@@ -12,13 +12,13 @@ import static org.junit.Assert.fail;
 
 public class TupleKeyTest {
 
-    private final TupleSchema personSchema = TupleSchema.of(
+    private final TupleSchema personSchema = TupleSchema.of("person",
             TupleSlot.of("name", String.class),
             TupleSlot.of("age", Integer.class),
             TupleSlot.of("address", Tuple.class)
     );
 
-    private final TupleSchema addressSchema = TupleSchema.of(
+    private final TupleSchema addressSchema = TupleSchema.of("address",
             TupleSlot.ofList("addressLines", String.class),
             TupleSlot.of("postcode", String.class)
     );

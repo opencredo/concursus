@@ -13,13 +13,13 @@ import static org.hamcrest.Matchers.not;
 
 public class TupleTest {
 
-    private final TupleSchema personSchema = TupleSchema.of(
+    private final TupleSchema personSchema = TupleSchema.of("person",
             TupleSlot.of("name", String.class),
             TupleSlot.of("age", Integer.class),
             TupleSlot.of("address", Tuple.class)
     );
 
-    private final TupleSchema addressSchema = TupleSchema.of(
+    private final TupleSchema addressSchema = TupleSchema.of("address",
             TupleSlot.of("addressLines", new TypeToken<List<String>>() {}.getType()),
             TupleSlot.of("postcode", String.class)
     );
@@ -55,7 +55,7 @@ public class TupleTest {
                 addressSchema.makeWith(asList("23 Acacia Avenue", "Sunderland"), "VB6 5UX"));
 
         assertThat(person.toString(),
-                equalTo("{name=Dominic, age=41, address={addressLines=[23 Acacia Avenue, Sunderland], postcode=VB6 5UX}}"));
+                equalTo("person{name=Dominic, age=41, address=address{addressLines=[23 Acacia Avenue, Sunderland], postcode=VB6 5UX}}"));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TupleTest {
         assertThat(person.serialise(Object::toString), equalTo(ImmutableMap.of(
                 "name", "Dominic",
                 "age", "41",
-                "address", "{addressLines=[23 Acacia Avenue, Sunderland], postcode=VB6 5UX}")));
+                "address", "address{addressLines=[23 Acacia Avenue, Sunderland], postcode=VB6 5UX}")));
     }
 
     @Test

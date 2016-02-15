@@ -17,6 +17,10 @@ public final class VersionedName {
         return of(parts[0], parts[1]);
     }
 
+    public static VersionedName of(String name) {
+        return of(name, "0");
+    }
+
     public static VersionedName of(String name, String version) {
         checkNotNull(name, "name must not be null");
         checkNotNull(version, "version must not be null");

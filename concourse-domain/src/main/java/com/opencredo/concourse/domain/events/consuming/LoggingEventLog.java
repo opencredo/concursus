@@ -1,4 +1,4 @@
-package com.opencredo.concourse.domain.events;
+package com.opencredo.concourse.domain.events.consuming;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,13 +7,10 @@ public final class LoggingEventLog {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingEventLog.class);
 
-    static EventLog logging(EventLog loggedEventLog) {
+    public static EventLog logging(EventLog loggedEventLog) {
         return events -> {
-            LOGGER.info("Event log received {} events ", events.size());
+            LOGGER.info("Events consumer received {} events", events.size());
             loggedEventLog.accept(events);
         };
-    }
-
-    private LoggingEventLog() {
     }
 }

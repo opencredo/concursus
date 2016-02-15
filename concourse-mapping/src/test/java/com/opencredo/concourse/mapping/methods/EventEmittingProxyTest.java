@@ -37,8 +37,8 @@ public class EventEmittingProxyTest {
         emitter.createdV2(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID(), "Arthur Putey", 41);
         emitter.nameUpdated(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID(), "Arthur Dent");
 
-        assertThat(emittedEvents.get(0).getParameters().get("age"), equalTo(41));
-        assertThat(emittedEvents.get(1).getParameters().get("updatedName"), equalTo("Arthur Dent"));
+        assertThat(emittedEvents.get(0).getParameters().toString(), equalTo("test/created_2{age=41, name=Arthur Putey}"));
+        assertThat(emittedEvents.get(1).getParameters().toString(), equalTo("test/nameUpdated_0{updatedName=Arthur Dent}"));
     }
 
 }

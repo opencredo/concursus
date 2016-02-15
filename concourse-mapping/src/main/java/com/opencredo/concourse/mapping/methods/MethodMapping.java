@@ -25,13 +25,16 @@ public final class MethodMapping {
 
         Class<?> klass = method.getDeclaringClass();
 
+        final String aggregateType = EventInterfaceReflection.getAggregateType(klass);
+        final VersionedName eventName = EventInterfaceReflection.getEventName(method);
+
         ParameterArgs parameterArgs = ParameterArgs.forMethod(method);
-        TupleSchema schema = parameterArgs.getTupleSchema();
+        TupleSchema schema = parameterArgs.getTupleSchema(EventType.of(aggregateType, eventName).toString());
         TupleKey[] tupleKeys = parameterArgs.getTupleKeys(schema);
 
         return new MethodMapping(
-                EventInterfaceReflection.getAggregateType(klass),
-                EventInterfaceReflection.getEventName(method),
+                aggregateType,
+                eventName,
                 schema,
                 tupleKeys);
     }

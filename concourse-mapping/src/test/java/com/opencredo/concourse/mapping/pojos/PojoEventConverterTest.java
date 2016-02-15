@@ -18,17 +18,17 @@ import static org.hamcrest.Matchers.instanceOf;
 
 public class PojoEventConverterTest {
 
-    private static final TupleSchema created = TupleSchema.of(
+    private static final TupleSchema created = TupleSchema.of("created_0",
             TupleSlot.of("sessionId", String.class)
     );
 
-    private static final TupleSchema addedItem = TupleSchema.of(
+    private static final TupleSchema addedItem = TupleSchema.of("addedItem_0",
             TupleSlot.of("itemId", String.class),
             TupleSlot.of("price", BigDecimal.class),
             TupleSlot.of("quantity", int.class)
     );
 
-    private static final TupleSchema purchasedV2 = TupleSchema.of(
+    private static final TupleSchema purchasedV2 = TupleSchema.of("purchased_2",
             TupleSlot.of("salesTaxPercent", BigDecimal.class)
     );
 

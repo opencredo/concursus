@@ -1,18 +1,16 @@
 package com.opencredo.concourse.domain.events.batching;
 
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.consuming.EventLog;
 import com.opencredo.concourse.domain.time.TimeUUID;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class SubBatchingEventBatch implements EventBatch {
 
-    public static EventBatch writingTo(Consumer<Collection<Event>> eventsConsumer, int maxSubBatchSize) {
-        return new SubBatchingEventBatch(eventsConsumer, maxSubBatchSize);
+    public static EventBatch writingTo(EventLog eventLog, int maxSubBatchSize) {
+        return new SubBatchingEventBatch(eventLog, maxSubBatchSize);
     }
 
     private final UUID id = TimeUUID.timeBased();
@@ -39,7 +37,7 @@ public final class SubBatchingEventBatch implements EventBatch {
     public void accept(Event event) {
         events.add(event);
         if (events.size() == maxSubBatchSize) {
-            eventsConsumer.accept(events);
+            eventsConsumer.accept(new ArrayList<>(events));
             events.clear();
         }
     }

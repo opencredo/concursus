@@ -6,34 +6,29 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-public final class LoggingEventBatch implements EventBatch {
-
-    public static EventBatch logging(EventBatch loggedEventBatch) {
-        return new LoggingEventBatch(loggedEventBatch);
-    }
+public final class LoggingEventBatch {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggingEventBatch.class);
 
-    private final EventBatch loggedEventBatch;
+    public static EventBatch logging(EventBatch loggedEventBatch) {
+        return new EventBatch() {
+            @Override
+            public UUID getId() {
+                return loggedEventBatch.getId();
+            }
 
-    private LoggingEventBatch(EventBatch loggedEventBatch) {
-        this.loggedEventBatch = loggedEventBatch;
+            @Override
+            public void complete() {
+                LOGGER.info("Batch {} completed", getId());
+                loggedEventBatch.complete();
+            }
+
+            @Override
+            public void accept(Event event) {
+                LOGGER.debug("Batch {} received event {}", getId(), event);
+                loggedEventBatch.accept(event);
+            }
+        };
     }
 
-    @Override
-    public UUID getId() {
-        return loggedEventBatch.getId();
-    }
-
-    @Override
-    public void complete() {
-        LOGGER.info("Batch {} completed", getId());
-        loggedEventBatch.complete();
-    }
-
-    @Override
-    public void accept(Event event) {
-        LOGGER.debug("Batch {} received event {}", getId(), event);
-        loggedEventBatch.accept(event);
-    }
 }

@@ -1,4 +1,4 @@
-package com.opencredo.concourse.domain.events.collection;
+package com.opencredo.concourse.domain.events.collecting;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
