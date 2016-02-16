@@ -3,7 +3,6 @@ package com.opencredo.concourse.domain.events;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
 
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
 @FunctionalInterface
 public interface EventBus extends Consumer<Event> {
@@ -23,9 +22,5 @@ public interface EventBus extends Consumer<Event> {
         EventBatch batch = startBatch();
         batchConsumer.accept(batch);
         batch.complete();
-    }
-
-    default EventBus filter(UnaryOperator<EventBus> filter) {
-        return filter.apply(this);
     }
 }

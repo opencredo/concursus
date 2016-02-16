@@ -1,5 +1,6 @@
 package com.opencredo.concourse.domain.events;
 
+import com.google.common.collect.ImmutableMap;
 import com.opencredo.concourse.data.tuples.Tuple;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.AggregateId;
@@ -7,12 +8,16 @@ import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.consuming.LoggingEventLog;
+import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeRange;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -23,13 +28,13 @@ public class InMemoryEventStoreTest {
 
     private final Instant startTime = Instant.now();
     private final Function<Integer, StreamTimestamp> timestamp = i -> StreamTimestamp.of("test", startTime.plusMillis(i));
-    private final Tuple empty = TupleSchema.of("empty").makeWith();
+    private final TupleSchema emptySchema = TupleSchema.of("empty");
+    private final Tuple empty = emptySchema.makeWith();
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
 
-    private final EventBus bus = EventBus.of(() ->
-            SimpleEventBatch.writingTo(eventStore.filter(LoggingEventLog::logging))
-                .filter(LoggingEventBatch::logging))
-            .filter(LoggingEventBus::logging);
+    private final EventBus bus = LoggingEventBus.logging(EventBus.of(() ->
+            LoggingEventBatch.logging(SimpleEventBatch.writingTo(
+                    LoggingEventLog.logging(eventStore)))));
 
     @Test
     public void storesEventsInTimeAscendingOrder() {
@@ -77,5 +82,51 @@ public class InMemoryEventStoreTest {
 
         assertThat(eventStore.getEvents(aggregateId, TimeRange.fromExclusive(startTime.plusMillis(10)).toUnbounded()),
                 contains(update1, update2));
+    }
+
+    @Test
+    public void preloadsEvents() {
+        AggregateId aggregateId1 = AggregateId.of("test", UUID.randomUUID());
+        AggregateId aggregateId2 = AggregateId.of("test", UUID.randomUUID());
+        AggregateId aggregateId3 = AggregateId.of("test", UUID.randomUUID());
+
+        Event created1 = Event.of(aggregateId1, timestamp.apply(10), VersionedName.of("created"), empty);
+        Event created2 = Event.of(aggregateId2, timestamp.apply(20), VersionedName.of("created"), empty);
+        Event created3 = Event.of(aggregateId3, timestamp.apply(30), VersionedName.of("created"), empty);
+
+        bus.dispatch(batch -> {
+            batch.accept(created1);
+            batch.accept(created2);
+            batch.accept(created3);
+        });
+
+        EventSource preloaded = eventStore.preload("test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
+                TimeRange.fromUnbounded().toExclusive(startTime.plusMillis(30)));
+
+        assertThat(preloaded.getEvents(aggregateId1), contains(created1));
+        assertThat(preloaded.getEvents(aggregateId2), Matchers.hasSize(0));
+        assertThat(preloaded.getEvents(aggregateId3), Matchers.hasSize(0));
+    }
+
+    @Test
+    public void filtersByMatchedEventTypes() {
+        AggregateId aggregateId = AggregateId.of("test", UUID.randomUUID());
+
+        Event created = Event.of(aggregateId, timestamp.apply(10), VersionedName.of("created"), empty);
+        Event update1 = Event.of(aggregateId, timestamp.apply(20), VersionedName.of("updated"), empty);
+        Event update2 = Event.of(aggregateId, timestamp.apply(30), VersionedName.of("updated"), empty);
+
+        bus.dispatch(batch -> {
+            batch.accept(created);
+            batch.accept(update1);
+            batch.accept(update2);
+        });
+
+        EventSource typeMatched = eventStore.matchingWith(
+            EventTypeMatcher.matchingAgainst(ImmutableMap.of(
+                    EventType.of(update1), emptySchema
+            )));
+
+        assertThat(typeMatched.getEvents(aggregateId), contains(update1, update2));
     }
 }

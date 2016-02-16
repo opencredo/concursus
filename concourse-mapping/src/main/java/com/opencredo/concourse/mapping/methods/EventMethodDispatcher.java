@@ -6,6 +6,7 @@ import com.opencredo.concourse.domain.events.EventType;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -16,11 +17,15 @@ public final class EventMethodDispatcher implements Consumer<Event> {
         return toHandler(target.getClass(), target);
     }
 
-    public static EventMethodDispatcher toHandler(Class<?> handlerInterface, Object target) {
+    public static <H> EventMethodDispatcher toHandler(Class<? extends H> handlerInterface, H target) {
         checkNotNull(handlerInterface, "handlerInterface must not be null");
         checkNotNull(target, "target must not be null");
 
         return new EventMethodDispatcher(target, EventInterfaceReflection.getEventDispatchers(handlerInterface));
+    }
+
+    public static <H, T> Function<Consumer<T>, Consumer<Event>> toCollector(Class<? extends H> handlerInterface, Function<Consumer<T>, H> handlerBuilder) {
+        return caller -> toHandler(handlerInterface, handlerBuilder.apply(caller));
     }
 
     private final Object target;

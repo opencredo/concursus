@@ -27,13 +27,13 @@ public class ProxyingEventBusTest {
     private final List<Event> publishedEvents = new ArrayList<>();
 
     private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
-    private final EventLog eventLog = LoggingEventLog.logging(batchedEvents::add).publishingTo(eventPublisher);
+    private final EventLog eventLog = LoggingEventLog.logging(batchedEvents::add)
+            .publishingTo(eventPublisher);
 
-    private final EventBus eventBus = EventBus.of(() ->
-            SimpleEventBatch.writingTo(eventLog).filter(LoggingEventBatch::logging))
-            .filter(LoggingEventBus::logging);
+    private final EventBus bus = LoggingEventBus.logging(() ->
+            LoggingEventBatch.logging(SimpleEventBatch.writingTo(eventLog)));
 
-    private final ProxyingEventBus unit = ProxyingEventBus.proxying(eventBus);
+    private final ProxyingEventBus unit = ProxyingEventBus.proxying(bus);
 
     @HandlesEventsFor("test")
     public interface TestEvents {

@@ -30,10 +30,8 @@ public class SubBatchingEventBatchTest {
     private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
     private final EventLog eventLog = LoggingEventLog.logging(batchedEvents::add).publishingTo(eventPublisher);
 
-    private final EventBus eventBus = EventBus.of(() ->
-            SubBatchingEventBatch.writingTo(eventLog, 10)
-            .filter(LoggingEventBatch::logging))
-            .filter(LoggingEventBus::logging);
+    private final EventBus eventBus = LoggingEventBus.logging(EventBus.of(() ->
+            LoggingEventBatch.logging(SubBatchingEventBatch.writingTo(eventLog, 10))));
 
     @Test
     public void breaksUpBatchIntoSubBatches() {

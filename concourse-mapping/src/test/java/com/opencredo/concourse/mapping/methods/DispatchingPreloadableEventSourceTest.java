@@ -1,18 +1,21 @@
 package com.opencredo.concourse.mapping.methods;
 
+import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
-import static com.opencredo.concourse.mapping.methods.EventMethodDispatcher.toHandler;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 
-public class EventMethodDispatcherTest {
+public class DispatchingPreloadableEventSourceTest {
 
     @HandlesEventsFor("test")
     public interface CreatedEventReceiver {
@@ -48,22 +51,29 @@ public class EventMethodDispatcherTest {
 
     private final TestEventsReceiver handler = mock(TestEventsReceiver.class);
 
-    @Test
-    public void dispatchesMethodCallsBasedOnEvents() {
-        EventMethodDispatcher dispatcher = toHandler(TestEventsReceiver.class, handler);
 
-        TestEvents emitter = EventEmittingProxy.proxying(dispatcher, TestEvents.class);
+    @Test
+    public void useWithReplayer() {
+        InMemoryEventStore eventStore = InMemoryEventStore.empty();
+
+        ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventStore));
 
         final StreamTimestamp timestamp1 = StreamTimestamp.of("test", Instant.now());
         final StreamTimestamp timestamp2 = StreamTimestamp.of("test", Instant.now());
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
 
-        emitter.createdV2(timestamp1, id1, "Arthur Putey", 41);
-        emitter.nameUpdated(timestamp2, id2, "Arthur Dent");
+        eventBus.dispatch(TestEvents.class, batch -> {
+            batch.createdV2(timestamp1, id1, "Arthur Putey", 41);
+            batch.nameUpdated(timestamp2, id2, "Arthur Dent");
+        });
 
-        Mockito.verify(handler).createdVersion2(timestamp1, id1, 41, "Arthur Putey");
-        Mockito.verify(handler).nameUpdated(timestamp2, id2, "Arthur Dent");
+        Optional<String> name = DispatchingPreloadableEventSource
+                .dispatching(eventStore, CreatedEventReceiver.class)
+                .replaying(id1)
+                .collectFirst(caller -> (ts, id, n, age) -> caller.accept(n));
+
+        assertThat(name, equalTo(Optional.of("Arthur Putey")));
     }
 
 }

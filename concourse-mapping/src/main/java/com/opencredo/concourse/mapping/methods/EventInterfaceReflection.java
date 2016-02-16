@@ -1,5 +1,7 @@
 package com.opencredo.concourse.mapping.methods;
 
+import com.opencredo.concourse.data.tuples.TupleSchemaRegistry;
+import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
@@ -86,5 +88,17 @@ public final class EventInterfaceReflection {
                 throw new RuntimeException(e);
             }
         };
+    }
+
+    private static final ConcurrentHashMap<Class<?>, EventTypeMatcher> eventTypeMatcherCache = new ConcurrentHashMap<>();
+
+    public static EventTypeMatcher getEventTypeMatcher(Class<?> handlerClass) {
+        return eventTypeMatcherCache.computeIfAbsent(handlerClass, EventInterfaceReflection::getEventTypeMatcherUncached);
+    }
+
+    private static EventTypeMatcher getEventTypeMatcherUncached(Class<?> handlerClass) {
+        TupleSchemaRegistry registry = new TupleSchemaRegistry();
+        getEventMappers(handlerClass).values().stream().forEach(mapper -> mapper.registerSchema(registry));
+        return EventTypeMatcher.matchingAgainst(registry);
     }
 }

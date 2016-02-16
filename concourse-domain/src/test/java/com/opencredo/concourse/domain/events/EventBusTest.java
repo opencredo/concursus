@@ -26,16 +26,12 @@ public class EventBusTest {
     private final List<Collection<Event>> loggedEvents = new ArrayList<>();
     private final List<Event> publishedEvents = new ArrayList<>();
 
-    private final EventLog eventLog = loggedEvents::add;
-    private final EventPublisher eventPublisher = publishedEvents::add;
+    private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
+    private final EventLog eventLog = LoggingEventLog.logging(loggedEvents::add)
+            .publishingTo(eventPublisher);
 
-    private final EventBus bus = EventBus.of(() ->
-            SimpleEventBatch.writingTo(
-                    eventLog.filter(LoggingEventLog::logging)
-                            .publishingTo(eventPublisher.filter(LoggingEventPublisher::logging)))
-            .filter(LoggingEventBatch::logging))
-            .filter(LoggingEventBus::logging);
-
+    private final EventBus bus = LoggingEventBus.logging(() ->
+            LoggingEventBatch.logging(SimpleEventBatch.writingTo(eventLog)));
 
     @Test
     public void dispatchesEventsSinglyToLogAndPublisher() {
