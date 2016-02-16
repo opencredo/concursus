@@ -44,7 +44,7 @@ public final class Event implements Comparable<Event> {
 
     public Event processed(UUID processingId) {
         checkNotNull(processingId, "processingId must not be null");
-        checkArgument(processingId.variant() == 1, "processingId must by type 1 UUID");
+        checkArgument(processingId.version() == 1, "processingId must be type 1 UUID");
 
         return new Event(aggregateId, eventTimestamp, Optional.of(processingId), eventName, parameters);
     }

@@ -28,7 +28,10 @@ public class SubBatchingEventBatchTest {
     private final List<Event> publishedEvents = new ArrayList<>();
 
     private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
-    private final EventLog eventLog = LoggingEventLog.logging(batchedEvents::add).publishingTo(eventPublisher);
+    private final EventLog eventLog = LoggingEventLog.logging(events -> {
+        batchedEvents.add(events);
+        return events;
+    }).publishingTo(eventPublisher);
 
     private final EventBus eventBus = LoggingEventBus.logging(EventBus.of(() ->
             LoggingEventBatch.logging(SubBatchingEventBatch.writingTo(eventLog, 10))));

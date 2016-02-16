@@ -27,8 +27,10 @@ public class EventBusTest {
     private final List<Event> publishedEvents = new ArrayList<>();
 
     private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
-    private final EventLog eventLog = LoggingEventLog.logging(loggedEvents::add)
-            .publishingTo(eventPublisher);
+    private final EventLog eventLog = LoggingEventLog.logging(events -> {
+        loggedEvents.add(events);
+        return events;
+    }).publishingTo(eventPublisher);
 
     private final EventBus bus = LoggingEventBus.logging(() ->
             LoggingEventBatch.logging(SimpleEventBatch.writingTo(eventLog)));

@@ -1,21 +1,20 @@
 package com.opencredo.concourse.mapping.methods;
 
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.storing.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class DispatchingPreloadableEventSourceTest {
+public class DispatchingEventSourceTest {
 
     @HandlesEventsFor("test")
     public interface CreatedEventReceiver {
@@ -53,9 +52,9 @@ public class DispatchingPreloadableEventSourceTest {
             batch.nameUpdated(timestamp2, id2, "Arthur Dent");
         });
 
-        Optional<String> name = DispatchingPreloadableEventSource
+        Optional<String> name = DispatchingEventSource
                 .dispatching(eventStore, CreatedEventReceiver.class)
-                .preload(Arrays.asList(id1))
+                .preload(id1)
                 .replaying(id1)
                 .collectFirst(caller -> (ts, id, n, age) -> caller.accept(n));
 

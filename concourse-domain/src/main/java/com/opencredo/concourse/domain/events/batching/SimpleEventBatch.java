@@ -7,19 +7,19 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 public class SimpleEventBatch implements EventBatch {
 
-    public static EventBatch writingTo(Consumer<Collection<Event>> eventsConsumer) {
+    public static EventBatch writingTo(UnaryOperator<Collection<Event>> eventsConsumer) {
         return new SimpleEventBatch(eventsConsumer);
     }
 
     private final UUID id = TimeUUID.timeBased();
     private final List<Event> events = new LinkedList<>();
-    private final Consumer<Collection<Event>> eventsConsumer;
+    private final UnaryOperator<Collection<Event>> eventsConsumer;
 
-    private SimpleEventBatch(Consumer<Collection<Event>> eventsConsumer) {
+    private SimpleEventBatch(UnaryOperator<Collection<Event>> eventsConsumer) {
         this.eventsConsumer = eventsConsumer;
     }
 
@@ -30,7 +30,7 @@ public class SimpleEventBatch implements EventBatch {
 
     @Override
     public void complete() {
-        eventsConsumer.accept(events);
+        eventsConsumer.apply(events);
     }
 
     @Override

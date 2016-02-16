@@ -36,6 +36,14 @@ public final class VersionedName {
         this.version = version;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
     public String getFormatted() {
         return name + "_" + version;
     }

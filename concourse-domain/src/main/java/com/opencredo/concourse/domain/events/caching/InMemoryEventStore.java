@@ -1,13 +1,13 @@
-package com.opencredo.concourse.domain.events.storing;
+package com.opencredo.concourse.domain.events.caching;
 
 import com.opencredo.concourse.domain.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.consuming.EventLog;
-import com.opencredo.concourse.domain.events.preloading.EventCache;
-import com.opencredo.concourse.domain.events.preloading.PreloadableEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.TimeRange;
+import com.opencredo.concourse.domain.time.TimeUUID;
 
 import java.util.Collection;
 import java.util.NavigableSet;
@@ -15,8 +15,9 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
-public final class InMemoryEventStore implements EventLog, PreloadableEventSource, EventSource {
+public final class InMemoryEventStore implements EventLog, EventSource, PreloadedEventSource {
 
     public static InMemoryEventStore empty() {
         return with(new ConcurrentHashMap<>());
@@ -28,7 +29,7 @@ public final class InMemoryEventStore implements EventLog, PreloadableEventSourc
 
     public static InMemoryEventStore with(Collection<Event> events) {
         InMemoryEventStore eventStore = empty();
-        eventStore.accept(events);
+        eventStore.apply(events);
         return eventStore;
     }
 
@@ -41,8 +42,12 @@ public final class InMemoryEventStore implements EventLog, PreloadableEventSourc
     }
 
     @Override
-    public void accept(Collection<Event> events) {
-        events.forEach(this::store);
+    public Collection<Event> apply(Collection<Event> events) {
+        return events.stream().map(event -> {
+            Event processed = event.processed(TimeUUID.timeBased());
+            store(processed);
+            return processed;
+        }).collect(Collectors.toList());
     }
 
     private void store(Event event) {
@@ -60,7 +65,7 @@ public final class InMemoryEventStore implements EventLog, PreloadableEventSourc
     }
 
     @Override
-    public EventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public PreloadedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
         return EventCache.containing(eventCache.getEvents(matcher, aggregateType, aggregateIds, timeRange));
     }
 

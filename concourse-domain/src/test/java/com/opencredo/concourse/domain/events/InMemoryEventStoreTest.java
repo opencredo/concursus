@@ -7,23 +7,25 @@ import com.opencredo.concourse.domain.AggregateId;
 import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
 import com.opencredo.concourse.domain.events.consuming.LoggingEventLog;
-import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
-import com.opencredo.concourse.domain.events.storing.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeRange;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 
 public class InMemoryEventStoreTest {
 
@@ -54,7 +56,7 @@ public class InMemoryEventStoreTest {
             batch.accept(created);
         });
 
-        assertThat(eventStore.getEvents(aggregateId), contains(created, update1, update2));
+        assertRetrieved(eventStore.getEvents(aggregateId), created, update1, update2);
     }
 
     @Test
@@ -71,20 +73,26 @@ public class InMemoryEventStoreTest {
             batch.accept(update2);
         });
 
-        assertThat(eventStore.getEvents(aggregateId, TimeRange.fromUnbounded().toExclusive(startTime.plusMillis(30))),
-                contains(created, update1));
+        assertRetrieved(eventStore.getEvents(aggregateId, TimeRange.fromUnbounded().toExclusive(startTime.plusMillis(30))),
+                created, update1);
 
-        assertThat(eventStore.getEvents(aggregateId, TimeRange.fromInclusive(startTime).toExclusive(startTime.plusMillis(30))),
-                contains(created, update1));
+        assertRetrieved(eventStore.getEvents(aggregateId, TimeRange.fromInclusive(startTime).toExclusive(startTime.plusMillis(30))),
+                created, update1);
 
-        assertThat(eventStore.getEvents(aggregateId, TimeRange.fromInclusive(startTime).toInclusive(startTime.plusMillis(30))),
-                contains(created, update1, update2));
+        assertRetrieved(eventStore.getEvents(aggregateId, TimeRange.fromInclusive(startTime).toInclusive(startTime.plusMillis(30))),
+                created, update1, update2);
 
-        assertThat(eventStore.getEvents(aggregateId, TimeRange.fromInclusive(startTime.plusMillis(10)).toUnbounded()),
-                contains(created, update1, update2));
+        assertRetrieved(eventStore.getEvents(aggregateId, TimeRange.fromInclusive(startTime.plusMillis(10)).toUnbounded()),
+                created, update1, update2);
 
-        assertThat(eventStore.getEvents(aggregateId, TimeRange.fromExclusive(startTime.plusMillis(10)).toUnbounded()),
-                contains(update1, update2));
+        assertRetrieved(eventStore.getEvents(aggregateId, TimeRange.fromExclusive(startTime.plusMillis(10)).toUnbounded()),
+                update1, update2);
+    }
+
+    private Collection<Event> stripProcessingTimes(Collection<Event> events) {
+        return events.stream().map(event ->
+                Event.of(event.getAggregateId(), event.getEventTimestamp(), event.getEventName(), event.getParameters()))
+                .collect(Collectors.toList());
     }
 
     @Test
@@ -103,12 +111,16 @@ public class InMemoryEventStoreTest {
             batch.accept(created3);
         });
 
-        EventSource preloaded = eventStore.preload(eventTypeMatcher, "test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
+        PreloadedEventSource preloaded = eventStore.preload(eventTypeMatcher, "test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
                 TimeRange.fromUnbounded().toExclusive(startTime.plusMillis(30)));
 
-        assertThat(preloaded.getEvents(aggregateId1), contains(created1));
-        assertThat(preloaded.getEvents(aggregateId2), Matchers.hasSize(0));
-        assertThat(preloaded.getEvents(aggregateId3), Matchers.hasSize(0));
+        assertRetrieved(preloaded.getEvents(aggregateId1), created1);
+        assertThat(preloaded.getEvents(aggregateId2), hasSize(0));
+        assertThat(preloaded.getEvents(aggregateId3), hasSize(0));
+    }
+
+    private void assertRetrieved(Collection<Event> processedEvents, Event...events) {
+        assertThat(stripProcessingTimes(processedEvents), contains(events));
     }
 
     @Test
@@ -129,6 +141,6 @@ public class InMemoryEventStoreTest {
                 EventType.of(update1), emptySchema
         ));
 
-        assertThat(eventStore.getEvents(updateOnlyTypeMatcher, aggregateId), contains(update1, update2));
+        assertRetrieved(eventStore.getEvents(updateOnlyTypeMatcher, aggregateId), update1, update2);
     }
 }

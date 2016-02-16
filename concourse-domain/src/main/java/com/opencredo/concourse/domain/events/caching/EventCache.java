@@ -1,11 +1,11 @@
-package com.opencredo.concourse.domain.events.preloading;
+package com.opencredo.concourse.domain.events.caching;
 
 import com.opencredo.concourse.domain.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
-import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
 
 import java.util.*;
@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-public class EventCache implements EventRetriever, EventSource {
+class EventCache implements EventRetriever, PreloadedEventSource {
 
     public static EventCache containing(Map<AggregateId, NavigableSet<Event>> events) {
         return new EventCache(events);

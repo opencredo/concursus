@@ -10,7 +10,7 @@ public final class LoggingEventLog {
     public static EventLog logging(EventLog loggedEventLog) {
         return events -> {
             LOGGER.info("Events consumer received {} events", events.size());
-            loggedEventLog.accept(events);
+            return loggedEventLog.apply(events);
         };
     }
 }

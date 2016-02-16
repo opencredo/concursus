@@ -5,7 +5,7 @@ import com.opencredo.concourse.domain.events.consuming.EventLog;
 import com.opencredo.concourse.domain.time.TimeUUID;
 
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 public final class SubBatchingEventBatch implements EventBatch {
 
@@ -15,10 +15,10 @@ public final class SubBatchingEventBatch implements EventBatch {
 
     private final UUID id = TimeUUID.timeBased();
     private final List<Event> events = new LinkedList<>();
-    private final Consumer<Collection<Event>> eventsConsumer;
+    private final UnaryOperator<Collection<Event>> eventsConsumer;
     private final int maxSubBatchSize;
 
-    private SubBatchingEventBatch(Consumer<Collection<Event>> eventsConsumer, int maxSubBatchSize) {
+    private SubBatchingEventBatch(UnaryOperator<Collection<Event>> eventsConsumer, int maxSubBatchSize) {
         this.eventsConsumer = eventsConsumer;
         this.maxSubBatchSize = maxSubBatchSize;
     }
@@ -30,14 +30,14 @@ public final class SubBatchingEventBatch implements EventBatch {
 
     @Override
     public void complete() {
-        eventsConsumer.accept(events);
+        eventsConsumer.apply(events);
     }
 
     @Override
     public void accept(Event event) {
         events.add(event);
         if (events.size() == maxSubBatchSize) {
-            eventsConsumer.accept(new ArrayList<>(events));
+            eventsConsumer.apply(new ArrayList<>(events));
             events.clear();
         }
     }
