@@ -12,7 +12,7 @@ public final class DispatchingEventSource<T> {
     private final String aggregateType;
     private final EventSource eventSource;
 
-    public DispatchingEventSource(Class<T> handlerClass, String aggregateType, EventSource eventSource) {
+    DispatchingEventSource(Class<T> handlerClass, String aggregateType, EventSource eventSource) {
         this.handlerClass = handlerClass;
         this.aggregateType = aggregateType;
         this.eventSource = eventSource;

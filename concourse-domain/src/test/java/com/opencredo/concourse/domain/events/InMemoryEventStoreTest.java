@@ -8,8 +8,8 @@ import com.opencredo.concourse.domain.VersionedName;
 import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.consuming.LoggingEventLog;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.events.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeRange;
@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -30,6 +31,8 @@ public class InMemoryEventStoreTest {
     private final Function<Integer, StreamTimestamp> timestamp = i -> StreamTimestamp.of("test", startTime.plusMillis(i));
     private final TupleSchema emptySchema = TupleSchema.of("empty");
     private final Tuple empty = emptySchema.makeWith();
+    private final EventTypeMatcher eventTypeMatcher = et -> Optional.of(emptySchema);
+
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
 
     private final EventBus bus = LoggingEventBus.logging(EventBus.of(() ->
@@ -100,7 +103,7 @@ public class InMemoryEventStoreTest {
             batch.accept(created3);
         });
 
-        EventSource preloaded = eventStore.preload("test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
+        EventSource preloaded = eventStore.preload(eventTypeMatcher, "test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
                 TimeRange.fromUnbounded().toExclusive(startTime.plusMillis(30)));
 
         assertThat(preloaded.getEvents(aggregateId1), contains(created1));
@@ -122,11 +125,10 @@ public class InMemoryEventStoreTest {
             batch.accept(update2);
         });
 
-        EventSource typeMatched = eventStore.matchingWith(
-            EventTypeMatcher.matchingAgainst(ImmutableMap.of(
-                    EventType.of(update1), emptySchema
-            )));
+        final EventTypeMatcher updateOnlyTypeMatcher = EventTypeMatcher.matchingAgainst(ImmutableMap.of(
+                EventType.of(update1), emptySchema
+        ));
 
-        assertThat(typeMatched.getEvents(aggregateId), contains(update1, update2));
+        assertThat(eventStore.getEvents(updateOnlyTypeMatcher, aggregateId), contains(update1, update2));
     }
 }

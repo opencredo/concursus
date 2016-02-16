@@ -32,18 +32,4 @@ public interface PreloadableEventSource {
         return preload(matcher, aggregateType, aggregateIds, TimeRange.unbounded());
     }
 
-    default TypeMatchedPreloadableEventSource matchingWith(EventTypeMatcher matcher) {
-        return new TypeMatchedPreloadableEventSource() {
-            @Override
-            public EventSource preload(String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
-                return PreloadableEventSource.this.preload(matcher, aggregateType, aggregateIds, timeRange);
-            }
-
-            @Override
-            public NavigableSet<Event> getEvents(AggregateId aggregateId, TimeRange timeRange) {
-                return PreloadableEventSource.this.getEvents(matcher, aggregateId, timeRange);
-            }
-        };
-    }
-
 }

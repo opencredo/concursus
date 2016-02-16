@@ -8,12 +8,12 @@ import com.opencredo.concourse.mapping.annotations.Name;
 import org.junit.Test;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.mock;
 
 public class DispatchingPreloadableEventSourceTest {
 
@@ -37,21 +37,6 @@ public class DispatchingPreloadableEventSourceTest {
         void nameUpdated(StreamTimestamp timestamp, UUID aggregateId, @Name("updatedName") String newName);
     }
 
-    @HandlesEventsFor("test")
-    public interface TestEventsReceiver {
-
-        @Name("created")
-        void createdV1(StreamTimestamp timestamp, UUID aggregateId, String name);
-
-        @Name(value="created", version="2")
-        void createdVersion2(StreamTimestamp timestamp, UUID aggregateId, int age, String name);
-
-        void nameUpdated(StreamTimestamp timestamp, UUID aggregateId, String updatedName);
-    }
-
-    private final TestEventsReceiver handler = mock(TestEventsReceiver.class);
-
-
     @Test
     public void useWithReplayer() {
         InMemoryEventStore eventStore = InMemoryEventStore.empty();
@@ -70,6 +55,7 @@ public class DispatchingPreloadableEventSourceTest {
 
         Optional<String> name = DispatchingPreloadableEventSource
                 .dispatching(eventStore, CreatedEventReceiver.class)
+                .preload(Arrays.asList(id1))
                 .replaying(id1)
                 .collectFirst(caller -> (ts, id, n, age) -> caller.accept(n));
 
