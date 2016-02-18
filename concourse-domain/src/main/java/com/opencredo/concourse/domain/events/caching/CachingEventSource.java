@@ -9,7 +9,7 @@ import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
 
 import java.util.Collection;
-import java.util.NavigableSet;
+import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -47,7 +47,7 @@ public final class CachingEventSource implements EventSource {
     }
 
     @Override
-    public NavigableSet<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
+    public List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
         checkNotNull(matcher, "matcher must not be null");
         checkNotNull(aggregateId, "aggregateId must not be null");
         checkNotNull(timeRange, "timeRange must not be null");

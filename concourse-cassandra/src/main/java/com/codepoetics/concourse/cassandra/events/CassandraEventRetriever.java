@@ -32,7 +32,7 @@ public class CassandraEventRetriever implements EventRetriever {
     }
 
     @Override
-    public NavigableSet<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
+    public List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
         final Select select = selectFromEvent();
 
         select.where(QueryBuilder.eq("aggregateType", aggregateId.getType()))
@@ -40,7 +40,7 @@ public class CassandraEventRetriever implements EventRetriever {
 
         constrainTimeRange(timeRange, select);
 
-        NavigableSet<Event> results = new TreeSet<>();
+        List<Event> results = new LinkedList<>();
 
         runAndTranslate(matcher, select, results::add);
 
@@ -63,7 +63,7 @@ public class CassandraEventRetriever implements EventRetriever {
     }
 
     @Override
-    public Map<AggregateId, NavigableSet<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
         final Select select = selectFromEvent();
 
         select.where(QueryBuilder.eq("aggregateType", aggregateType))
@@ -71,8 +71,8 @@ public class CassandraEventRetriever implements EventRetriever {
 
         constrainTimeRange(timeRange, select);
 
-        Map<AggregateId, NavigableSet<Event>> results = new HashMap<>();
-        Consumer<Event> addToResults = event -> results.computeIfAbsent(event.getAggregateId(), id -> new TreeSet<>()).add(event);
+        Map<AggregateId, List<Event>> results = new HashMap<>();
+        Consumer<Event> addToResults = event -> results.computeIfAbsent(event.getAggregateId(), id -> new LinkedList<>()).add(event);
 
         runAndTranslate(matcher, select, addToResults);
 

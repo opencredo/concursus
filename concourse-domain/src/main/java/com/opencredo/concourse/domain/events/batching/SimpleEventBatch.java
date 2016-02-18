@@ -1,26 +1,25 @@
 package com.opencredo.concourse.domain.events.batching;
 
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.writing.EventWriter;
 import com.opencredo.concourse.domain.time.TimeUUID;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.UnaryOperator;
 
 public class SimpleEventBatch implements EventBatch {
 
-    public static EventBatch writingTo(UnaryOperator<Collection<Event>> eventsConsumer) {
-        return new SimpleEventBatch(eventsConsumer);
+    public static EventBatch writingTo(EventWriter eventWriter) {
+        return new SimpleEventBatch(eventWriter);
     }
 
     private final UUID id = TimeUUID.timeBased();
     private final List<Event> events = new LinkedList<>();
-    private final UnaryOperator<Collection<Event>> eventsConsumer;
+    private final EventWriter eventWriter;
 
-    private SimpleEventBatch(UnaryOperator<Collection<Event>> eventsConsumer) {
-        this.eventsConsumer = eventsConsumer;
+    private SimpleEventBatch(EventWriter eventWriter) {
+        this.eventWriter = eventWriter;
     }
 
     @Override
@@ -30,7 +29,7 @@ public class SimpleEventBatch implements EventBatch {
 
     @Override
     public void complete() {
-        eventsConsumer.apply(events);
+        eventWriter.accept(events);
     }
 
     @Override

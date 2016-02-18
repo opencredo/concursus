@@ -1,6 +1,6 @@
 package com.opencredo.concourse.mapping.methods;
 
-import com.opencredo.concourse.domain.events.EventBus;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.functional.Consumers;
 
 import java.util.function.Consumer;

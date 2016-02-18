@@ -1,13 +1,12 @@
 package com.opencredo.concourse.mapping.methods;
 
+import com.opencredo.concourse.domain.events.writing.EventWriter;
+import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.EventBus;
-import com.opencredo.concourse.domain.events.LoggingEventBus;
-import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.consuming.EventLog;
-import com.opencredo.concourse.domain.events.consuming.LoggingEventLog;
+import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.publishing.EventPublisher;
 import com.opencredo.concourse.domain.events.publishing.LoggingEventPublisher;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
@@ -27,13 +26,13 @@ public class ProxyingEventBusTest {
     private final List<Event> publishedEvents = new ArrayList<>();
 
     private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
-    private final EventLog eventLog = LoggingEventLog.logging(events -> {
+    private final EventLog eventLog = events -> {
         batchedEvents.add(events);
         return events;
-    }).publishingTo(eventPublisher);
+    };
+    private final EventWriter eventWriter = PublishingEventWriter.using(eventLog, eventPublisher);
 
-    private final EventBus bus = LoggingEventBus.logging(() ->
-            LoggingEventBatch.logging(SimpleEventBatch.writingTo(eventLog)));
+    private final EventBus bus = () -> SimpleEventBatch.writingTo(eventWriter);
 
     private final ProxyingEventBus unit = ProxyingEventBus.proxying(bus);
 

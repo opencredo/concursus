@@ -24,16 +24,20 @@ public final class DispatchingEventReplayer<T> {
         this.eventReplayer = eventReplayer;
     }
 
-    public DispatchingEventReplayer<T> inOrder(Comparator<Event> comparator) {
-        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inOrder(comparator));
+    public DispatchingEventReplayer<T> inDescendingOrder() {
+        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inDescendingOrder());
     }
 
-    public DispatchingEventReplayer<T> inReverseOrder() {
-        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inReverseOrder());
+    public DispatchingEventReplayer<T> inDescendingOrder(Comparator<Event> comparator) {
+        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inDescendingOrder(comparator));
     }
 
-    public DispatchingEventReplayer<T> inReverseOrder(Comparator<Event> comparator) {
-        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inReverseOrder(comparator));
+    public DispatchingEventReplayer<T> inAscendingOrder() {
+        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inAscendingOrder());
+    }
+
+    public DispatchingEventReplayer<T> inAscendingOrder(Comparator<Event> comparator) {
+        return new DispatchingEventReplayer<>(handlerClass, eventReplayer.inAscendingOrder(comparator));
     }
 
     public DispatchingEventReplayer<T> filter(Predicate<Event> predicate) {

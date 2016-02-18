@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS Concourse.Event (
    version text,
    parameters map<text, text>,
    PRIMARY KEY((aggregateType, aggregateId), eventTimestamp, streamId)
-) WITH CLUSTERING ORDER BY (eventTimestamp ASC);
+) WITH CLUSTERING ORDER BY (eventTimestamp DESC);

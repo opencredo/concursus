@@ -4,7 +4,7 @@ import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.consuming.EventLog;
+import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.time.TimeUUID;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 

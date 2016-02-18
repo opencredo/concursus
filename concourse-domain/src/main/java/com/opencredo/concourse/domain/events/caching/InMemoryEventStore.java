@@ -2,29 +2,27 @@ package com.opencredo.concourse.domain.events.caching;
 
 import com.opencredo.concourse.domain.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.consuming.EventLog;
+import com.opencredo.concourse.domain.events.logging.EventLog;
+import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.TimeRange;
 import com.opencredo.concourse.domain.time.TimeUUID;
 
-import java.util.Collection;
-import java.util.NavigableSet;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-public final class InMemoryEventStore implements EventLog, EventSource, PreloadedEventSource {
+import static com.opencredo.concourse.domain.events.caching.EventSelection.*;
+
+public final class InMemoryEventStore implements EventLog, EventRetriever {
+
+    private static final Comparator<Event> reverseTimestampOrder = Comparator.comparing(Event::getEventTimestamp)
+            .reversed();
 
     public static InMemoryEventStore empty() {
-        return with(new ConcurrentHashMap<>());
-    }
-
-    public static InMemoryEventStore with(ConcurrentMap<AggregateId, NavigableSet<Event>> events) {
-        return new InMemoryEventStore(events, EventCache.containing(events));
+        return new InMemoryEventStore(new ConcurrentHashMap<>());
     }
 
     public static InMemoryEventStore with(Collection<Event> events) {
@@ -33,12 +31,14 @@ public final class InMemoryEventStore implements EventLog, EventSource, Preloade
         return eventStore;
     }
 
-    private final ConcurrentMap<AggregateId, NavigableSet<Event>> events;
-    private final EventCache eventCache;
+    private final ConcurrentMap<AggregateId, Set<Event>> events;
 
-    private InMemoryEventStore(ConcurrentMap<AggregateId, NavigableSet<Event>> events, EventCache eventCache) {
+    private InMemoryEventStore(ConcurrentMap<AggregateId, Set<Event>> events) {
         this.events = events;
-        this.eventCache = eventCache;
+    }
+
+    public EventSource getEventSource() {
+        return CachingEventSource.retrievingWith(this);
     }
 
     @Override
@@ -53,24 +53,19 @@ public final class InMemoryEventStore implements EventLog, EventSource, Preloade
     private void store(Event event) {
         events.compute(event.getAggregateId(),
                 (id, events) -> {
-                    NavigableSet<Event> updatedEvents = events == null ? new TreeSet<>() : events;
+                    Set<Event> updatedEvents = events == null ? new TreeSet<>(reverseTimestampOrder) : events;
                     updatedEvents.add(event);
                     return updatedEvents;
                 });
     }
 
     @Override
-    public NavigableSet<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
-        return eventCache.getEvents(matcher, aggregateId, timeRange);
+    public List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
+        return selectEvents(events, inRange(timeRange).and(matchedBy(matcher)), aggregateId);
     }
 
     @Override
-    public PreloadedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
-        return EventCache.containing(eventCache.getEvents(matcher, aggregateType, aggregateIds, timeRange));
-    }
-
-    @Override
-    public NavigableSet<Event> getEvents(AggregateId aggregateId, TimeRange timeRange) {
-        return eventCache.getEvents(aggregateId, timeRange);
+    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+        return selectEvents(events, matchedBy(matcher).and(inRange(timeRange)), aggregateType, aggregateIds);
     }
 }

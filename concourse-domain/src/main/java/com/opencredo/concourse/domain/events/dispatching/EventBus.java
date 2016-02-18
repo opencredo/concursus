@@ -1,15 +1,12 @@
-package com.opencredo.concourse.domain.events;
+package com.opencredo.concourse.domain.events.dispatching;
 
+import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
 
 import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface EventBus extends Consumer<Event> {
-
-    static EventBus of(EventBus bus) {
-        return bus;
-    }
 
     EventBatch startBatch();
 

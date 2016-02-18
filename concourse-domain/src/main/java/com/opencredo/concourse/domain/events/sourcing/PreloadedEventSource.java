@@ -4,14 +4,14 @@ import com.opencredo.concourse.domain.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.time.TimeRange;
 
-import java.util.NavigableSet;
+import java.util.List;
 
 @FunctionalInterface
 public interface PreloadedEventSource {
 
-    NavigableSet<Event> getEvents(AggregateId aggregateId, TimeRange timeRange);
+    List<Event> getEvents(AggregateId aggregateId, TimeRange timeRange);
 
-    default NavigableSet<Event> getEvents(AggregateId aggregateId) {
+    default List<Event> getEvents(AggregateId aggregateId) {
         return getEvents(aggregateId, TimeRange.unbounded());
     }
 

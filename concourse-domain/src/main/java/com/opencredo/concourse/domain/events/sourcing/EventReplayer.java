@@ -13,36 +13,38 @@ import java.util.stream.StreamSupport;
 
 public final class EventReplayer {
 
-    public static EventReplayer of(NavigableSet<Event> events) {
-        return new EventReplayer(events, NavigableSet::stream, Optional.empty());
+    public static EventReplayer of(List<Event> events) {
+        return new EventReplayer(events, List::stream, Optional.empty());
     }
 
-    private final NavigableSet<Event> events;
-    private final Function<NavigableSet<Event>, Stream<Event>> orderedStreamer;
+    private final List<Event> events;
+    private final Function<List<Event>, Stream<Event>> orderedStreamer;
     private final Optional<Predicate<Event>> filter;
 
-    private EventReplayer(NavigableSet<Event> events, Function<NavigableSet<Event>, Stream<Event>> orderedStreamer, Optional<Predicate<Event>> filter) {
+    private EventReplayer(List<Event> events, Function<List<Event>, Stream<Event>> orderedStreamer, Optional<Predicate<Event>> filter) {
         this.events = events;
         this.orderedStreamer = orderedStreamer;
         this.filter = filter;
     }
 
-    public EventReplayer inOrder(Comparator<Event> comparator) {
-        return new EventReplayer(events, navigableSet -> navigableSet.stream().sorted(comparator), filter);
-    }
-
-    public EventReplayer inReverseOrder() {
+    public EventReplayer inAscendingOrder() {
         return new EventReplayer(events, this::reverseStream, filter);
     }
 
-    private Stream<Event> reverseStream(NavigableSet<Event> navigableSet) {
-        return StreamSupport.stream(
-                Spliterators.spliterator(navigableSet.descendingIterator(), navigableSet.size(),
-                Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SORTED | Spliterator.DISTINCT | Spliterator.NONNULL), false);
+    public EventReplayer inAscendingOrder(Comparator<Event> comparator) {
+        return new EventReplayer(events, eventList -> reverseStream(eventList).sorted(comparator), filter);
     }
 
-    public EventReplayer inReverseOrder(Comparator<Event> comparator) {
-        return new EventReplayer(events, deque -> reverseStream(deque).sorted(comparator.reversed()), filter);
+    public EventReplayer inDescendingOrder() {
+        return new EventReplayer(events, List::stream, filter);
+    }
+
+    public EventReplayer inDescendingOrder(Comparator<Event> comparator) {
+        return new EventReplayer(events, eventList -> eventList.stream().sorted(comparator.reversed()), filter);
+    }
+
+    private Stream<Event> reverseStream(List<Event> eventList) {
+        return StreamSupport.stream(ReverseListSpliterator.over(eventList), false);
     }
 
     public EventReplayer filter(Predicate<Event> predicate) {

@@ -161,7 +161,6 @@ public final class TimeUUID {
                 }
             }
         } catch (UnknownHostException var5) {
-            ;
         }
 
         try {
@@ -176,7 +175,6 @@ public final class TimeUUID {
                 }
             }
         } catch (SocketException var4) {
-            ;
         }
 
         return allIps;

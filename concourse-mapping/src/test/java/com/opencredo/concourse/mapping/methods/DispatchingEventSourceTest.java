@@ -2,6 +2,9 @@ package com.opencredo.concourse.mapping.methods;
 
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.events.writing.EventWriter;
+import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
@@ -39,8 +42,10 @@ public class DispatchingEventSourceTest {
     @Test
     public void useWithReplayer() {
         InMemoryEventStore eventStore = InMemoryEventStore.empty();
+        EventWriter eventWriter = PublishingEventWriter.using(eventStore, event -> {});
+        EventSource eventSource = eventStore.getEventSource();
 
-        ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventStore));
+        ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventWriter));
 
         final StreamTimestamp timestamp1 = StreamTimestamp.of("test", Instant.now());
         final StreamTimestamp timestamp2 = StreamTimestamp.of("test", Instant.now());
@@ -53,7 +58,7 @@ public class DispatchingEventSourceTest {
         });
 
         Optional<String> name = DispatchingEventSource
-                .dispatching(eventStore, CreatedEventReceiver.class)
+                .dispatching(eventSource, CreatedEventReceiver.class)
                 .preload(id1)
                 .replaying(id1)
                 .collectFirst(caller -> (ts, id, n, age) -> caller.accept(n));

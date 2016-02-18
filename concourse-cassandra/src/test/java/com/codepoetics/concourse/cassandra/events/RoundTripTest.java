@@ -2,12 +2,13 @@ package com.codepoetics.concourse.cassandra.events;
 
 import com.datastax.driver.core.Cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencredo.concourse.domain.events.EventBus;
-import com.opencredo.concourse.domain.events.LoggingEventBus;
-import com.opencredo.concourse.domain.events.batching.LoggingEventBatch;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.caching.CachingEventSource;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
+import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.events.writing.EventWriter;
+import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.methods.DispatchingEventSourceFactory;
@@ -18,10 +19,7 @@ import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import java.time.Instant;
@@ -51,9 +49,11 @@ public class RoundTripTest {
     private final Cluster cluster = CASSANDRA_CQL_UNIT.getCluster();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final CassandraEventLog cassandraEventLog = CassandraEventLog.create(
+    private final EventLog cassandraEventLog = CassandraEventLog.create(
             new CassandraTemplate(cluster.connect("Concourse")),
             JsonSerialiser.using(objectMapper));
+
+    private final EventWriter eventWriter = PublishingEventWriter.using(cassandraEventLog, event -> {});
 
     private final CassandraEventRetriever cassandraEventRetriever = CassandraEventRetriever.create(
             new CassandraTemplate(cluster.connect("Concourse")),
@@ -62,8 +62,7 @@ public class RoundTripTest {
     private final EventSource eventSource = CachingEventSource.retrievingWith(cassandraEventRetriever);
     private final DispatchingEventSourceFactory eventSourceDispatching = DispatchingEventSourceFactory.dispatching(eventSource);
 
-    private final EventBus eventBus = LoggingEventBus.logging(() ->
-            LoggingEventBatch.logging(SimpleEventBatch.writingTo(cassandraEventLog)));
+    private final EventBus eventBus = () -> SimpleEventBatch.writingTo(eventWriter);
 
     private final ProxyingEventBus proxyingEventBus = ProxyingEventBus.proxying(eventBus);
 
@@ -114,17 +113,17 @@ public class RoundTripTest {
                 .preload(personId1, personId2);
 
         List<String> personHistory1 = preloaded.replaying(personId1).collectAll(eventSummariser());
-        List<String> personHistory2 = preloaded.replaying(personId2).inReverseOrder().collectAll(eventSummariser());
+        List<String> personHistory2 = preloaded.replaying(personId2).inAscendingOrder().collectAll(eventSummariser());
 
         assertThat(personHistory1, contains(
-                "Arthur Putey was created with age 41",
+                "name was changed to Arthur Daley",
                 "age was changed to 42",
-                "name was changed to Arthur Daley"
+                "Arthur Putey was created with age 41"
         ));
 
         assertThat(personHistory2, contains(
-                "name was changed to Arthur Danto",
-                "Arthur Dent was created with age 32"
+                "Arthur Dent was created with age 32",
+                "name was changed to Arthur Danto"
         ));
     }
 
@@ -147,6 +146,7 @@ public class RoundTripTest {
         };
     }
 
+    @Ignore
     @PerfTest(invocations = 100, warmUp = 5000)
     @Test
     public void writeAThousandEvents() {

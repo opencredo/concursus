@@ -5,13 +5,13 @@ import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.time.TimeRange;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
 import java.util.UUID;
 
 public interface EventRetriever {
 
-    NavigableSet<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange);
-    Map<AggregateId, NavigableSet<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange);
+    List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange);
+    Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange);
 
 }
