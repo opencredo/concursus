@@ -1,7 +1,6 @@
 package com.opencredo.concourse.spring;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.methods.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.methods.DispatchingPreloadedEventSource;
 import com.opencredo.concourse.mapping.methods.ProxyingEventBus;
@@ -9,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
@@ -30,12 +30,8 @@ public class EventSystemIntegrationTest {
     @Autowired
     private DispatchingEventSourceFactory eventSourceDispatching;
 
-    @HandlesEventsFor("person")
-    public interface PersonEvents {
-        void created(StreamTimestamp timestamp, UUID personId, String name, int age);
-        void updatedAge(StreamTimestamp timestamp, UUID personId, int newAge);
-        void updatedName(StreamTimestamp timestamp, UUID personId, String newName);
-    }
+    @Autowired
+    private PersonEventHandler personEventHandler;
 
     @Test
     public void writeAndReadBatch() {
@@ -86,6 +82,14 @@ public class EventSystemIntegrationTest {
         ));
 
         assertThat(personHistory2, contains(
+                "Arthur Dent was created with age 32",
+                "name was changed to Arthur Danto"
+        ));
+
+        assertThat(personEventHandler.getPublishedEvents(), contains(
+                "Arthur Putey was created with age 41",
+                "age was changed to 42",
+                "name was changed to Arthur Daley",
                 "Arthur Dent was created with age 32",
                 "name was changed to Arthur Danto"
         ));

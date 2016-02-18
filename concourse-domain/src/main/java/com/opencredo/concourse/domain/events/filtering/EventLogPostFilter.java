@@ -5,6 +5,7 @@ import com.opencredo.concourse.domain.events.logging.EventLog;
 
 import java.util.Collection;
 
+@FunctionalInterface
 public interface EventLogPostFilter extends ObservingEventLogFilter {
 
     @Override

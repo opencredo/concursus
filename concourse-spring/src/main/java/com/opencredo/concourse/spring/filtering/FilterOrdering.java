@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring;
+package com.opencredo.concourse.spring.filtering;
 
 import java.util.Comparator;
 

@@ -2,6 +2,7 @@ package com.opencredo.concourse.mapping.methods;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
+import com.opencredo.concourse.domain.events.publishing.Subscribable;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -45,5 +46,10 @@ public final class EventMethodDispatcher implements Consumer<Event> {
                 "No method dispatcher found for event " + event);
 
         methodDispatcher.accept(target, event);
+    }
+
+    public void subscribeTo(Subscribable publisher) {
+        eventMappers.keySet().forEach(eventType ->
+        publisher.subscribe(eventType, this));
     }
 }

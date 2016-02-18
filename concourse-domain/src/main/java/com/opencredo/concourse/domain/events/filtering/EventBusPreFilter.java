@@ -3,6 +3,7 @@ package com.opencredo.concourse.domain.events.filtering;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 
+@FunctionalInterface
 public interface EventBusPreFilter extends ObservingEventBusFilter {
 
     @Override

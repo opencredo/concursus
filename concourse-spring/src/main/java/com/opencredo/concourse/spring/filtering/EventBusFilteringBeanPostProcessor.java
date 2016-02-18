@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring;
+package com.opencredo.concourse.spring.filtering;
 
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.mapping.methods.ProxyingEventBus;

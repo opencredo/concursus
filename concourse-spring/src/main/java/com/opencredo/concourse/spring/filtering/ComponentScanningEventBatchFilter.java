@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring;
+package com.opencredo.concourse.spring.filtering;
 
 import com.opencredo.concourse.domain.events.batching.EventBatch;
 import com.opencredo.concourse.domain.events.filtering.EventBatchFilter;
