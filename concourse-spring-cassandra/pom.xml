@@ -9,28 +9,17 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>concourse-spring</artifactId>
+    <artifactId>concourse-spring-cassandra</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
+            <groupId>com.opencredo</groupId>
+            <artifactId>concourse-spring</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.opencredo</groupId>
-            <artifactId>concourse-domain</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.opencredo</groupId>
-            <artifactId>concourse-mapping</artifactId>
+            <artifactId>concourse-cassandra</artifactId>
         </dependency>
 
         <dependency>
@@ -43,6 +32,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.cassandraunit</groupId>
+            <artifactId>cassandra-unit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
         </dependency>
     </dependencies>
 

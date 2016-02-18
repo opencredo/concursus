@@ -22,18 +22,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 public class EventSystemBeans {
 
-    private final InMemoryEventStore inMemoryEventStore = InMemoryEventStore.empty();
     private final SubscribableEventPublisher subscribableEventPublisher = new SubscribableEventPublisher();
-
-    @Bean
-    public EventSource eventSource() {
-        return inMemoryEventStore.getEventSource();
-    }
-
-    @Bean
-    public EventLog eventLog() {
-        return inMemoryEventStore;
-    }
 
     @Bean
     public DispatchingEventSourceFactory dispatchingEventSourceFactory(EventSource eventSource) {

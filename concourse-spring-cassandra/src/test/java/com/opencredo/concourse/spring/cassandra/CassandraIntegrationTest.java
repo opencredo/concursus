@@ -1,9 +1,15 @@
-package com.opencredo.concourse.spring;
+package com.opencredo.concourse.spring.cassandra;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.methods.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.methods.DispatchingPreloadedEventSource;
 import com.opencredo.concourse.mapping.methods.ProxyingEventBus;
+import com.opencredo.concourse.spring.EventSystemBeans;
+import org.cassandraunit.CassandraCQLUnit;
+import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +26,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { EventSystemBeans.class, TestConfiguration.class })
-public class EventSystemIntegrationTest {
+@SpringApplicationConfiguration(classes = { CassandraBeans.class,  EventSystemBeans.class })
+public class CassandraIntegrationTest {
+
+    @ClassRule
+    public static final CassandraCQLUnit CASSANDRA_CQL_UNIT =
+            new CassandraCQLUnit(new ClassPathCQLDataSet("cql/tables.cql"), EmbeddedCassandraServerHelper.CASSANDRA_RNDPORT_YML_FILE);
+
+    @BeforeClass
+    public static void setUpCassandraServer() {
+        System.setProperty("spring.data.cassandra.port",
+                Integer.toString(CASSANDRA_CQL_UNIT.getCluster().getConfiguration().getProtocolOptions().getPort()));
+    }
 
     @Autowired
     private ProxyingEventBus proxyingEventBus;
