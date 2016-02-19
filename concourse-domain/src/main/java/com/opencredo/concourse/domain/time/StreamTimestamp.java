@@ -34,6 +34,10 @@ public final class StreamTimestamp implements Comparable<StreamTimestamp> {
         return timestamp;
     }
 
+    public StreamTimestamp subStream(String substreamName) {
+        return new StreamTimestamp(streamId + ":" + substreamName, timestamp);
+    }
+
     @Override
     public int compareTo(StreamTimestamp o) {
         return COMPARATOR.compare(this, o);

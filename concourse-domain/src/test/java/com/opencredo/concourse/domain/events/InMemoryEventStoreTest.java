@@ -3,15 +3,15 @@ package com.opencredo.concourse.domain.events;
 import com.google.common.collect.ImmutableMap;
 import com.opencredo.concourse.data.tuples.Tuple;
 import com.opencredo.concourse.data.tuples.TupleSchema;
-import com.opencredo.concourse.domain.AggregateId;
-import com.opencredo.concourse.domain.VersionedName;
+import com.opencredo.concourse.domain.common.AggregateId;
+import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
-import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
+import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.events.writing.EventWriter;
 import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
@@ -115,7 +115,7 @@ public class InMemoryEventStoreTest {
             batch.accept(created3);
         });
 
-        PreloadedEventSource preloaded = eventSource.preload(eventTypeMatcher, "test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
+        CachedEventSource preloaded = eventSource.preload(eventTypeMatcher, "test", Arrays.asList(aggregateId1.getId(), aggregateId3.getId()),
                 TimeRange.fromUnbounded().toExclusive(startTime.plusMillis(30)));
 
         assertRetrieved(preloaded.getEvents(aggregateId1), created1);

@@ -1,18 +1,17 @@
 package com.opencredo.concourse.domain.events.sourcing;
 
-import com.opencredo.concourse.domain.AggregateId;
+import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.time.TimeRange;
 
 import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
 import java.util.UUID;
 
 public interface EventSource {
 
     List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange);
-    PreloadedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange);
+    CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange);
 
     default List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId) {
         return getEvents(matcher, aggregateId, TimeRange.unbounded());
@@ -26,7 +25,7 @@ public interface EventSource {
         return replaying(matcher, aggregateId, TimeRange.unbounded());
     }
 
-    default PreloadedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds) {
+    default CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds) {
         return preload(matcher, aggregateType, aggregateIds, TimeRange.unbounded());
     }
 

@@ -13,12 +13,14 @@ import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
 @Configuration
 @EnableAutoConfiguration
+@ComponentScan
 public class CassandraBeans {
 
     @Autowired

@@ -1,13 +1,12 @@
 package com.opencredo.concourse.domain.events;
 
 import com.opencredo.concourse.data.tuples.Tuple;
-import com.opencredo.concourse.domain.AggregateId;
-import com.opencredo.concourse.domain.VersionedName;
+import com.opencredo.concourse.domain.common.AggregateId;
+import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeUUID;
 
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,7 +14,7 @@ import java.util.UUID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class Event implements Comparable<Event> {
+public final class Event {
 
     public static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, VersionedName eventName, Tuple parameters) {
         checkNotNull(aggregateId, "aggregateId must not be null");
@@ -98,12 +97,5 @@ public final class Event implements Comparable<Event> {
                         aggregateId, eventName, eventTimestamp, parameters, processingTime))
                 .orElseGet(() -> String.format("%s %s\nat %s\nwith %s",
                         aggregateId, eventName, eventTimestamp, parameters));
-    }
-
-    private static final Comparator<Event> timeOrderAscending = Comparator.comparing(Event::getEventTimestamp);
-
-    @Override
-    public int compareTo(Event o) {
-        return timeOrderAscending.compare(this, o);
     }
 }

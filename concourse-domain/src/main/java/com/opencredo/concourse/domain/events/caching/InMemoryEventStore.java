@@ -1,6 +1,6 @@
 package com.opencredo.concourse.domain.events.caching;
 
-import com.opencredo.concourse.domain.AggregateId;
+import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.sourcing.EventRetriever;

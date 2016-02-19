@@ -4,7 +4,7 @@ import com.opencredo.concourse.domain.events.batching.EventBatch;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 
 @FunctionalInterface
-public interface EventBusPostFilter extends ObservingEventBusFilter {
+public interface EventBusPostFilter extends EventBusIntercepter {
 
     @Override
     default EventBatch onStartBatch(EventBus eventBus) {

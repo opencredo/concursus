@@ -1,11 +1,11 @@
 package com.opencredo.concourse.domain.events.caching;
 
-import com.opencredo.concourse.domain.AggregateId;
+import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
-import com.opencredo.concourse.domain.events.sourcing.PreloadedEventSource;
+import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
 
 import java.util.Collection;
@@ -37,7 +37,7 @@ public final class CachingEventSource implements EventSource {
     }
 
     @Override
-    public PreloadedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
         checkNotNull(matcher, "matcher must not be null");
         checkNotNull(aggregateType, "aggregateType must not be null");
         checkNotNull(aggregateIds, "aggregateIds must not be null");

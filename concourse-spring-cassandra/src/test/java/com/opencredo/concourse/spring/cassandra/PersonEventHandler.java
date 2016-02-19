@@ -1,7 +1,7 @@
 package com.opencredo.concourse.spring.cassandra;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.spring.publishing.EventHandler;
+import com.opencredo.concourse.spring.events.publishing.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;

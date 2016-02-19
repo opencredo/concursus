@@ -3,7 +3,7 @@ package com.opencredo.concourse.domain.events.filtering;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
 
-public interface EventBatchPreFilter extends ObservingEventBatchFilter {
+public interface EventBatchPreFilter extends EventBatchIntercepter {
 
     @Override
     default void onComplete(EventBatch eventBatch) {

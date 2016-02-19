@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @FunctionalInterface
-public interface EventFilteringEventLogPreFilter extends ObservingEventLogFilter {
+public interface EventFilteringEventLogPreFilter extends EventLogIntercepter {
 
     @Override
     default Collection<Event> onLog(EventLog eventLog, Collection<Event> events) {

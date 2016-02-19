@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
-public class SubscribableEventPublisher implements EventPublisher, Subscribable {
+public class SubscribableEventPublisher implements EventPublisher, EventSubscribable {
 
     private final ConcurrentMap<EventType, List<Consumer<Event>>> subscribers = new ConcurrentHashMap<>();
 

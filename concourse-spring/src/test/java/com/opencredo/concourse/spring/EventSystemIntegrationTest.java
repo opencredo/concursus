@@ -1,9 +1,11 @@
 package com.opencredo.concourse.spring;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.methods.DispatchingEventSourceFactory;
-import com.opencredo.concourse.mapping.methods.DispatchingPreloadedEventSource;
-import com.opencredo.concourse.mapping.methods.ProxyingEventBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingPreloadedEventSource;
+import com.opencredo.concourse.spring.commands.CommandSystemBeans;
+import com.opencredo.concourse.spring.events.EventSystemBeans;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -20,11 +23,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { EventSystemBeans.class, TestConfiguration.class })
+@SpringApplicationConfiguration(classes = { EventSystemBeans.class, CommandSystemBeans.class, TestConfiguration.class })
 public class EventSystemIntegrationTest {
 
     @Autowired
-    private ProxyingEventBus proxyingEventBus;
+    private ProxyingCommandBus proxyingCommandBus;
 
     @Autowired
     private DispatchingEventSourceFactory eventSourceDispatching;
@@ -33,40 +36,35 @@ public class EventSystemIntegrationTest {
     private PersonEventHandler personEventHandler;
 
     @Test
-    public void writeAndReadBatch() {
+    public void writeAndReadBatch() throws ExecutionException, InterruptedException {
         UUID personId1 = UUID.randomUUID();
         UUID personId2 = UUID.randomUUID();
         Instant start = Instant.now();
 
-        proxyingEventBus.dispatch(PersonEvents.class, batch -> {
-            batch.created(
-                    StreamTimestamp.of("test", start),
-                    personId1,
-                    "Arthur Putey",
-                    41);
+        final PersonCommands personCommands = proxyingCommandBus.getDispatcherFor(PersonCommands.class);
 
-            batch.updatedAge(
-                    StreamTimestamp.of("test", start.plusMillis(1)),
-                    personId1,
-                    42);
+        personCommands.create(StreamTimestamp.of("test", start),
+                personId1,
+                "Arthur Putey",
+                41).get();
 
-            batch.updatedName(
-                    StreamTimestamp.of("test", start.plusMillis(2)),
-                    personId1,
-                    "Arthur Daley");
+        personCommands.updateNameAndAge(
+                StreamTimestamp.of("test", start.plusMillis(1)),
+                personId1,
+                "Arthur Daley",
+                42).get();
 
-            batch.created(
-                    StreamTimestamp.of("test", start),
-                    personId2,
-                    "Arthur Dent",
-                    32);
+        personCommands.create(
+                StreamTimestamp.of("test", start),
+                personId2,
+                "Arthur Dent",
+                32);
 
-            batch.updatedName(
-                    StreamTimestamp.of("test", start.plusMillis(1)),
-                    personId2,
-                    "Arthur Danto"
-            );
-        });
+        personCommands.updateNameAndAge(
+                StreamTimestamp.of("test", start.plusMillis(1)),
+                personId2,
+                "Arthur Danto",
+                32).get();
 
         final DispatchingPreloadedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
                 .preload(personId1, personId2);
@@ -82,14 +80,17 @@ public class EventSystemIntegrationTest {
 
         assertThat(personHistory2, contains(
                 "Arthur Dent was created with age 32",
+                "age was changed to 32",
                 "name was changed to Arthur Danto"
         ));
 
+        System.out.println(personEventHandler.getPublishedEvents());
         assertThat(personEventHandler.getPublishedEvents(), contains(
                 "Arthur Putey was created with age 41",
                 "age was changed to 42",
                 "name was changed to Arthur Daley",
                 "Arthur Dent was created with age 32",
+                "age was changed to 32",
                 "name was changed to Arthur Danto"
         ));
     }

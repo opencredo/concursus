@@ -1,10 +1,10 @@
 package com.opencredo.concourse.spring.cassandra;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.methods.DispatchingEventSourceFactory;
-import com.opencredo.concourse.mapping.methods.DispatchingPreloadedEventSource;
-import com.opencredo.concourse.mapping.methods.ProxyingEventBus;
-import com.opencredo.concourse.spring.EventSystemBeans;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingPreloadedEventSource;
+import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
+import com.opencredo.concourse.spring.events.EventSystemBeans;
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;

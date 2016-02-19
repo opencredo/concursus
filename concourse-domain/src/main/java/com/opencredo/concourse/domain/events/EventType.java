@@ -1,6 +1,6 @@
 package com.opencredo.concourse.domain.events;
 
-import com.opencredo.concourse.domain.VersionedName;
+import com.opencredo.concourse.domain.common.VersionedName;
 
 import java.util.Objects;
 
