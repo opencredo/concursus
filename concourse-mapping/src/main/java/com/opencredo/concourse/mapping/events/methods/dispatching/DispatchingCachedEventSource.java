@@ -6,13 +6,13 @@ import com.opencredo.concourse.domain.time.TimeRange;
 
 import java.util.UUID;
 
-public final class DispatchingPreloadedEventSource<T> {
+public final class DispatchingCachedEventSource<T> {
 
     private final Class<T> handlerClass;
     private final String aggregateType;
     private final CachedEventSource cachedEventSource;
 
-    DispatchingPreloadedEventSource(Class<T> handlerClass, String aggregateType, CachedEventSource cachedEventSource) {
+    DispatchingCachedEventSource(Class<T> handlerClass, String aggregateType, CachedEventSource cachedEventSource) {
         this.handlerClass = handlerClass;
         this.aggregateType = aggregateType;
         this.cachedEventSource = cachedEventSource;

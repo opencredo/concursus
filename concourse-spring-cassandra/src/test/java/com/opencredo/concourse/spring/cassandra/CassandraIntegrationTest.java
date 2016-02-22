@@ -2,7 +2,7 @@ package com.opencredo.concourse.spring.cassandra;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingPreloadedEventSource;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concourse.spring.events.EventSystemBeans;
 import org.cassandraunit.CassandraCQLUnit;
@@ -84,7 +84,7 @@ public class CassandraIntegrationTest {
             );
         });
 
-        final DispatchingPreloadedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
+        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
                 .preload(personId1, personId2);
 
         List<String> personHistory1 = preloaded.replaying(personId1).collectAll(eventSummariser());

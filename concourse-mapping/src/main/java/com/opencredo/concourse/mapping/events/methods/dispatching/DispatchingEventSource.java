@@ -48,18 +48,18 @@ public class DispatchingEventSource<T> {
         return replaying(aggregateId, TimeRange.unbounded());
     }
 
-    public DispatchingPreloadedEventSource<T> preload(Collection<UUID> aggregateIds, TimeRange timeRange) {
-        return new DispatchingPreloadedEventSource<>(
+    public DispatchingCachedEventSource<T> preload(Collection<UUID> aggregateIds, TimeRange timeRange) {
+        return new DispatchingCachedEventSource<>(
                 handlerClass,
                 aggregateType,
                 eventSource.preload(eventTypeMatcher, aggregateType, aggregateIds, timeRange));
     }
 
-    public DispatchingPreloadedEventSource<T> preload(Collection<UUID> aggregateIds) {
+    public DispatchingCachedEventSource<T> preload(Collection<UUID> aggregateIds) {
         return preload(aggregateIds, TimeRange.unbounded());
     }
 
-    public DispatchingPreloadedEventSource<T> preload(UUID...aggregateIds) {
+    public DispatchingCachedEventSource<T> preload(UUID...aggregateIds) {
         return preload(Arrays.asList(aggregateIds));
     }
 }

@@ -66,6 +66,10 @@ public final class EventMethodMapping {
         return EventType.of(aggregateType, eventName);
     }
 
+    public TupleSchema getTupleSchema() {
+        return tupleSchema;
+    }
+
     private Tuple makeTupleFromArgs(Object[] args) {
         return tupleSchema.make(IntStream.range(0, tupleKeys.length)
                 .mapToObj(getValueFrom(args))

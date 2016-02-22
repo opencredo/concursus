@@ -12,7 +12,7 @@ import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingPreloadedEventSource;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
@@ -109,7 +109,7 @@ public class RoundTripTest {
             );
         });
 
-        final DispatchingPreloadedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
+        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
                 .preload(personId1, personId2);
 
         List<String> personHistory1 = preloaded.replaying(personId1).collectAll(eventSummariser());

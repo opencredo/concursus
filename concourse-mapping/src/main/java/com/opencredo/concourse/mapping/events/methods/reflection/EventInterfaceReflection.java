@@ -1,6 +1,6 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
-import com.opencredo.concourse.data.tuples.TupleSchemaRegistry;
+import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
@@ -11,6 +11,7 @@ import com.opencredo.concourse.mapping.annotations.Name;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,15 +84,17 @@ public final class EventInterfaceReflection {
         };
     }
 
-    private static final ConcurrentHashMap<Class<?>, EventTypeMatcher> eventTypeMatcherCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>[], EventTypeMatcher> eventTypeMatcherCache = new ConcurrentHashMap<>();
 
-    public static EventTypeMatcher getEventTypeMatcher(Class<?> handlerClass) {
-        return eventTypeMatcherCache.computeIfAbsent(handlerClass, EventInterfaceReflection::getEventTypeMatcherUncached);
+    public static EventTypeMatcher getEventTypeMatcher(Class<?>...handlerClasses) {
+        return eventTypeMatcherCache.computeIfAbsent(handlerClasses, EventInterfaceReflection::getEventTypeMatcherUncached);
     }
 
-    private static EventTypeMatcher getEventTypeMatcherUncached(Class<?> handlerClass) {
-        TupleSchemaRegistry registry = new TupleSchemaRegistry();
-        getEventMappers(handlerClass).values().stream().forEach(mapper -> mapper.registerSchema(registry));
-        return EventTypeMatcher.matchingAgainst(registry);
+    private static EventTypeMatcher getEventTypeMatcherUncached(Class<?>[] handlerClasses) {
+        Map<EventType, TupleSchema> eventTypeMap = new HashMap<>();
+        Stream.of(handlerClasses).flatMap(handlerClass ->
+                getEventMappers(handlerClass).values().stream()).forEach(mapper ->
+                    eventTypeMap.put(mapper.getEventType(), mapper.getTupleSchema()));
+        return EventTypeMatcher.matchingAgainst(eventTypeMap);
     }
 }
