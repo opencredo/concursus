@@ -7,6 +7,7 @@ import com.opencredo.concourse.domain.events.sourcing.EventReplayer;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.TimeRange;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.dispatching.EventMethodDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceReflection;
 
@@ -17,9 +18,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public final class ProxyingEventStreamCollector<T, I, A> {
 
     public static <T, I, A> ProxyingEventStreamCollector<T, I, A> proxying(Class<? extends T> stateClass, Class<? extends I> initialiserHandlerClass, Class<? extends A> accumulatorHandlerClass) {
+        checkNotNull(stateClass, "stateClass must not be null");
+        checkNotNull(initialiserHandlerClass, "initialiserHandlerClass must not be null");
+        checkNotNull(accumulatorHandlerClass, "accumulatorHandlerClass must not be null");
+        checkArgument(initialiserHandlerClass.isAnnotationPresent(HandlesEventsFor.class),
+                "Class %s is not annotated with @HandlesEventsFor", initialiserHandlerClass);
+        checkArgument(accumulatorHandlerClass.isAnnotationPresent(HandlesEventsFor.class),
+                "Class %s is not annotated with @HandlesEventsFor", accumulatorHandlerClass);
+
         return new ProxyingEventStreamCollector<>(
                 EventInterfaceReflection.getAggregateType(initialiserHandlerClass),
                 EventInterfaceReflection.getEventTypeMatcher(initialiserHandlerClass, accumulatorHandlerClass),

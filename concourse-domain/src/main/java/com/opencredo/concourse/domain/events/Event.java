@@ -16,13 +16,24 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Event {
 
+    public static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, UUID processingId, VersionedName eventName, Tuple parameters) {
+        checkNotNull(processingId, "processingId must not be null");
+        checkArgument(processingId.version() == 1, "processingId must be type 1 UUID");
+
+        return of(aggregateId, eventTimestamp, Optional.of(processingId), eventName, parameters);
+    }
+
     public static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, VersionedName eventName, Tuple parameters) {
+        return of(aggregateId, eventTimestamp, Optional.empty(), eventName, parameters);
+    }
+
+    private static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, Optional<UUID> processingId, VersionedName eventName, Tuple parameters) {
         checkNotNull(aggregateId, "aggregateId must not be null");
         checkNotNull(eventTimestamp, "eventTimestamp must not be null");
         checkNotNull(eventName, "eventName must not be null");
         checkNotNull(parameters, "parameters must not be null");
 
-        return new Event(aggregateId, eventTimestamp, Optional.empty(), eventName, parameters);
+        return new Event(aggregateId, eventTimestamp, processingId, eventName, parameters);
     }
 
     private final AggregateId aggregateId;

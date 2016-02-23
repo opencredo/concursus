@@ -25,7 +25,7 @@ public class EventBusFilteringBeanPostProcessor implements BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object o, String s) throws BeansException {
         if (o instanceof ProxyingEventBus) {
-            return ProxyingEventBus.proxying(eventBusFilter.apply(((EventBus) o)));
+            return o;
         }
         if (o instanceof EventBus) {
             return eventBusFilter.apply((EventBus) o);

@@ -1,55 +1,52 @@
 package com.opencredo.concourse.spring.demo.services;
 
+import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.events.views.EventView;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.events.methods.collecting.ProxyingEventStreamCollector;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSource;
-import com.opencredo.concourse.spring.demo.events.GroupChangedNameEvent;
-import com.opencredo.concourse.spring.demo.events.GroupCreatedEvent;
-import com.opencredo.concourse.spring.demo.events.UserCreatedEvent;
-import com.opencredo.concourse.spring.demo.events.UserUpdatedEvents;
+import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceReflection;
+import com.opencredo.concourse.spring.demo.events.*;
+import com.opencredo.concourse.spring.demo.repositories.UserStateRepository;
 import com.opencredo.concourse.spring.demo.views.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class UserService {
 
+    @HandlesEventsFor("group")
     public interface GroupNameEvents extends GroupCreatedEvent, GroupChangedNameEvent {}
 
     private final EventSource eventSource;
+    private final UserStateRepository userStateRepository;
 
     @Autowired
-    public UserService(EventSource eventSource) {
+    public UserService(EventSource eventSource, UserStateRepository userStateRepository) {
         this.eventSource = eventSource;
+        this.userStateRepository = userStateRepository;
+    }
+
+    public List<EventView> getHistory(UUID userId) {
+        return eventSource.getEvents(EventInterfaceReflection.getEventTypeMatcher(UserEvents.class), AggregateId.of("user", userId))
+                .stream().map(EventView::of).collect(Collectors.toList());
     }
 
     public boolean checkPassword(UUID userId, String passwordHash) {
-        return getUserState(userId).map(userState -> userState.getPasswordHash().equals(passwordHash)).orElse(false);
+        return userStateRepository.getUserState(userId).map(userState -> userState.getPasswordHash().equals(passwordHash)).orElse(false);
     }
 
     public Optional<UserView> getUser(UUID userId) {
-        return getUserState(userId).map(user ->
+        return userStateRepository.getUserState(userId).map(user ->
                 new UserView(
                         user.getId(),
                         user.getName(),
                         getGroupNames(user.getGroupIds())));
-    }
-
-    private Optional<UserState> getUserState(UUID userId) {
-        ProxyingEventStreamCollector<UserState, UserCreatedEvent, UserUpdatedEvents> collector = ProxyingEventStreamCollector.proxying(
-                UserState.class,
-                UserCreatedEvent.class,
-                UserUpdatedEvents.class
-        );
-
-        return collector.collect(eventSource, userId,
-                caller -> (ts, id, name, pwd) -> caller.accept(new UserState(id, name, pwd)),
-                UserUpdater::new)
-                .filter(userState -> !userState.isDeleted());
     }
 
     private Map<UUID, String> getGroupNames(Collection<UUID> groupIds) {
@@ -62,39 +59,6 @@ public class UserService {
         groupIds.stream().map(preloaded::replaying).forEach(replayer -> replayer.replayAll(handler));
 
         return handler.getGroupNames();
-    }
-
-    private static class UserUpdater implements UserUpdatedEvents {
-        private final UserState userState;
-
-        public UserUpdater(UserState userState) {
-            this.userState = userState;
-        }
-
-        @Override
-        public void changedName(StreamTimestamp ts, UUID userId, String newName) {
-            userState.setName(newName);
-        }
-
-        @Override
-        public void addedToGroup(StreamTimestamp ts, UUID userId, UUID groupId) {
-            userState.addGroupId(groupId);
-        }
-
-        @Override
-        public void removedFromGroup(StreamTimestamp ts, UUID userId, UUID groupId) {
-            userState.removeGroupId(groupId);
-        }
-
-        @Override
-        public void deleted(StreamTimestamp ts, UUID userId) {
-            userState.delete();
-        }
-
-        @Override
-        public void updatedPassword(StreamTimestamp ts, UUID userId, String newPasswordHash) {
-            userState.setPasswordHash(newPasswordHash);
-        }
     }
 
     private static class GroupNameHandler implements GroupNameEvents {

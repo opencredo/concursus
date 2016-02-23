@@ -4,15 +4,24 @@ import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.TimeRange;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceReflection;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class DispatchingEventSource<T> {
 
     public static <T> DispatchingEventSource<T> dispatching(EventSource eventSource, Class<T> handlerClass) {
+        checkNotNull(eventSource, "eventSource must not be null");
+        checkNotNull(handlerClass, "handleClass must not be null");
+        checkArgument(handlerClass.isAnnotationPresent(HandlesEventsFor.class),
+                "Class %s is not annotated with @HandlesEventsFor", handlerClass);
+
         return new DispatchingEventSource<>(
                 handlerClass,
                 EventInterfaceReflection.getAggregateType(handlerClass),

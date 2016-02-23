@@ -27,11 +27,6 @@ public class CassandraBeans {
     private ConcourseCassandraConfiguration configuration;
 
     @Bean
-    public ObjectMapper mapper() {
-        return new ObjectMapper().findAndRegisterModules();
-    }
-
-    @Bean
     public JsonDeserialiser deserialiser(ObjectMapper mapper) {
         return JsonDeserialiser.using(mapper);
     }

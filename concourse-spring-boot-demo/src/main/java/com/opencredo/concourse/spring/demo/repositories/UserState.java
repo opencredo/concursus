@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring.demo.services;
+package com.opencredo.concourse.spring.demo.repositories;
 
 import java.util.HashSet;
 import java.util.Set;

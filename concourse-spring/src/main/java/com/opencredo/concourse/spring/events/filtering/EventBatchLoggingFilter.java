@@ -18,6 +18,6 @@ public final class EventBatchLoggingFilter implements EventBatchPostFilter {
 
     @Override
     public void afterAccept(EventBatch eventBatch, Event event) {
-        LOGGER.debug("Batch {} received event {}", eventBatch.getId(), event);
+        LOGGER.info("Batch {} received event {}", eventBatch.getId(), event);
     }
 }

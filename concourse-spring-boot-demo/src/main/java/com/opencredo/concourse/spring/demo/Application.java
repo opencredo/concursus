@@ -7,12 +7,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
-@ComponentScan(basePackageClasses = {EventSystemBeans.class, CommandSystemBeans.class, CassandraBeans.class })
+@ComponentScan(basePackageClasses = {EventSystemBeans.class, CommandSystemBeans.class, CassandraBeans.class, Application.class })
 @EnableAutoConfiguration
 @EnableWebMvc
+@Configuration
 public class Application {
 
     public static void main(String[] args) {

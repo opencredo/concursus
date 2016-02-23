@@ -5,7 +5,7 @@ import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 
 import java.util.UUID;
 
-@HandlesEventsFor("user")
+@HandlesEventsFor("group")
 public interface GroupCreatedEvent {
 
     void created(StreamTimestamp ts, UUID groupId, String groupName);

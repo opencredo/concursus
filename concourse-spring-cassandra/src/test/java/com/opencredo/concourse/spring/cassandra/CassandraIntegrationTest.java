@@ -26,7 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { CassandraBeans.class,  EventSystemBeans.class })
+@SpringApplicationConfiguration(classes = { CassandraBeans.class,  EventSystemBeans.class, TestConfiguration.class })
 public class CassandraIntegrationTest {
 
     @ClassRule

@@ -23,6 +23,7 @@ final class EventTranslator implements RowCallbackHandler {
     private static final int AGGREGATE_ID = 1;
     private static final int EVENT_TIMESTAMP = 2;
     private static final int STREAM_ID = 3;
+    private static final int PROCESSING_ID = 4;
     private static final int EVENT_NAME = 5;
     private static final int EVENT_VERSION = 6;
     private static final int PARAMETERS = 7;
@@ -62,6 +63,7 @@ final class EventTranslator implements RowCallbackHandler {
         Event event = Event.of(
                 AggregateId.of(aggregateType, row.getUUID(AGGREGATE_ID)),
                 StreamTimestamp.of(row.getString(STREAM_ID), row.getDate(EVENT_TIMESTAMP).toInstant()),
+                row.getUUID(PROCESSING_ID),
                 versionedName,
                 parameters);
 
