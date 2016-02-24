@@ -28,7 +28,7 @@ public final class CommandMethodMapping {
         final String aggregateType = CommandInterfaceReflection.getAggregateType(klass);
         final VersionedName commandName = CommandInterfaceReflection.getCommandName(method);
 
-        ParameterArgs parameterArgs = ParameterArgs.forMethod(method);
+        ParameterArgs parameterArgs = ParameterArgs.forMethod(method, 2);
         TupleSchema schema = parameterArgs.getTupleSchema(CommandType.of(aggregateType, commandName).toString());
         TupleKey[] tupleKeys = parameterArgs.getTupleKeys(schema);
 
@@ -90,10 +90,6 @@ public final class CommandMethodMapping {
         populateArgsFromTuple(command, args);
 
         return args;
-    }
-
-    public void registerSchema(TupleSchemaRegistry registry) {
-        registry.add(tupleSchema);
     }
 
     private void populateArgsFromTuple(Command command, Object[] args) {

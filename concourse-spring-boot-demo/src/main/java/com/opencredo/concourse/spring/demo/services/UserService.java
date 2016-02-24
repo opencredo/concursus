@@ -1,13 +1,13 @@
 package com.opencredo.concourse.spring.demo.services;
 
 import com.opencredo.concourse.domain.common.AggregateId;
+import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.views.EventView;
-import com.opencredo.concourse.domain.time.StreamTimestamp;
+import com.opencredo.concourse.mapping.annotations.HandlesEvent;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSource;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceReflection;
+import com.opencredo.concourse.mapping.events.methods.state.StateBuilder;
 import com.opencredo.concourse.spring.demo.events.*;
 import com.opencredo.concourse.spring.demo.repositories.UserStateRepository;
 import com.opencredo.concourse.spring.demo.views.UserView;
@@ -19,9 +19,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class UserService {
-
-    @HandlesEventsFor("group")
-    public interface GroupNameEvents extends GroupCreatedEvent, GroupChangedNameEvent {}
 
     private final EventSource eventSource;
     private final UserStateRepository userStateRepository;
@@ -49,33 +46,42 @@ public class UserService {
                         getGroupNames(user.getGroupIds())));
     }
 
-    private Map<UUID, String> getGroupNames(Collection<UUID> groupIds) {
-        GroupNameHandler handler = new GroupNameHandler();
 
-        final DispatchingCachedEventSource<GroupNameEvents> preloaded = DispatchingEventSource
-                .dispatching(eventSource, GroupNameEvents.class)
-                .preload(groupIds);
+    private Map<UUID, String> getGroupNames(Collection<UUID> userIds) {
+        StateBuilder<GroupNameState> stateBuilder = StateBuilder.forStateClass(GroupNameState.class);
 
-        groupIds.stream().map(preloaded::replaying).forEach(replayer -> replayer.replayAll(handler));
+        CachedEventSource cachedEventSource = stateBuilder.preload(eventSource, userIds);
 
-        return handler.getGroupNames();
+        return userIds.stream()
+                .map(id -> stateBuilder.buildState(cachedEventSource, id))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toMap(
+                        state -> state.id,
+                        state -> state.name
+                ));
     }
 
-    private static class GroupNameHandler implements GroupNameEvents {
-        private final Map<UUID, String> groupNames = new HashMap<>();
+    @HandlesEventsFor("group")
+    public static final class GroupNameState {
 
-        @Override
-        public void created(StreamTimestamp ts, UUID groupId, String groupName) {
-            groupNames.put(groupId, groupName);
+        @HandlesEvent
+        public static GroupNameState created(UUID id, String groupName) {
+            return new GroupNameState(id, groupName);
         }
 
-        @Override
-        public void changedName(StreamTimestamp ts, UUID groupId, String newName) {
-            groupNames.put(groupId, newName);
+        private final UUID id;
+        private String name;
+
+        private GroupNameState(UUID id, String name) {
+            this.id = id;
+            this.name = name;
         }
 
-        public Map<UUID, String> getGroupNames() {
-            return groupNames;
+        @HandlesEvent
+        public void changedName(String newName) {
+            name = newName;
         }
     }
+
 }

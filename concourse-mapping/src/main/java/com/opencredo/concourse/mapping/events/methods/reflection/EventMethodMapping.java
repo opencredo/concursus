@@ -26,7 +26,7 @@ public final class EventMethodMapping {
         final String aggregateType = EventInterfaceReflection.getAggregateType(klass);
         final VersionedName eventName = EventInterfaceReflection.getEventName(method);
 
-        ParameterArgs parameterArgs = ParameterArgs.forMethod(method);
+        ParameterArgs parameterArgs = ParameterArgs.forMethod(method, 2);
         TupleSchema schema = parameterArgs.getTupleSchema(EventType.of(aggregateType, eventName).toString());
         TupleKey[] tupleKeys = parameterArgs.getTupleKeys(schema);
 
@@ -86,10 +86,6 @@ public final class EventMethodMapping {
         populateArgsFromTuple(event, args);
 
         return args;
-    }
-
-    public void registerSchema(TupleSchemaRegistry registry) {
-        registry.add(tupleSchema);
     }
 
     private void populateArgsFromTuple(Event event, Object[] args) {

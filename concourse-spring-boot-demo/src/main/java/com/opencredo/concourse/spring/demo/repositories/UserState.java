@@ -1,10 +1,19 @@
 package com.opencredo.concourse.spring.demo.repositories;
 
+import com.opencredo.concourse.mapping.annotations.HandlesEvent;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@HandlesEventsFor("user")
 public final class UserState {
+
+    @HandlesEvent
+    public static UserState created(UUID id, String userName, String passwordHash) {
+        return new UserState(id, userName, passwordHash);
+    }
 
     private final UUID id;
     private String name;
@@ -18,19 +27,23 @@ public final class UserState {
         this.passwordHash = passwordHash;
     }
 
-    public void addGroupId(UUID groupId) {
+    @HandlesEvent
+    public void addedToGroup(UUID groupId) {
         groupIds.add(groupId);
     }
 
-    public void removeGroupId(UUID groupId) {
+    @HandlesEvent
+    public void removedFromGroup(UUID groupId) {
        groupIds.remove(groupId);
     }
 
-    public void setName(String name) {
+    @HandlesEvent
+    public void nameChanged(String newName) {
         this.name = name;
     }
 
-    public void delete() {
+    @HandlesEvent
+    public void deleted() {
         isDeleted = true;
     }
 
@@ -54,7 +67,8 @@ public final class UserState {
         return passwordHash;
     }
 
-    public void setPasswordHash(String newPasswordHash) {
+    @HandlesEvent
+    public void passwordHashUpdated(String newPasswordHash) {
         passwordHash = newPasswordHash;
     }
 }

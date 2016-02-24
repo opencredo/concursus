@@ -1,10 +1,19 @@
 package com.opencredo.concourse.spring.demo.repositories;
 
+import com.opencredo.concourse.mapping.annotations.HandlesEvent;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@HandlesEventsFor("group")
 public final class GroupState {
+
+    @HandlesEvent
+    public static GroupState created(UUID id, String groupName) {
+        return new GroupState(id, groupName);
+    }
 
     private final UUID id;
     private String name;
@@ -24,24 +33,28 @@ public final class GroupState {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Set<UUID> getUsers() {
         return users;
     }
 
-    public void addUser(UUID uuid) {
-        users.add(uuid);
+    @HandlesEvent
+    public void nameChanged(String newName) {
+        this.name = newName;
     }
 
-    public void removeUser(UUID uuid) {
-        users.remove(uuid);
+    @HandlesEvent
+    public void userAdded(UUID userId) {
+        users.add(userId);
     }
 
-    public void delete() {
+    @HandlesEvent
+    public void deleted() {
         deleted = true;
+    }
+
+    @HandlesEvent
+    public void userRemoved(UUID userId) {
+        users.remove(userId);
     }
 
     public boolean isDeleted() {

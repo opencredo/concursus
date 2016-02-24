@@ -21,13 +21,13 @@ public final class ParameterArgs {
                 : parameter.getName();
     }
 
-    public static ParameterArgs forMethod(Method method) {
+    public static ParameterArgs forMethod(Method method, int skip) {
         Type[] parameterTypes = Stream.of(method.getGenericParameterTypes())
-                .skip(2)
+                .skip(skip)
                 .toArray(Type[]::new);
 
         String[] parameterNames = Stream.of(method.getParameters())
-                .skip(2)
+                .skip(skip)
                 .map(ParameterArgs::getParameterName)
                 .toArray(String[]::new);
 
