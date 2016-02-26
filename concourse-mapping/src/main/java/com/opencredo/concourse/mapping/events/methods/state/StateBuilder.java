@@ -13,7 +13,9 @@ import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -146,11 +148,27 @@ public final class StateBuilder<T> {
         return eventSource.preload(eventTypeMatcher, aggregateType, aggregateIds, timeRange);
     }
 
+    public Map<UUID, T> buildStates(EventSource eventSource, Collection<UUID> aggregateIds) {
+        return buildStates(eventSource, aggregateIds, TimeRange.unbounded());
+    }
+
+    public Map<UUID, T> buildStates(EventSource eventSource, Collection<UUID> aggregateIds, TimeRange timeRange) {
+        return buildStates(preload(eventSource, aggregateIds, timeRange), aggregateIds);
+    }
+
+    public Map<UUID, T> buildStates(CachedEventSource cachedEventSource, Collection<UUID> aggregateIds) {
+        return buildStates(cachedEventSource, aggregateIds, TimeRange.unbounded());
+    }
+
+    public Map<UUID, T> buildStates(CachedEventSource cachedEventSource, Collection<UUID> aggregateIds, TimeRange timeRange) {
+        return aggregateIds.stream()
+                .map(id -> new SimpleEntry<>(id, buildState(cachedEventSource, id)))
+                .filter(e -> e.getValue().isPresent())
+                .collect(toMap(Entry::getKey, e -> e.getValue().get()));
+    }
+
     private AggregateId addTypeTo(UUID aggregateId) {
         return AggregateId.of(aggregateType, aggregateId);
     }
 
-    public EventTypeMatcher getEventTypeMatcher() {
-        return eventTypeMatcher;
-    }
 }

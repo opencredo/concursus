@@ -1,17 +1,14 @@
 package com.opencredo.concourse.spring.demo.services;
 
-import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
-import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.mapping.annotations.HandlesEvent;
-import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
-import com.opencredo.concourse.mapping.events.methods.state.StateBuilder;
 import com.opencredo.concourse.spring.demo.repositories.GroupStateRepository;
+import com.opencredo.concourse.spring.demo.repositories.UserStateRepository;
 import com.opencredo.concourse.spring.demo.views.GroupView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,13 +16,13 @@ import java.util.stream.Collectors;
 @Component
 public class GroupService {
 
-    private final EventSource eventSource;
     private final GroupStateRepository groupStateRepository;
+    private final UserStateRepository userStateRepository;
 
     @Autowired
-    public GroupService(EventSource eventSource, GroupStateRepository groupStateRepository) {
-        this.eventSource = eventSource;
+    public GroupService(GroupStateRepository groupStateRepository, UserStateRepository userStateRepository) {
         this.groupStateRepository = groupStateRepository;
+        this.userStateRepository = userStateRepository;
     }
 
     public Optional<GroupView> getGroup(UUID groupId) {
@@ -33,40 +30,10 @@ public class GroupService {
     }
 
     private Map<UUID, String> getUserNames(Collection<UUID> userIds) {
-        StateBuilder<UserNameState> stateBuilder = StateBuilder.forStateClass(UserNameState.class);
-
-        CachedEventSource cachedEventSource = stateBuilder.preload(eventSource, userIds);
-
-        return userIds.stream()
-                .map(id -> stateBuilder.buildState(cachedEventSource, id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toMap(
-                        state -> state.id,
-                        state -> state.name
-                ));
-    }
-
-    @HandlesEventsFor("user")
-    public static final class UserNameState {
-
-        @HandlesEvent
-        public static UserNameState created(UUID id, String userName, String passwordHash) {
-            return new UserNameState(id, userName);
-        }
-
-        private final UUID id;
-        private String name;
-
-        private UserNameState(UUID id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        @HandlesEvent
-        public void changedName(String newName) {
-            name = newName;
-        }
+        return userStateRepository.getUserStates(userIds).entrySet().stream().collect(Collectors.toMap(
+                Entry::getKey,
+                e -> e.getValue().getName()
+        ));
     }
 
 }

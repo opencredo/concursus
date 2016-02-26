@@ -15,9 +15,9 @@ import java.util.stream.Stream;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class StateUpdateMethodDispatcher implements BiConsumer<Object, Event> {
+final class StateUpdateMethodDispatcher implements BiConsumer<Object, Event> {
 
-    public static StateUpdateMethodDispatcher of(Class<?> stateClass, String aggregateType, Method method) {
+    static StateUpdateMethodDispatcher of(Class<?> stateClass, String aggregateType, Method method) {
         checkNotNull(stateClass, "stateClass must not be null");
         checkNotNull(method, "method must not be null");
         checkArgument(method.getReturnType().equals(void.class),

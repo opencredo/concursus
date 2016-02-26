@@ -13,15 +13,16 @@ import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public final class ParameterArgs {
 
-    private static String getParameterName(Parameter parameter) {
-        return parameter.isAnnotationPresent(Name.class)
-                ? parameter.getAnnotation(Name.class).value()
-                : parameter.getName();
-    }
-
     public static ParameterArgs forMethod(Method method, int skip) {
+        checkNotNull(method, "method must not be null");
+        checkArgument(method.getParameterCount() >= skip,
+                "method %s must have at least %s arguments", method, skip);
+
         Type[] parameterTypes = Stream.of(method.getGenericParameterTypes())
                 .skip(skip)
                 .toArray(Type[]::new);
@@ -32,6 +33,12 @@ public final class ParameterArgs {
                 .toArray(String[]::new);
 
         return new ParameterArgs(parameterTypes, parameterNames);
+    }
+
+    private static String getParameterName(Parameter parameter) {
+        return parameter.isAnnotationPresent(Name.class)
+                ? parameter.getAnnotation(Name.class).value()
+                : parameter.getName();
     }
 
     private final Type[] parameterTypes;

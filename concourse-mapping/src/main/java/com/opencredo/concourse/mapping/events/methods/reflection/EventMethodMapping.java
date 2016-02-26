@@ -6,6 +6,7 @@ import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
+import com.opencredo.concourse.mapping.annotations.Name;
 import com.opencredo.concourse.mapping.reflection.ParameterArgs;
 
 import java.lang.reflect.Method;
@@ -16,15 +17,13 @@ import java.util.stream.IntStream;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class EventMethodMapping {
+final class EventMethodMapping {
 
-    public static EventMethodMapping forMethod(Method method) {
+    public static EventMethodMapping forMethod(Method method, String aggregateType) {
         checkNotNull(method, "method must not be null");
+        checkNotNull(aggregateType, "aggregateType must not be null");
 
-        Class<?> klass = method.getDeclaringClass();
-
-        final String aggregateType = EventInterfaceReflection.getAggregateType(klass);
-        final VersionedName eventName = EventInterfaceReflection.getEventName(method);
+        final VersionedName eventName = getEventName(method);
 
         ParameterArgs parameterArgs = ParameterArgs.forMethod(method, 2);
         TupleSchema schema = parameterArgs.getTupleSchema(EventType.of(aggregateType, eventName).toString());
@@ -37,6 +36,14 @@ public final class EventMethodMapping {
                 tupleKeys);
     }
 
+    private static VersionedName getEventName(Method method) {
+        return method.isAnnotationPresent(Name.class)
+                ? VersionedName.of(
+                method.getAnnotation(Name.class).value(),
+                method.getAnnotation(Name.class).version())
+                : VersionedName.of(method.getName(), "0");
+    }
+
     private final String aggregateType;
     private final VersionedName eventName;
     private final TupleSchema tupleSchema;
@@ -47,6 +54,14 @@ public final class EventMethodMapping {
         this.eventName = eventName;
         this.tupleSchema = tupleSchema;
         this.tupleKeys = tupleKeys;
+    }
+
+    public EventType getEventType() {
+        return EventType.of(aggregateType, eventName);
+    }
+
+    public TupleSchema getTupleSchema() {
+        return tupleSchema;
     }
 
     public Event mapArguments(Object[] args) {
@@ -62,20 +77,6 @@ public final class EventMethodMapping {
         );
     }
 
-    public EventType getEventType() {
-        return EventType.of(aggregateType, eventName);
-    }
-
-    public TupleSchema getTupleSchema() {
-        return tupleSchema;
-    }
-
-    private Tuple makeTupleFromArgs(Object[] args) {
-        return tupleSchema.make(IntStream.range(0, tupleKeys.length)
-                .mapToObj(getValueFrom(args))
-                .toArray(TupleKeyValue[]::new));
-    }
-
     public Object[] mapEvent(Event event) {
         checkNotNull(event, "event must not be null");
 
@@ -86,6 +87,12 @@ public final class EventMethodMapping {
         populateArgsFromTuple(event, args);
 
         return args;
+    }
+
+    private Tuple makeTupleFromArgs(Object[] args) {
+        return tupleSchema.make(IntStream.range(0, tupleKeys.length)
+                .mapToObj(getValueFrom(args))
+                .toArray(TupleKeyValue[]::new));
     }
 
     private void populateArgsFromTuple(Event event, Object[] args) {

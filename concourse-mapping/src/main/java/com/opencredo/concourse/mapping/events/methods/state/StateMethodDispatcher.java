@@ -14,7 +14,7 @@ import java.util.function.Function;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventReplayer, Optional<T>> {
+final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventReplayer, Optional<T>> {
 
     private Optional<T> state = Optional.empty();
 

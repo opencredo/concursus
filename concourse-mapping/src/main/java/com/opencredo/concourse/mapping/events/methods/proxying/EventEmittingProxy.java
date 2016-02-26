@@ -1,41 +1,43 @@
 package com.opencredo.concourse.mapping.events.methods.proxying;
 
-import com.google.common.base.Preconditions;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceReflection;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventMethodMapping;
+import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.EventMethodMapper;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Map;
 import java.util.function.Consumer;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A proxy that converts method invocations into events
  */
-public final class EventEmittingProxy implements InvocationHandler {
+public final class EventEmittingProxy<T> implements InvocationHandler {
 
     /**
      * Create an EventEmittingProxy proxying the given class, and passing the emitted events to the supplied consumer.
      * @param eventConsumer The Consumer that will be called back with events.
-     * @param klass The class to proxy.
+     * @param iface The class to proxy.
      * @param <T> The type of the class to proxy.
      * @return The proxy instance.
      */
-    public static <T> T proxying(Consumer<Event> eventConsumer, Class<T> klass) {
-        return klass.cast(Proxy.newProxyInstance(klass.getClassLoader(),
-                new Class<?>[] { klass },
-                new EventEmittingProxy(eventConsumer, EventInterfaceReflection.getEventMappers(klass))
+    public static <T> T proxying(Consumer<Event> eventConsumer, Class<? extends T> iface) {
+        checkNotNull(eventConsumer, "eventConsumer must not be null");
+
+        return iface.cast(Proxy.newProxyInstance(iface.getClassLoader(),
+                new Class<?>[] { iface },
+                new EventEmittingProxy<>(eventConsumer, EventInterfaceInfo.forInterface(iface).getEventMethodMapper())
         ));
     }
 
     private final Consumer<Event> eventConsumer;
-    private final Map<Method, EventMethodMapping> eventMappers;
+    private final EventMethodMapper eventMethodMapper;
 
-    private EventEmittingProxy(Consumer<Event> eventConsumer, Map<Method, EventMethodMapping> eventMappers) {
+    private EventEmittingProxy(Consumer<Event> eventConsumer, EventMethodMapper eventMethodMapper) {
         this.eventConsumer = eventConsumer;
-        this.eventMappers = eventMappers;
+        this.eventMethodMapper = eventMethodMapper;
     }
 
     @Override
@@ -43,10 +45,8 @@ public final class EventEmittingProxy implements InvocationHandler {
         if (method.getDeclaringClass().isAssignableFrom(getClass())) {
             return method.invoke(this, args);
         }
-        EventMethodMapping mapper = eventMappers.get(method);
-        Preconditions.checkState(mapper != null, "No mapper found for method %s", method);
 
-        eventConsumer.accept(mapper.mapArguments(args));
+        eventConsumer.accept(eventMethodMapper.mapMethodCall(method, args));
         return null;
     }
 }

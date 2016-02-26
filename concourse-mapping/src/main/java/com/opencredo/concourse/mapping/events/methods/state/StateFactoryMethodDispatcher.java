@@ -15,9 +15,9 @@ import java.util.stream.IntStream;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class StateFactoryMethodDispatcher<T> implements Function<Event, T> {
+final class StateFactoryMethodDispatcher<T> implements Function<Event, T> {
 
-    public static <T> StateFactoryMethodDispatcher<T> of(Class<? extends T> stateClass, String aggregateType, Method method) {
+    static <T> StateFactoryMethodDispatcher<T> of(Class<? extends T> stateClass, String aggregateType, Method method) {
         checkNotNull(stateClass, "stateClass must not be null");
         checkNotNull(method, "method must not be null");
         checkArgument(method.getParameterTypes()[0].equals(UUID.class),

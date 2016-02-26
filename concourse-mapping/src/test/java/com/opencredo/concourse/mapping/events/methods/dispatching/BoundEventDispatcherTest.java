@@ -1,20 +1,19 @@
-package com.opencredo.concourse.mapping.events.methods;
+package com.opencredo.concourse.mapping.events.methods.dispatching;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
-import com.opencredo.concourse.mapping.events.methods.dispatching.EventMethodDispatcher;
 import com.opencredo.concourse.mapping.events.methods.proxying.EventEmittingProxy;
+import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static com.opencredo.concourse.mapping.events.methods.dispatching.EventMethodDispatcher.toHandler;
 import static org.mockito.Mockito.mock;
 
-public class EventMethodDispatcherTest {
+public class BoundEventDispatcherTest {
 
     @HandlesEventsFor("test")
     public interface CreatedEventReceiver {
@@ -52,8 +51,8 @@ public class EventMethodDispatcherTest {
 
     @Test
     public void dispatchesMethodCallsBasedOnEvents() {
-        EventMethodDispatcher dispatcher = toHandler(TestEventsReceiver.class, handler);
-
+        EventInterfaceInfo<TestEventsReceiver> mapper = EventInterfaceInfo.forInterface(TestEventsReceiver.class);
+        BoundEventDispatcher dispatcher = BoundEventDispatcher.binding(mapper.getEventDispatcher(), handler);
         TestEvents emitter = EventEmittingProxy.proxying(dispatcher, TestEvents.class);
 
         final StreamTimestamp timestamp1 = StreamTimestamp.of("test", Instant.now());

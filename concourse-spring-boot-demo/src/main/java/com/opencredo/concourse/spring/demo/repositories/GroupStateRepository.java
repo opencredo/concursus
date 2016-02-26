@@ -5,6 +5,8 @@ import com.opencredo.concourse.mapping.events.methods.state.StateBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,5 +23,9 @@ public class GroupStateRepository {
     public Optional<GroupState> getGroupState(UUID groupId) {
         return StateBuilder.forStateClass(GroupState.class).buildState(eventSource, groupId)
                 .filter(state -> !state.isDeleted());
+    }
+
+    public Map<UUID, GroupState> getGroupStates(Collection<UUID> groupIds) {
+        return StateBuilder.forStateClass(GroupState.class).buildStates(eventSource, groupIds);
     }
 }

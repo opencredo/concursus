@@ -1,56 +1,41 @@
 package com.opencredo.concourse.mapping.events.methods.dispatching;
 
-import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.TimeRange;
-import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceReflection;
+import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.EventTypeBinding;
+import com.opencredo.concourse.mapping.events.methods.reflection.MultiEventDispatcher;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DispatchingEventSource<T> {
 
     public static <T> DispatchingEventSource<T> dispatching(EventSource eventSource, Class<T> handlerClass) {
         checkNotNull(eventSource, "eventSource must not be null");
-        checkNotNull(handlerClass, "handleClass must not be null");
-        checkArgument(handlerClass.isAnnotationPresent(HandlesEventsFor.class),
-                "Class %s is not annotated with @HandlesEventsFor", handlerClass);
+        EventInterfaceInfo<T> interfaceInfo = EventInterfaceInfo.forInterface(handlerClass);
 
-        return new DispatchingEventSource<>(
-                handlerClass,
-                EventInterfaceReflection.getAggregateType(handlerClass),
-                EventInterfaceReflection.getEventTypeMatcher(handlerClass),
-                eventSource);
+        return new DispatchingEventSource<>(interfaceInfo.getEventDispatcher(), interfaceInfo.getEventTypeBinding(), eventSource);
     }
 
-    private final Class<T> handlerClass;
-    private final String aggregateType;
-    private EventTypeMatcher eventTypeMatcher;
+    private final MultiEventDispatcher<T> eventDispatcher;
+    private final EventTypeBinding typeBinding;
     private final EventSource eventSource;
 
-    private DispatchingEventSource(Class<T> handlerClass,
-                                   String aggregateType,
-                                   EventTypeMatcher eventTypeMatcher,
-                                   EventSource eventSource) {
-        this.handlerClass = handlerClass;
-        this.aggregateType = aggregateType;
-        this.eventTypeMatcher = eventTypeMatcher;
+    private DispatchingEventSource(MultiEventDispatcher<T> eventDispatcher,
+                                   EventTypeBinding typeBinding, EventSource eventSource) {
+        this.eventDispatcher = eventDispatcher;
+        this.typeBinding = typeBinding;
         this.eventSource = eventSource;
     }
 
     public DispatchingEventReplayer<T> replaying(UUID aggregateId, TimeRange timeRange) {
         return DispatchingEventReplayer.dispatching(
-                handlerClass,
-                eventSource.replaying(
-                        eventTypeMatcher,
-                        AggregateId.of(aggregateType, aggregateId),
-                        timeRange));
+                eventDispatcher,
+                typeBinding.replaying(eventSource, aggregateId, timeRange));
     }
 
     public DispatchingEventReplayer<T> replaying(UUID aggregateId) {
@@ -58,10 +43,10 @@ public class DispatchingEventSource<T> {
     }
 
     public DispatchingCachedEventSource<T> preload(Collection<UUID> aggregateIds, TimeRange timeRange) {
-        return new DispatchingCachedEventSource<>(
-                handlerClass,
-                aggregateType,
-                eventSource.preload(eventTypeMatcher, aggregateType, aggregateIds, timeRange));
+        return DispatchingCachedEventSource.dispatching(
+                eventDispatcher,
+                typeBinding,
+                typeBinding.preload(eventSource, aggregateIds, timeRange));
     }
 
     public DispatchingCachedEventSource<T> preload(Collection<UUID> aggregateIds) {
