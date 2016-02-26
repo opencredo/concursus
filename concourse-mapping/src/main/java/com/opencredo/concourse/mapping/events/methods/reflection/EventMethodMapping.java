@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 final class EventMethodMapping {
 
-    public static EventMethodMapping forMethod(Method method, String aggregateType) {
+    static EventMethodMapping forMethod(Method method, String aggregateType) {
         checkNotNull(method, "method must not be null");
         checkNotNull(aggregateType, "aggregateType must not be null");
 

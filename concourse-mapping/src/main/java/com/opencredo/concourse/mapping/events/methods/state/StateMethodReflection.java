@@ -5,7 +5,10 @@ import com.opencredo.concourse.mapping.annotations.HandlesEvent;
 
 import java.lang.reflect.Method;
 
-class StateMethodReflection {
+final class StateMethodReflection {
+
+    private StateMethodReflection() {
+    }
 
     static VersionedName getName(Method method) {
         HandlesEvent annotation = method.getAnnotation(HandlesEvent.class);

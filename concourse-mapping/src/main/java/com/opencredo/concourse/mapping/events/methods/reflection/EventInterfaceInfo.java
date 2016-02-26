@@ -10,6 +10,7 @@ import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -20,10 +21,20 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * The source of all reflection information about an event interface.
+ * @param <T> The type of the event interface.
+ */
 public final class EventInterfaceInfo<T> {
 
     private static final ConcurrentMap<Class<?>, EventInterfaceInfo<?>> cache = new ConcurrentHashMap<>();
 
+    /**
+     * Get event interface information from the supplied interface. This method is cached.
+     * @param iface The interface to get information for.
+     * @param <T> The type of the interface.
+     * @return The EventInterfaceInfo for the supplied interface.
+     */
     @SuppressWarnings("unchecked")
     public static <T> EventInterfaceInfo<T> forInterface(Class<? extends T> iface) {
         return (EventInterfaceInfo<T>) cache.computeIfAbsent(iface, EventInterfaceInfo::forInterfaceUncached);
@@ -41,7 +52,7 @@ public final class EventInterfaceInfo<T> {
         EventMethodMapper eventMethodMapper = EventMethodMapper.mappingWith(eventMappers);
         MultiEventDispatcher<T> eventDispatcher = getMethodMappingEventDispatcher(eventMappers);
 
-        Comparator<Event> causalOrderComparator = Comparator.comparing(Event::getEventTimestamp); // TODO: collect causal ordering annotations
+        Comparator<Event> causalOrderComparator = CausalOrdering.onMethods(getEventTypes(eventMappers));
         EventTypeMatcher eventTypeMatcher = EventTypeMatcher.matchingAgainst(getTupleSchemas(eventMappers));
 
         return new EventInterfaceInfo<>(
@@ -49,6 +60,10 @@ public final class EventInterfaceInfo<T> {
                 eventMethodMapper,
                 eventDispatcher,
                 causalOrderComparator);
+    }
+
+    private static Map<Method, EventType> getEventTypes(Map<Method, EventMethodMapping> eventMappers) {
+        return eventMappers.entrySet().stream().collect(toMap(Entry::getKey, e -> e.getValue().getEventType()));
     }
 
     private static <T> MultiEventDispatcher<T> getMethodMappingEventDispatcher(Map<Method, EventMethodMapping> methodMappings) {
@@ -91,18 +106,34 @@ public final class EventInterfaceInfo<T> {
         this.causalOrderComparator = causalOrderComparator;
     }
 
+    /**
+     * Get a {@link Comparator} that can be used to sort events in causal order, based on annotations on the interface.
+     * @return The comparator.
+     */
     public Comparator<Event> getCausalOrderComparator() {
         return causalOrderComparator;
     }
 
+    /**
+     * Get {@link EventTypeBinding} for the interface.
+     * @return
+     */
     public EventTypeBinding getEventTypeBinding() {
         return eventTypeBinding;
     }
 
+    /**
+     * Get an {@link EventMethodMapper} for the interface.
+     * @return
+     */
     public EventMethodMapper getEventMethodMapper() {
         return eventMethodMapper;
     }
 
+    /**
+     * Get a {@link MultiEventDispatcher} for the interface.
+     * @return
+     */
     public MultiEventDispatcher<T> getEventDispatcher() {
         return eventDispatcher;
     }

@@ -154,7 +154,7 @@ public final class TupleSchema {
 
     Object get(String name, Object[] values) {
         Integer valueIndex = slotLookup.get(name);
-        checkNotNull(valueIndex, "Schema %s does not have a slot named '%s'", this, name);
+        checkArgument(valueIndex != null, "Schema %s does not have a slot named '%s'", this, name);
 
         return values[valueIndex];
     }
