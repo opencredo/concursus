@@ -1,4 +1,4 @@
-package com.opencredo.concourse.mapping.events.methods.reflection;
+package com.opencredo.concourse.mapping.events.methods.reflection.dispatching;
 
 import com.opencredo.concourse.domain.events.Event;
 
@@ -9,5 +9,4 @@ import java.util.function.BiConsumer;
  * @param <T> The type of the target object.
  */
 public interface EventDispatcher<T> extends BiConsumer<T, Event> {
-
 }

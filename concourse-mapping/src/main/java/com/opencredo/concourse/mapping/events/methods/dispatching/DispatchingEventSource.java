@@ -5,7 +5,7 @@ import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventTypeBinding;
-import com.opencredo.concourse.mapping.events.methods.reflection.MultiEventDispatcher;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,12 +27,12 @@ public class DispatchingEventSource<T> {
                 eventSource);
     }
 
-    private final MultiEventDispatcher<T> eventDispatcher;
+    private final MultiTypeEventDispatcher<T> eventDispatcher;
     private final Comparator<Event> causalOrderComparator;
     private final EventTypeBinding typeBinding;
     private final EventSource eventSource;
 
-    private DispatchingEventSource(MultiEventDispatcher<T> eventDispatcher,
+    private DispatchingEventSource(MultiTypeEventDispatcher<T> eventDispatcher,
                                    Comparator<Event> causalOrderComparator, EventTypeBinding typeBinding, EventSource eventSource) {
         this.eventDispatcher = eventDispatcher;
         this.causalOrderComparator = causalOrderComparator;

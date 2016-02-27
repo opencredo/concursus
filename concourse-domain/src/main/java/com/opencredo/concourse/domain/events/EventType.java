@@ -1,8 +1,12 @@
 package com.opencredo.concourse.domain.events;
 
+import com.opencredo.concourse.data.tuples.Tuple;
+import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -48,4 +52,11 @@ public final class EventType {
     }
 
 
+    public Event makeEvent(UUID aggregateId, StreamTimestamp streamTimestamp, Tuple parameters) {
+        return Event.of(
+                AggregateId.of(aggregateType, aggregateId),
+                streamTimestamp,
+                eventName,
+                parameters);
+    }
 }

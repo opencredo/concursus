@@ -1,6 +1,7 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.MethodArgumentsInterpreter;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -12,14 +13,14 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public final class EventMethodMapper {
 
-    static EventMethodMapper mappingWith(Map<Method, EventMethodMapping> eventMappers) {
-        return new EventMethodMapper(eventMappers);
+    static EventMethodMapper mappingWith(Map<Method, ? extends MethodArgumentsInterpreter> argumentsInterpreters) {
+        return new EventMethodMapper(argumentsInterpreters);
     }
 
-    private final Map<Method, EventMethodMapping> eventMappers;
+    private final Map<Method, ? extends MethodArgumentsInterpreter> argumentsInterpreters;
 
-    private EventMethodMapper(Map<Method, EventMethodMapping> eventMappers) {
-        this.eventMappers = eventMappers;
+    private EventMethodMapper(Map<Method, ? extends MethodArgumentsInterpreter> argumentsInterpreters) {
+        this.argumentsInterpreters = argumentsInterpreters;
     }
 
     /**
@@ -29,7 +30,7 @@ public final class EventMethodMapper {
      * @return The constructed {@link Event}
      */
     public Event mapMethodCall(Method method, Object[] args) {
-        EventMethodMapping mapping = eventMappers.get(method);
+        MethodArgumentsInterpreter mapping = argumentsInterpreters.get(method);
         checkState(mapping != null, "No mapping found for method %s", method);
 
         return mapping.mapArguments(args);

@@ -2,7 +2,7 @@ package com.opencredo.concourse.mapping.events.methods.dispatching;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.sourcing.EventReplayer;
-import com.opencredo.concourse.mapping.events.methods.reflection.MultiEventDispatcher;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
 
 import java.util.Comparator;
 import java.util.List;
@@ -13,15 +13,15 @@ import java.util.function.Predicate;
 
 public final class DispatchingEventReplayer<T> {
 
-    static <T> DispatchingEventReplayer<T> dispatching(Comparator<Event> causalOrderComparator, MultiEventDispatcher<T> mapper, EventReplayer eventReplayer) {
+    static <T> DispatchingEventReplayer<T> dispatching(Comparator<Event> causalOrderComparator, MultiTypeEventDispatcher<T> mapper, EventReplayer eventReplayer) {
         return new DispatchingEventReplayer<>(causalOrderComparator, mapper, eventReplayer);
     }
 
     private final Comparator<Event> causalOrderComparator;
-    private final MultiEventDispatcher<T> dispatcher;
+    private final MultiTypeEventDispatcher<T> dispatcher;
     private final EventReplayer eventReplayer;
 
-    private DispatchingEventReplayer(Comparator<Event> causalOrderComparator, MultiEventDispatcher<T> dispatcher, EventReplayer eventReplayer) {
+    private DispatchingEventReplayer(Comparator<Event> causalOrderComparator, MultiTypeEventDispatcher<T> dispatcher, EventReplayer eventReplayer) {
         this.causalOrderComparator = causalOrderComparator;
         this.dispatcher = dispatcher;
         this.eventReplayer = eventReplayer;

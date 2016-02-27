@@ -6,8 +6,16 @@ import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
+import com.opencredo.concourse.mapping.events.methods.ordering.CausalOrdering;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MethodInvokingEventDispatcher;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.TypeMappingEventDispatcher;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventInterpreters;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.InterfaceMethodMapping;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.TypeMapping;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,44 +55,50 @@ public final class EventInterfaceInfo<T> {
                 "Interface %s is not annotated with @HandlesEventsFor", iface);
 
         String aggregateType = iface.getAnnotation(HandlesEventsFor.class).value();
-        Map<Method, EventMethodMapping> eventMappers = getEventMappers(iface, aggregateType);
+        Map<Method, InterfaceMethodMapping> eventMappers = getEventMappers(iface, aggregateType);
 
-        EventMethodMapper eventMethodMapper = EventMethodMapper.mappingWith(eventMappers);
-        MultiEventDispatcher<T> eventDispatcher = getMethodMappingEventDispatcher(eventMappers);
-
-        Comparator<Event> causalOrderComparator = CausalOrdering.onMethods(getEventTypes(eventMappers));
-        EventTypeMatcher eventTypeMatcher = EventTypeMatcher.matchingAgainst(getTupleSchemas(eventMappers));
+        EventTypeMatcher eventTypeMatcher = EventTypeMatcher.matchingAgainst(getTupleSchemas(eventMappers.values()));
 
         return new EventInterfaceInfo<>(
                 EventTypeBinding.of(aggregateType, eventTypeMatcher),
-                eventMethodMapper,
-                eventDispatcher,
-                causalOrderComparator);
+                EventMethodMapper.mappingWith(eventMappers),
+                getMethodMappingEventDispatcher(eventMappers),
+                getCausalOrdering(eventMappers));
     }
 
-    private static Map<Method, EventType> getEventTypes(Map<Method, EventMethodMapping> eventMappers) {
+    private static Comparator<Event> getCausalOrdering(Map<Method, ? extends TypeMapping> eventMappers) {
+        return CausalOrdering.onEventTypes(eventMappers.entrySet().stream()
+                .collect(toMap(
+                        e -> e.getValue().getEventType(),
+                        e -> e.getValue().getCausalOrder())
+                ));
+    }
+
+
+
+    private static Map<Method, EventType> getEventTypes(Map<Method, InterfaceMethodMapping> eventMappers) {
         return eventMappers.entrySet().stream().collect(toMap(Entry::getKey, e -> e.getValue().getEventType()));
     }
 
-    private static <T> MultiEventDispatcher<T> getMethodMappingEventDispatcher(Map<Method, EventMethodMapping> methodMappings) {
-        return EventTypeMappingEventDispatcher.mapping(methodMappings.entrySet().stream().collect(toMap(
+    private static <T> MultiTypeEventDispatcher<T> getMethodMappingEventDispatcher(Map<Method, InterfaceMethodMapping> methodMappings) {
+        return TypeMappingEventDispatcher.mapping(methodMappings.entrySet().stream().collect(toMap(
                     e -> e.getValue().getEventType(),
                     e -> MethodInvokingEventDispatcher.dispatching(e.getKey(), e.getValue()))));
     }
 
-    private static Map<Method, EventMethodMapping> getEventMappers(Class<?> iface, String aggregateType) {
+    private static Map<Method, InterfaceMethodMapping> getEventMappers(Class<?> iface, String aggregateType) {
         return Stream.of(iface.getMethods())
                 .filter(EventInterfaceInfo::isEventEmittingMethod)
                 .distinct()
                 .collect(toMap(
                         Function.identity(),
-                        method -> EventMethodMapping.forMethod(method, aggregateType)
+                        method -> EventInterpreters.forInterfaceMethod(method, aggregateType)
                 ));
     }
 
-    private static Map<EventType, TupleSchema> getTupleSchemas(Map<Method, EventMethodMapping> methodMappings) {
-        return methodMappings.values().stream()
-                .collect(toMap(EventMethodMapping::getEventType, EventMethodMapping::getTupleSchema));
+    private static Map<EventType, TupleSchema> getTupleSchemas(Collection<? extends TypeMapping> methodMappings) {
+        return methodMappings.stream()
+                .collect(toMap(TypeMapping::getEventType, TypeMapping::getTupleSchema));
     }
 
     private static boolean isEventEmittingMethod(Method method) {
@@ -96,10 +110,10 @@ public final class EventInterfaceInfo<T> {
 
     private final EventTypeBinding eventTypeBinding;
     private final EventMethodMapper eventMethodMapper;
-    private final MultiEventDispatcher<T> eventDispatcher;
+    private final MultiTypeEventDispatcher<T> eventDispatcher;
     private final Comparator<Event> causalOrderComparator;
 
-    private EventInterfaceInfo(EventTypeBinding eventTypeBinding, EventMethodMapper eventMethodMapper, MultiEventDispatcher<T> eventDispatcher, Comparator<Event> causalOrderComparator) {
+    private EventInterfaceInfo(EventTypeBinding eventTypeBinding, EventMethodMapper eventMethodMapper, MultiTypeEventDispatcher<T> eventDispatcher, Comparator<Event> causalOrderComparator) {
         this.eventTypeBinding = eventTypeBinding;
         this.eventMethodMapper = eventMethodMapper;
         this.eventDispatcher = eventDispatcher;
@@ -131,10 +145,10 @@ public final class EventInterfaceInfo<T> {
     }
 
     /**
-     * Get a {@link MultiEventDispatcher} for the interface.
+     * Get a {@link MultiTypeEventDispatcher} for the interface.
      * @return
      */
-    public MultiEventDispatcher<T> getEventDispatcher() {
+    public MultiTypeEventDispatcher<T> getEventDispatcher() {
         return eventDispatcher;
     }
 }

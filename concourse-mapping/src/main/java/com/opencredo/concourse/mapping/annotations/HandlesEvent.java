@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface HandlesEvent {
     String value() default "";
-    String version() default "";
+    String version() default "0";
 }

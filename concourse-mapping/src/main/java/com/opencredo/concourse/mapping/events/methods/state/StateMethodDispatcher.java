@@ -1,30 +1,32 @@
 package com.opencredo.concourse.mapping.events.methods.state;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.events.sourcing.EventReplayer;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatcher;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.InitialEventDispatcher;
 
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventReplayer, Optional<T>> {
 
+    public static <T> StateMethodDispatcher<T> dispatching(InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateMethodDispatcher, Comparator<Event> causalOrder) {
+        return new StateMethodDispatcher<>(initialEventDispatcher, updateMethodDispatcher, causalOrder);
+    }
+
     private Optional<T> state = Optional.empty();
 
-    private final Map<EventType, StateFactoryMethodDispatcher<T>> factoryMethodDispatchers;
-    private final Map<EventType, StateUpdateMethodDispatcher> updateMethodDispatchers;
+    private final InitialEventDispatcher<T> initialEventDispatcher;
+    private final EventDispatcher<T> updateMethodDispatcher;
     private final Comparator<Event> causalOrder;
 
-    StateMethodDispatcher(Map<EventType, StateFactoryMethodDispatcher<T>> factoryMethodDispatchers, Map<EventType, StateUpdateMethodDispatcher> updateMethodDispatchers, Comparator<Event> causalOrder) {
-        this.factoryMethodDispatchers = factoryMethodDispatchers;
-        this.updateMethodDispatchers = updateMethodDispatchers;
+    private StateMethodDispatcher(InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateMethodDispatcher, Comparator<Event> causalOrder) {
+        this.initialEventDispatcher = initialEventDispatcher;
+        this.updateMethodDispatcher = updateMethodDispatcher;
         this.causalOrder = causalOrder;
     }
 
@@ -33,25 +35,10 @@ final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventR
         checkNotNull(event, "event must not be null");
 
         if (!state.isPresent()) {
-            createState(event);
+            state = Optional.of(initialEventDispatcher.apply(event));
         } else {
-            state.ifPresent(s -> updateState(s, event));
+            state.ifPresent(s -> updateMethodDispatcher.accept(s, event));
         }
-    }
-
-    private void createState(Event event) {
-        Function<Event, T> createEventMapper = factoryMethodDispatchers.get(EventType.of(event));
-        checkState(createEventMapper != null,
-                "No create event mapper found for event %s", event);
-        state = Optional.of(createEventMapper.apply(event));
-    }
-
-    private void updateState(T state, Event event) {
-        BiConsumer<Object, Event> eventMapper = updateMethodDispatchers.get(EventType.of(event));
-        checkState(eventMapper != null,
-                "No method dispatcher found for event %s", event);
-
-        eventMapper.accept(state, event);
     }
 
     @Override

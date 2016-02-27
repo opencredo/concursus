@@ -1,16 +1,16 @@
-package com.opencredo.concourse.mapping.events.methods.state;
+package com.opencredo.concourse.mapping.events.methods.reflection;
 
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.mapping.annotations.HandlesEvent;
 
 import java.lang.reflect.Method;
 
-final class StateMethodReflection {
+public final class StateMethodReflection {
 
     private StateMethodReflection() {
     }
 
-    static VersionedName getName(Method method) {
+    public static VersionedName getName(Method method) {
         HandlesEvent annotation = method.getAnnotation(HandlesEvent.class);
         return VersionedName.of(
                 annotation.value().isEmpty() ? method.getName() : annotation.value(),
