@@ -12,6 +12,7 @@
     <artifactId>concourse-spring-cassandra</artifactId>
 
     <dependencies>
+
         <dependency>
             <groupId>com.opencredo</groupId>
             <artifactId>concourse-spring</artifactId>

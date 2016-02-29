@@ -3,9 +3,6 @@ package com.opencredo.concourse.mapping.events.methods.reflection.interpreting;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.EventInterpreter;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.MethodArgumentsInterpreter;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.TypeMapping;
 
 public final class InterfaceMethodMapping implements MethodArgumentsInterpreter, EventInterpreter, TypeMapping {
 

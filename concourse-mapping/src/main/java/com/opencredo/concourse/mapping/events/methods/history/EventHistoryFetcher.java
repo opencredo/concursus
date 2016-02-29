@@ -5,7 +5,7 @@ import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventTypeBinding;
+import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
 
 import java.util.*;
 import java.util.function.Function;

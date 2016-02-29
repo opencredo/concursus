@@ -1,7 +1,7 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.MethodArgumentsInterpreter;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.MethodArgumentsInterpreter;
 
 import java.lang.reflect.Method;
 import java.util.Map;

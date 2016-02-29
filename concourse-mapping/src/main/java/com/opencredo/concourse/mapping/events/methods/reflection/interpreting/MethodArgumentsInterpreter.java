@@ -1,4 +1,4 @@
-package com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api;
+package com.opencredo.concourse.mapping.events.methods.reflection.interpreting;
 
 import com.opencredo.concourse.domain.events.Event;
 

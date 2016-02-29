@@ -7,7 +7,6 @@ import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.MethodArgumentsInterpreter;
 
 import java.util.UUID;
 import java.util.function.IntFunction;
@@ -18,15 +17,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 final class InterfaceMethodArgumentsInterpreter implements MethodArgumentsInterpreter {
 
-    static InterfaceMethodArgumentsInterpreter using(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys) {
-        return new InterfaceMethodArgumentsInterpreter(eventType, tupleSchema, tupleKeys);
-    }
-
     private final EventType eventType;
     private final TupleSchema tupleSchema;
     private final TupleKey[] tupleKeys;
 
-    public InterfaceMethodArgumentsInterpreter(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys) {
+    InterfaceMethodArgumentsInterpreter(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys) {
         this.eventType = eventType;
         this.tupleSchema = tupleSchema;
         this.tupleKeys = tupleKeys;

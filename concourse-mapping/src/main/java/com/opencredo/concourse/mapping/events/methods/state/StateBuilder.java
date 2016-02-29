@@ -3,7 +3,7 @@ package com.opencredo.concourse.mapping.events.methods.state;
 import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventTypeBinding;
+import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
 import com.opencredo.concourse.mapping.events.methods.reflection.StateClassInfo;
 
 import java.util.AbstractMap.SimpleEntry;

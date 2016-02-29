@@ -1,33 +1,22 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
-import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
-import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
-import com.opencredo.concourse.mapping.events.methods.ordering.CausalOrdering;
-import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MethodInvokingEventDispatcher;
+import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
+import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
-import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.TypeMappingEventDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventInterpreters;
 import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.InterfaceMethodMapping;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.TypeMapping;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.TypeMapping;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * The source of all reflection information about an event interface.
@@ -57,55 +46,18 @@ public final class EventInterfaceInfo<T> {
         String aggregateType = iface.getAnnotation(HandlesEventsFor.class).value();
         Map<Method, InterfaceMethodMapping> eventMappers = getEventMappers(iface, aggregateType);
 
-        EventTypeMatcher eventTypeMatcher = EventTypeMatcher.matchingAgainst(getTupleSchemas(eventMappers.values()));
-
         return new EventInterfaceInfo<>(
-                EventTypeBinding.of(aggregateType, eventTypeMatcher),
+                EventTypeBinding.of(aggregateType, TypeMapping.makeEventTypeMatcher(eventMappers.values())),
                 EventMethodMapper.mappingWith(eventMappers),
-                getMethodMappingEventDispatcher(eventMappers),
-                getCausalOrdering(eventMappers));
-    }
-
-    private static Comparator<Event> getCausalOrdering(Map<Method, ? extends TypeMapping> eventMappers) {
-        return CausalOrdering.onEventTypes(eventMappers.entrySet().stream()
-                .collect(toMap(
-                        e -> e.getValue().getEventType(),
-                        e -> e.getValue().getCausalOrder())
-                ));
-    }
-
-
-
-    private static Map<Method, EventType> getEventTypes(Map<Method, InterfaceMethodMapping> eventMappers) {
-        return eventMappers.entrySet().stream().collect(toMap(Entry::getKey, e -> e.getValue().getEventType()));
-    }
-
-    private static <T> MultiTypeEventDispatcher<T> getMethodMappingEventDispatcher(Map<Method, InterfaceMethodMapping> methodMappings) {
-        return TypeMappingEventDispatcher.mapping(methodMappings.entrySet().stream().collect(toMap(
-                    e -> e.getValue().getEventType(),
-                    e -> MethodInvokingEventDispatcher.dispatching(e.getKey(), e.getValue()))));
+                EventDispatchers.dispatchingEventsByType(eventMappers),
+                TypeMapping.makeCausalOrdering(eventMappers.values()));
     }
 
     private static Map<Method, InterfaceMethodMapping> getEventMappers(Class<?> iface, String aggregateType) {
-        return Stream.of(iface.getMethods())
-                .filter(EventInterfaceInfo::isEventEmittingMethod)
-                .distinct()
-                .collect(toMap(
-                        Function.identity(),
-                        method -> EventInterpreters.forInterfaceMethod(method, aggregateType)
-                ));
-    }
-
-    private static Map<EventType, TupleSchema> getTupleSchemas(Collection<? extends TypeMapping> methodMappings) {
-        return methodMappings.stream()
-                .collect(toMap(TypeMapping::getEventType, TypeMapping::getTupleSchema));
-    }
-
-    private static boolean isEventEmittingMethod(Method method) {
-        return method.getReturnType().equals(void.class)
-                && method.getParameterCount() >= 2
-                && method.getParameterTypes()[0].equals(StreamTimestamp.class)
-                && method.getParameterTypes()[1].equals(UUID.class);
+        return MethodSelectors.interpretMethods(
+                iface,
+                MethodSelectors.isEventEmittingMethod,
+                method -> EventInterpreters.forInterfaceMethod(method, aggregateType));
     }
 
     private final EventTypeBinding eventTypeBinding;

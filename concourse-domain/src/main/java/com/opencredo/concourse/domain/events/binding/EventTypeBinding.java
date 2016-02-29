@@ -1,4 +1,4 @@
-package com.opencredo.concourse.mapping.events.methods.reflection;
+package com.opencredo.concourse.domain.events.binding;
 
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;

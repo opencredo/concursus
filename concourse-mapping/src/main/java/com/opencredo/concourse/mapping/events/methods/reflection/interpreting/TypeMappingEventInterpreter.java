@@ -3,17 +3,14 @@ package com.opencredo.concourse.mapping.events.methods.reflection.interpreting;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.EventInterpreter;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.api.TypeMapping;
 
 public final class TypeMappingEventInterpreter implements EventInterpreter, TypeMapping {
 
-    public static TypeMappingEventInterpreter create(EventInterpreter eventInterpreter, EventType eventType, TupleSchema tupleSchema, int causalOrder) {
+    public static TypeMappingEventInterpreter with(EventInterpreter eventInterpreter, EventType eventType, TupleSchema tupleSchema, int causalOrder) {
         return new TypeMappingEventInterpreter(eventInterpreter, eventType, tupleSchema, causalOrder);
     }
 
     private final EventInterpreter eventInterpreter;
-
     private final EventType eventType;
     private final TupleSchema tupleSchema;
     private final int causalOrder;
