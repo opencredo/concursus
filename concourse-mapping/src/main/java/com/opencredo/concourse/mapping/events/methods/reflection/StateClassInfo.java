@@ -1,14 +1,13 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.InitialEventDispatcher;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventInterpreters;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.TypeMapping;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.TypeMappingEventInterpreter;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodType;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -38,40 +37,26 @@ public final class StateClassInfo<T> {
 
         String aggregateType = stateClass.getAnnotation(HandlesEventsFor.class).value();
 
-        Map<Method, TypeMappingEventInterpreter> factoryMethodMappings = getFactoryMethodMappings(stateClass, aggregateType);
-        Map<Method, TypeMappingEventInterpreter> updateMethodMappings = getUpdateMethodMappings(stateClass, aggregateType);
+        Map<Method, EventMethodInfo> factoryMethodMappings = EventMethodType.FACTORY.getEventMethodInfo(aggregateType, stateClass);
+        Map<Method, EventMethodInfo> updateMethodMappings = EventMethodType.UPDATER.getEventMethodInfo(aggregateType, stateClass);
 
-        Collection<? extends TypeMapping> typeMappings = getTypeMappings(factoryMethodMappings, updateMethodMappings);
+        Collection<? extends EventMethodInfo> typeMappings = getTypeMappings(factoryMethodMappings, updateMethodMappings);
 
         return new StateClassInfo<>(
                 makeEventTypeBinding(aggregateType, typeMappings),
-                TypeMapping.makeCausalOrdering(typeMappings),
+                EventMethodInfo.makeCausalOrdering(typeMappings),
                 EventDispatchers.dispatchingInitialEventsByType(stateClass, factoryMethodMappings),
                 EventDispatchers.dispatchingEventsByType(updateMethodMappings));
     }
 
-    private static Collection<? extends TypeMapping> getTypeMappings(Map<Method, TypeMappingEventInterpreter> factoryMethodMappings, Map<Method, TypeMappingEventInterpreter> updateMethodMappings) {
+    private static Collection<? extends EventMethodInfo> getTypeMappings(Map<Method, EventMethodInfo> factoryMethodMappings, Map<Method, EventMethodInfo> updateMethodMappings) {
         return concat(
                     factoryMethodMappings.values().stream(),
                     updateMethodMappings.values().stream()).collect(toList());
     }
 
-    private static EventTypeBinding makeEventTypeBinding(String aggregateType, Collection<? extends TypeMapping> typeMappings) {
-        return EventTypeBinding.of(aggregateType, TypeMapping.makeEventTypeMatcher(typeMappings));
-    }
-
-    private static <T> Map<Method, TypeMappingEventInterpreter> getFactoryMethodMappings(Class<? extends T> stateClass, String aggregateType) {
-        return MethodSelectors.interpretMethods(
-                stateClass,
-                MethodSelectors.isFactoryMethod,
-                method -> EventInterpreters.forFactoryMethod(stateClass, aggregateType, method));
-    }
-
-    private static <T> Map<Method, TypeMappingEventInterpreter> getUpdateMethodMappings(Class<? extends T> stateClass, String aggregateType) {
-        return MethodSelectors.interpretMethods(
-                stateClass,
-                MethodSelectors.isUpdateMethod,
-                method -> EventInterpreters.forUpdateMethod(aggregateType, method));
+    private static EventTypeBinding makeEventTypeBinding(String aggregateType, Collection<? extends EventMethodInfo> typeMappings) {
+        return EventTypeBinding.of(aggregateType, EventMethodInfo.makeEventTypeMatcher(typeMappings));
     }
 
     private final EventTypeBinding eventTypeBinding;

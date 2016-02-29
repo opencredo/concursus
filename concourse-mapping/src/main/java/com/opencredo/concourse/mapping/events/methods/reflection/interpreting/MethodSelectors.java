@@ -1,4 +1,4 @@
-package com.opencredo.concourse.mapping.events.methods.reflection;
+package com.opencredo.concourse.mapping.events.methods.reflection.interpreting;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEvent;
@@ -6,13 +6,8 @@ import com.opencredo.concourse.mapping.annotations.HandlesEvent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toMap;
 
 final class MethodSelectors {
 
@@ -59,13 +54,4 @@ final class MethodSelectors {
 
     static final Predicate<Method> isUpdateMethod = handlesEvent.and(isInstance).and(returnsVoid);
 
-    static <T, I> Map<Method, I> interpretMethods(Class<? extends T> klass, Predicate<Method> methodSelector, Function<Method, I> interpreterBuilder) {
-        return Stream.of(klass.getMethods())
-                .filter(methodSelector)
-                .distinct()
-                .collect(toMap(
-                        Function.identity(),
-                        interpreterBuilder
-                ));
-    }
 }

@@ -1,13 +1,12 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
+import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventInterpreters;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.InterfaceMethodMapping;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.TypeMapping;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodType;
 
 import java.lang.reflect.Method;
 import java.util.Comparator;
@@ -44,20 +43,13 @@ public final class EventInterfaceInfo<T> {
                 "Interface %s is not annotated with @HandlesEventsFor", iface);
 
         String aggregateType = iface.getAnnotation(HandlesEventsFor.class).value();
-        Map<Method, InterfaceMethodMapping> eventMappers = getEventMappers(iface, aggregateType);
+        Map<Method, EventMethodInfo> eventMappers = EventMethodType.EMITTER.getEventMethodInfo(aggregateType, iface);
 
         return new EventInterfaceInfo<>(
-                EventTypeBinding.of(aggregateType, TypeMapping.makeEventTypeMatcher(eventMappers.values())),
+                EventTypeBinding.of(aggregateType, EventMethodInfo.makeEventTypeMatcher(eventMappers.values())),
                 EventMethodMapper.mappingWith(eventMappers),
                 EventDispatchers.dispatchingEventsByType(eventMappers),
-                TypeMapping.makeCausalOrdering(eventMappers.values()));
-    }
-
-    private static Map<Method, InterfaceMethodMapping> getEventMappers(Class<?> iface, String aggregateType) {
-        return MethodSelectors.interpretMethods(
-                iface,
-                MethodSelectors.isEventEmittingMethod,
-                method -> EventInterpreters.forInterfaceMethod(method, aggregateType));
+                EventMethodInfo.makeCausalOrdering(eventMappers.values()));
     }
 
     private final EventTypeBinding eventTypeBinding;

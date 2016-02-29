@@ -1,7 +1,7 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.MethodArgumentsInterpreter;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodInfo;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -13,13 +13,13 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public final class EventMethodMapper {
 
-    static EventMethodMapper mappingWith(Map<Method, ? extends MethodArgumentsInterpreter> argumentsInterpreters) {
+    static EventMethodMapper mappingWith(Map<Method, EventMethodInfo> argumentsInterpreters) {
         return new EventMethodMapper(argumentsInterpreters);
     }
 
-    private final Map<Method, ? extends MethodArgumentsInterpreter> argumentsInterpreters;
+    private final Map<Method, EventMethodInfo> argumentsInterpreters;
 
-    private EventMethodMapper(Map<Method, ? extends MethodArgumentsInterpreter> argumentsInterpreters) {
+    private EventMethodMapper(Map<Method, EventMethodInfo> argumentsInterpreters) {
         this.argumentsInterpreters = argumentsInterpreters;
     }
 
@@ -30,9 +30,9 @@ public final class EventMethodMapper {
      * @return The constructed {@link Event}
      */
     public Event mapMethodCall(Method method, Object[] args) {
-        MethodArgumentsInterpreter mapping = argumentsInterpreters.get(method);
-        checkState(mapping != null, "No mapping found for method %s", method);
+        EventMethodInfo methodInfo = argumentsInterpreters.get(method);
+        checkState(methodInfo != null, "No methodInfo found for method %s", method);
 
-        return mapping.mapArguments(args);
+        return methodInfo.mapArguments(args);
     }
 }

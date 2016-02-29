@@ -9,7 +9,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -23,16 +25,17 @@ public final class ParameterArgs {
         checkArgument(method.getParameterCount() >= skip,
                 "method %s must have at least %s arguments", method, skip);
 
-        Type[] parameterTypes = Stream.of(method.getGenericParameterTypes())
-                .skip(skip)
-                .toArray(Type[]::new);
+        Parameter[] parameters = method.getParameters();
+        Type[] types = method.getGenericParameterTypes();
 
-        String[] parameterNames = Stream.of(method.getParameters())
-                .skip(skip)
-                .map(ParameterArgs::getParameterName)
-                .toArray(String[]::new);
+        Map<String, Type> typesByName = IntStream.range(skip, method.getParameterCount())
+                .mapToObj(Integer::valueOf)
+                .collect(Collectors.toMap(
+                        i -> getParameterName(parameters[i]),
+                        i -> types[i]
+                ));
 
-        return new ParameterArgs(parameterTypes, parameterNames);
+        return new ParameterArgs(typesByName);
     }
 
     private static String getParameterName(Parameter parameter) {
@@ -41,17 +44,14 @@ public final class ParameterArgs {
                 : parameter.getName();
     }
 
-    private final Type[] parameterTypes;
-    private final String[] parameterNames;
+    private final Map<String, Type> typesByName;
 
-    private ParameterArgs(Type[] parameterTypes, String[] parameterNames) {
-        this.parameterTypes = parameterTypes;
-        this.parameterNames = parameterNames;
+    private ParameterArgs(Map<String, Type> typesByName) {
+        this.typesByName = typesByName;
     }
 
     private <T> Stream<T> streamOverNamesAndTypes(BiFunction<String, Type, T> combiner) {
-        return IntStream.range(0, parameterNames.length)
-                .mapToObj(i -> combiner.apply(parameterNames[i], parameterTypes[i]));
+        return typesByName.entrySet().stream().map(e -> combiner.apply(e.getKey(), e.getValue()));
     }
 
     private TupleSlot[] getTupleSlots() {
