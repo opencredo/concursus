@@ -23,8 +23,8 @@ public class CassandraEventLog implements EventLog {
 
     private static PreparedStatement prepareInsert(Session session) {
         return session.prepare(
-                "INSERT INTO Event (aggregateType, aggregateId, eventTimestamp, streamId, processingId, name, version, parameters) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                "INSERT INTO Event (aggregateType, aggregateId, eventTimestamp, streamId, processingId, name, version, parameters, characteristics) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     }
 
     private final CassandraTemplate cassandraTemplate;
@@ -82,7 +82,8 @@ public class CassandraEventLog implements EventLog {
                 processingId,
                 event.getEventName().getName(),
                 event.getEventName().getVersion(),
-                event.getParameters().serialise(serialiser)
+                event.getParameters().serialise(serialiser),
+                event.getCharacteristics()
         };
     }
 

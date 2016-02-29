@@ -1,7 +1,7 @@
 package com.opencredo.concourse.mapping.events.methods.proxying;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.EmitterInterfaceInfo;
 import com.opencredo.concourse.mapping.events.methods.reflection.EventMethodMapper;
 
 import java.lang.reflect.InvocationHandler;
@@ -28,7 +28,7 @@ public final class EventEmittingProxy<T> implements InvocationHandler {
 
         return iface.cast(Proxy.newProxyInstance(iface.getClassLoader(),
                 new Class<?>[] { iface },
-                new EventEmittingProxy<>(eventConsumer, EventInterfaceInfo.forInterface(iface).getEventMethodMapper())
+                new EventEmittingProxy<>(eventConsumer, EmitterInterfaceInfo.forInterface(iface).getEventMethodMapper())
         ));
     }
 

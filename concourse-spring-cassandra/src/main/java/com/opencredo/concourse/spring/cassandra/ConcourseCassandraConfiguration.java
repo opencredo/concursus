@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 public class ConcourseCassandraConfiguration {
 
     private String keyspace = "Concourse";
+    private int catalogueBucketCount = 8;
 
     public String getKeyspace() {
         return keyspace;
@@ -15,5 +16,13 @@ public class ConcourseCassandraConfiguration {
 
     public void setKeyspace(String keyspace) {
         this.keyspace = keyspace;
+    }
+
+    public int getCatalogueBucketCount() {
+        return catalogueBucketCount;
+    }
+
+    public void setCatalogueBucketCount(int catalogueBucketCount) {
+        this.catalogueBucketCount = catalogueBucketCount;
     }
 }

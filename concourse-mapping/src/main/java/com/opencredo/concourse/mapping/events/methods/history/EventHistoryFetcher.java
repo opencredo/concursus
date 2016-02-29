@@ -4,7 +4,7 @@ import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.EmitterInterfaceInfo;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
 
 import java.util.*;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public final class EventHistoryFetcher {
 
     public static <T> EventHistoryFetcher of(Class<? extends T> eventInterface) {
-        EventInterfaceInfo<T> interfaceInfo = EventInterfaceInfo.forInterface(eventInterface);
+        EmitterInterfaceInfo<T> interfaceInfo = EmitterInterfaceInfo.forInterface(eventInterface);
 
         return new EventHistoryFetcher(
                 interfaceInfo.getEventTypeBinding(),

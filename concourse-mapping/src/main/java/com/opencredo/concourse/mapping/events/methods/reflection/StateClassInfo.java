@@ -6,7 +6,7 @@ import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.InitialEventDispatcher;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodMapping;
 import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodType;
 
 import java.lang.reflect.Method;
@@ -37,26 +37,26 @@ public final class StateClassInfo<T> {
 
         String aggregateType = stateClass.getAnnotation(HandlesEventsFor.class).value();
 
-        Map<Method, EventMethodInfo> factoryMethodMappings = EventMethodType.FACTORY.getEventMethodInfo(aggregateType, stateClass);
-        Map<Method, EventMethodInfo> updateMethodMappings = EventMethodType.UPDATER.getEventMethodInfo(aggregateType, stateClass);
+        Map<Method, EventMethodMapping> factoryMethodMappings = EventMethodType.FACTORY.getEventMethodInfo(aggregateType, stateClass);
+        Map<Method, EventMethodMapping> updateMethodMappings = EventMethodType.UPDATER.getEventMethodInfo(aggregateType, stateClass);
 
-        Collection<? extends EventMethodInfo> typeMappings = getTypeMappings(factoryMethodMappings, updateMethodMappings);
+        Collection<? extends EventMethodMapping> typeMappings = getTypeMappings(factoryMethodMappings, updateMethodMappings);
 
         return new StateClassInfo<>(
                 makeEventTypeBinding(aggregateType, typeMappings),
-                EventMethodInfo.makeCausalOrdering(typeMappings),
+                EventMethodMapping.makeCausalOrdering(typeMappings),
                 EventDispatchers.dispatchingInitialEventsByType(stateClass, factoryMethodMappings),
                 EventDispatchers.dispatchingEventsByType(updateMethodMappings));
     }
 
-    private static Collection<? extends EventMethodInfo> getTypeMappings(Map<Method, EventMethodInfo> factoryMethodMappings, Map<Method, EventMethodInfo> updateMethodMappings) {
+    private static Collection<? extends EventMethodMapping> getTypeMappings(Map<Method, EventMethodMapping> factoryMethodMappings, Map<Method, EventMethodMapping> updateMethodMappings) {
         return concat(
                     factoryMethodMappings.values().stream(),
                     updateMethodMappings.values().stream()).collect(toList());
     }
 
-    private static EventTypeBinding makeEventTypeBinding(String aggregateType, Collection<? extends EventMethodInfo> typeMappings) {
-        return EventTypeBinding.of(aggregateType, EventMethodInfo.makeEventTypeMatcher(typeMappings));
+    private static EventTypeBinding makeEventTypeBinding(String aggregateType, Collection<? extends EventMethodMapping> typeMappings) {
+        return EventTypeBinding.of(aggregateType, EventMethodMapping.makeEventTypeMatcher(typeMappings));
     }
 
     private final EventTypeBinding eventTypeBinding;

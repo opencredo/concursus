@@ -16,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,6 +31,11 @@ public class UserController {
     public UserController(ProxyingCommandBus commandBus, UserService userService) {
         userCommands = commandBus.getDispatcherFor(UserCommands.class);
         this.userService = userService;
+    }
+
+    @RequestMapping(path = "", method = RequestMethod.GET)
+    public Map<String, String> getUsers() {
+        return userService.getUsers();
     }
 
     @RequestMapping(path = "{userId}", method = RequestMethod.GET)

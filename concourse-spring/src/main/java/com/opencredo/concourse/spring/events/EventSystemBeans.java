@@ -1,6 +1,8 @@
 package com.opencredo.concourse.spring.events;
 
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
+import com.opencredo.concourse.domain.events.cataloguing.InMemoryAggregateCatalogue;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.publishing.EventPublisher;

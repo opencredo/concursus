@@ -20,14 +20,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.toMap;
 
-public final class EventMethodInfo {
+public final class EventMethodMapping {
 
-    public static EventTypeMatcher makeEventTypeMatcher(Collection<? extends EventMethodInfo> typeMappings) {
-        return EventTypeMatcher.matchingAgainst(typeMappings.stream().collect(toMap(EventMethodInfo::getEventType, EventMethodInfo::getTupleSchema)));
+    public static EventTypeMatcher makeEventTypeMatcher(Collection<? extends EventMethodMapping> typeMappings) {
+        return EventTypeMatcher.matchingAgainst(typeMappings.stream().collect(toMap(EventMethodMapping::getEventType, EventMethodMapping::getTupleSchema)));
     }
 
-    public static Comparator<Event> makeCausalOrdering(Collection<? extends EventMethodInfo> typeMappings) {
-        return CausalOrdering.onEventTypes(typeMappings.stream().collect(toMap(EventMethodInfo::getEventType, EventMethodInfo::getCausalOrder)));
+    public static Comparator<Event> makeCausalOrdering(Collection<? extends EventMethodMapping> typeMappings) {
+        return CausalOrdering.onEventTypes(typeMappings.stream().collect(toMap(EventMethodMapping::getEventType, EventMethodMapping::getCausalOrder)));
     }
 
     private final EventType eventType;
@@ -35,13 +35,15 @@ public final class EventMethodInfo {
     private final TupleKey[] tupleKeys;
     private final int causalOrder;
     private final EventMethodType eventMethodType;
+    private final int characteristics;
 
-    public EventMethodInfo(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys, int causalOrder, EventMethodType eventMethodType) {
+    EventMethodMapping(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys, int causalOrder, EventMethodType eventMethodType, int characteristics) {
         this.eventType = eventType;
         this.tupleSchema = tupleSchema;
         this.tupleKeys = tupleKeys;
         this.causalOrder = causalOrder;
         this.eventMethodType = eventMethodType;
+        this.characteristics = characteristics;
     }
 
     public EventType getEventType() {
@@ -67,7 +69,7 @@ public final class EventMethodInfo {
         checkArgument(args[1] instanceof UUID, "second argument %s is not a UUID", args[1]);
         checkArgument(args[0] instanceof StreamTimestamp, "first argument %s is not a StreamTimestamp", args[0]);
 
-        return eventType.makeEvent((UUID) args[1], (StreamTimestamp) args[0], makeTupleFromArgs(args));
+        return eventType.makeEvent((UUID) args[1], (StreamTimestamp) args[0], makeTupleFromArgs(args), characteristics);
     }
 
     private Tuple makeTupleFromArgs(Object[] args) {

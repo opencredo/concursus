@@ -1,22 +1,23 @@
 package com.opencredo.concourse.mapping.events.methods.reflection.interpreting;
 
 import com.opencredo.concourse.domain.common.VersionedName;
+import com.opencredo.concourse.domain.events.EventCharacteristics;
 import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.mapping.annotations.*;
 import com.opencredo.concourse.mapping.events.methods.ordering.CausalOrdering;
 
 import java.lang.reflect.Method;
 
-public final class EventMethodReflection {
+final class EventMethodReflection {
 
     private EventMethodReflection() {
     }
 
-    public static EventType getEventType(String aggregateType, Method method) {
+    static EventType getEventType(String aggregateType, Method method) {
         return EventType.of(aggregateType, getEventName(method));
     }
 
-    public static VersionedName getEventName(Method method) {
+    static VersionedName getEventName(Method method) {
         if (method.isAnnotationPresent(HandlesEvent.class)) {
             return getEventName(method.getAnnotation(HandlesEvent.class), method.getName());
         }
@@ -37,7 +38,7 @@ public final class EventMethodReflection {
         return VersionedName.of(name.value(), name.version());
     }
 
-    public static int getOrdering(Method method) {
+    static int getOrdering(Method method) {
         if (method.isAnnotationPresent(Initial.class)) {
             return CausalOrdering.INITIAL;
         }
@@ -51,5 +52,13 @@ public final class EventMethodReflection {
         }
 
         return CausalOrdering.PRE_TERMINAL;
+    }
+
+    public static int getCharacteristics(Method method) {
+        return method.isAnnotationPresent(Initial.class)
+                ? EventCharacteristics.IS_INITIAL
+                : method.isAnnotationPresent(Terminal.class)
+                    ? EventCharacteristics.IS_TERMINAL
+                    : 0;
     }
 }

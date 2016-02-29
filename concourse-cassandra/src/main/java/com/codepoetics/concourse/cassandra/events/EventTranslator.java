@@ -27,6 +27,7 @@ final class EventTranslator implements RowCallbackHandler {
     private static final int EVENT_NAME = 5;
     private static final int EVENT_VERSION = 6;
     private static final int PARAMETERS = 7;
+    private static final int CHARACTERISTICS = 8;
 
     public static EventTranslator using(EventTypeMatcher matcher, BiFunction<String, Type, Object> deserialiser, Consumer<Event> eventCollector) {
         return new EventTranslator(matcher, deserialiser, eventCollector);
@@ -65,7 +66,8 @@ final class EventTranslator implements RowCallbackHandler {
                 StreamTimestamp.of(row.getString(STREAM_ID), row.getDate(EVENT_TIMESTAMP).toInstant()),
                 row.getUUID(PROCESSING_ID),
                 versionedName,
-                parameters);
+                parameters,
+                row.getInt(CHARACTERISTICS));
 
         eventCollector.accept(event);
     }

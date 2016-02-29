@@ -92,7 +92,7 @@ public class CassandraEventRetriever implements EventRetriever {
     private Select selectFromEvent() {
         return QueryBuilder.select(
                 "aggregateType", "aggregateId", "eventTimestamp", "streamId",
-                "processingId", "name", "version", "parameters")
+                "processingId", "name", "version", "parameters", "characteristics")
                 .from("Event");
     }
 }

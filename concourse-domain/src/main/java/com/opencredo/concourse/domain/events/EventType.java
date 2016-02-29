@@ -52,11 +52,12 @@ public final class EventType {
     }
 
 
-    public Event makeEvent(UUID aggregateId, StreamTimestamp streamTimestamp, Tuple parameters) {
+    public Event makeEvent(UUID aggregateId, StreamTimestamp streamTimestamp, Tuple parameters, int...characteristics) {
         return Event.of(
                 AggregateId.of(aggregateType, aggregateId),
                 streamTimestamp,
                 eventName,
-                parameters);
+                parameters,
+                characteristics);
     }
 }

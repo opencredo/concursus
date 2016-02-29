@@ -3,7 +3,7 @@ package com.opencredo.concourse.mapping.events.methods.dispatching;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.time.TimeRange;
-import com.opencredo.concourse.mapping.events.methods.reflection.EventInterfaceInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.EmitterInterfaceInfo;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
 
@@ -18,7 +18,7 @@ public class DispatchingEventSource<T> {
 
     public static <T> DispatchingEventSource<T> dispatching(EventSource eventSource, Class<T> handlerClass) {
         checkNotNull(eventSource, "eventSource must not be null");
-        EventInterfaceInfo<T> interfaceInfo = EventInterfaceInfo.forInterface(handlerClass);
+        EmitterInterfaceInfo<T> interfaceInfo = EmitterInterfaceInfo.forInterface(handlerClass);
 
         return new DispatchingEventSource<>(
                 interfaceInfo.getEventDispatcher(),
@@ -33,7 +33,9 @@ public class DispatchingEventSource<T> {
     private final EventSource eventSource;
 
     private DispatchingEventSource(MultiTypeEventDispatcher<T> eventDispatcher,
-                                   Comparator<Event> causalOrderComparator, EventTypeBinding typeBinding, EventSource eventSource) {
+                                   Comparator<Event> causalOrderComparator,
+                                   EventTypeBinding typeBinding,
+                                   EventSource eventSource) {
         this.eventDispatcher = eventDispatcher;
         this.causalOrderComparator = causalOrderComparator;
         this.typeBinding = typeBinding;

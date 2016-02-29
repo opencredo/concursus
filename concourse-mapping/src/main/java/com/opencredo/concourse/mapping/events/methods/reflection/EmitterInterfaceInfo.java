@@ -5,7 +5,7 @@ import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodMapping;
 import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodType;
 
 import java.lang.reflect.Method;
@@ -21,9 +21,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * The source of all reflection information about an event interface.
  * @param <T> The type of the event interface.
  */
-public final class EventInterfaceInfo<T> {
+public final class EmitterInterfaceInfo<T> {
 
-    private static final ConcurrentMap<Class<?>, EventInterfaceInfo<?>> cache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, EmitterInterfaceInfo<?>> cache = new ConcurrentHashMap<>();
 
     /**
      * Get event interface information from the supplied interface. This method is cached.
@@ -32,24 +32,24 @@ public final class EventInterfaceInfo<T> {
      * @return The EventInterfaceInfo for the supplied interface.
      */
     @SuppressWarnings("unchecked")
-    public static <T> EventInterfaceInfo<T> forInterface(Class<? extends T> iface) {
-        return (EventInterfaceInfo<T>) cache.computeIfAbsent(iface, EventInterfaceInfo::forInterfaceUncached);
+    public static <T> EmitterInterfaceInfo<T> forInterface(Class<? extends T> iface) {
+        return (EmitterInterfaceInfo<T>) cache.computeIfAbsent(iface, EmitterInterfaceInfo::forInterfaceUncached);
     }
 
-    private static <T> EventInterfaceInfo<T> forInterfaceUncached(Class<? extends T> iface) {
+    private static <T> EmitterInterfaceInfo<T> forInterfaceUncached(Class<? extends T> iface) {
         checkNotNull(iface, "iface must not be null");
         checkArgument(iface.isInterface(), "iface must be interface");
         checkArgument(iface.isAnnotationPresent(HandlesEventsFor.class),
                 "Interface %s is not annotated with @HandlesEventsFor", iface);
 
         String aggregateType = iface.getAnnotation(HandlesEventsFor.class).value();
-        Map<Method, EventMethodInfo> eventMappers = EventMethodType.EMITTER.getEventMethodInfo(aggregateType, iface);
+        Map<Method, EventMethodMapping> eventMappers = EventMethodType.EMITTER.getEventMethodInfo(aggregateType, iface);
 
-        return new EventInterfaceInfo<>(
-                EventTypeBinding.of(aggregateType, EventMethodInfo.makeEventTypeMatcher(eventMappers.values())),
+        return new EmitterInterfaceInfo<>(
+                EventTypeBinding.of(aggregateType, EventMethodMapping.makeEventTypeMatcher(eventMappers.values())),
                 EventMethodMapper.mappingWith(eventMappers),
                 EventDispatchers.dispatchingEventsByType(eventMappers),
-                EventMethodInfo.makeCausalOrdering(eventMappers.values()));
+                EventMethodMapping.makeCausalOrdering(eventMappers.values()));
     }
 
     private final EventTypeBinding eventTypeBinding;
@@ -57,7 +57,7 @@ public final class EventInterfaceInfo<T> {
     private final MultiTypeEventDispatcher<T> eventDispatcher;
     private final Comparator<Event> causalOrderComparator;
 
-    private EventInterfaceInfo(EventTypeBinding eventTypeBinding, EventMethodMapper eventMethodMapper, MultiTypeEventDispatcher<T> eventDispatcher, Comparator<Event> causalOrderComparator) {
+    private EmitterInterfaceInfo(EventTypeBinding eventTypeBinding, EventMethodMapper eventMethodMapper, MultiTypeEventDispatcher<T> eventDispatcher, Comparator<Event> causalOrderComparator) {
         this.eventTypeBinding = eventTypeBinding;
         this.eventMethodMapper = eventMethodMapper;
         this.eventDispatcher = eventDispatcher;

@@ -2,7 +2,7 @@ package com.opencredo.concourse.mapping.events.methods.reflection.dispatching;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodInfo;
+import com.opencredo.concourse.mapping.events.methods.reflection.interpreting.EventMethodMapping;
 import com.opencredo.concourse.mapping.reflection.MethodInvoking;
 
 import java.lang.reflect.Method;
@@ -18,25 +18,25 @@ public final class EventDispatchers {
     private EventDispatchers() {
     }
 
-    public static <T> InitialEventDispatcher<T> toFactoryMethod(Class<? extends T> targetClass, Method method, EventMethodInfo methodInfo) {
+    public static <T> InitialEventDispatcher<T> toFactoryMethod(Class<? extends T> targetClass, Method method, EventMethodMapping methodInfo) {
         return event -> MethodInvoking.invokingStatic(targetClass, method).apply(methodInfo.mapEvent(event));
     }
 
-    public static <T> EventDispatcher<T> toUpdateOrEmitterMethod(Method method, EventMethodInfo methodInfo) {
+    public static <T> EventDispatcher<T> toUpdateOrEmitterMethod(Method method, EventMethodMapping methodInfo) {
         return (target, event) -> MethodInvoking.invokingInstance(method, target).apply(methodInfo.mapEvent(event));
     }
 
-    public static <T> InitialEventDispatcher<T> dispatchingInitialEventsByType(Class<? extends T> stateClass, Map<Method, EventMethodInfo> factoryMethodInfo) {
+    public static <T> InitialEventDispatcher<T> dispatchingInitialEventsByType(Class<? extends T> stateClass, Map<Method, EventMethodMapping> factoryMethodInfo) {
         return new TypeMappingInitialEventDispatcher<T>(makeEventTypeMap(
                 factoryMethodInfo,
                 (method, interpreter) -> toFactoryMethod(stateClass, method, interpreter)));
     }
 
-    public static <T> MultiTypeEventDispatcher<T> dispatchingEventsByType(Map<Method, EventMethodInfo> updateMethodInterpreters) {
+    public static <T> MultiTypeEventDispatcher<T> dispatchingEventsByType(Map<Method, EventMethodMapping> updateMethodInterpreters) {
         return new TypeMappingEventDispatcher<>(makeEventTypeMap(updateMethodInterpreters, EventDispatchers::toUpdateOrEmitterMethod));
     }
 
-    private static <T, D> Map<EventType, D> makeEventTypeMap(Map<Method, EventMethodInfo> interpreterMap, BiFunction<Method, EventMethodInfo, D> dispatcherBuilder) {
+    private static <T, D> Map<EventType, D> makeEventTypeMap(Map<Method, EventMethodMapping> interpreterMap, BiFunction<Method, EventMethodMapping, D> dispatcherBuilder) {
         return interpreterMap.entrySet().stream().collect(toMap(
                 e -> e.getValue().getEventType(),
                 e -> dispatcherBuilder.apply(e.getKey(), e.getValue())

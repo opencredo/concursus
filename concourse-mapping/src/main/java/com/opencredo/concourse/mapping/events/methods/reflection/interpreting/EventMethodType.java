@@ -38,7 +38,7 @@ public enum EventMethodType implements BiFunction<Event, TupleKey[], Object[]> {
         this.nonParameterArgsPopulator = nonParameterArgsPopulator;
     }
 
-    public Map<Method, EventMethodInfo> getEventMethodInfo(String aggregateType, Class<?> eventClass) {
+    public Map<Method, EventMethodMapping> getEventMethodInfo(String aggregateType, Class<?> eventClass) {
         checkNotNull(aggregateType, "aggregateType must not be null");
         checkNotNull(eventClass, "eventClass must not be null");
 
@@ -69,19 +69,20 @@ public enum EventMethodType implements BiFunction<Event, TupleKey[], Object[]> {
         }
     }
 
-    private EventMethodInfo getMethodInfo(String aggregateType, Method method) {
+    private EventMethodMapping getMethodInfo(String aggregateType, Method method) {
         EventType eventType = EventMethodReflection.getEventType(aggregateType, method);
 
         ParameterArgs parameterArgs = ParameterArgs.forMethod(method, offset);
         TupleSchema tupleSchema = parameterArgs.getTupleSchema(eventType.toString());
         TupleKey[] tupleKeys = parameterArgs.getTupleKeys(tupleSchema);
 
-        return new EventMethodInfo(
+        return new EventMethodMapping(
                 eventType,
                 tupleSchema,
                 tupleKeys,
                 EventMethodReflection.getOrdering(method),
-                this);
+                this,
+                EventMethodReflection.getCharacteristics(method));
     }
 
 }

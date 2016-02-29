@@ -4,15 +4,19 @@ import com.datastax.driver.core.Cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.caching.CachingEventSource;
+import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
+import com.opencredo.concourse.domain.events.filtering.EventLogPostFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.writing.EventWriter;
 import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
+import com.opencredo.concourse.mapping.annotations.Initial;
+import com.opencredo.concourse.mapping.annotations.Terminal;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
@@ -30,6 +34,7 @@ import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItems;
 
 public class RoundTripTest {
 
@@ -53,7 +58,13 @@ public class RoundTripTest {
             new CassandraTemplate(cluster.connect("Concourse")),
             JsonSerialiser.using(objectMapper));
 
-    private final EventWriter eventWriter = PublishingEventWriter.using(cassandraEventLog, event -> {});
+    private final AggregateCatalogue aggregateCatalogue = CassandraAggregateCatalogue.create(new CassandraTemplate(cluster.connect("Concourse")), 16);
+    private final EventLogPostFilter aggregateCatalogueFilter = (publisher, events) -> {
+        events.forEach(aggregateCatalogue);
+        return events;
+    };
+
+    private final EventWriter eventWriter = PublishingEventWriter.using(aggregateCatalogueFilter.apply(cassandraEventLog), event -> {});
 
     private final CassandraEventRetriever cassandraEventRetriever = CassandraEventRetriever.create(
             new CassandraTemplate(cluster.connect("Concourse")),
@@ -68,9 +79,12 @@ public class RoundTripTest {
 
     @HandlesEventsFor("person")
     public interface PersonEvents {
+        @Initial
         void created(StreamTimestamp timestamp, UUID personId, String name, int age);
         void updatedAge(StreamTimestamp timestamp, UUID personId, int newAge);
         void updatedName(StreamTimestamp timestamp, UUID personId, String newName);
+        @Terminal
+        void deleted(StreamTimestamp timestamp, UUID personId);
     }
 
     @Test
@@ -107,6 +121,8 @@ public class RoundTripTest {
                     personId2,
                     "Arthur Danto"
             );
+
+            batch.deleted(StreamTimestamp.of("test", start.plusMillis(3)), personId1);
         });
 
         final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
@@ -116,6 +132,7 @@ public class RoundTripTest {
         List<String> personHistory2 = preloaded.replaying(personId2).inAscendingOrder().collectAll(eventSummariser());
 
         assertThat(personHistory1, contains(
+                "person was deleted",
                 "name was changed to Arthur Daley",
                 "age was changed to 42",
                 "Arthur Putey was created with age 41"
@@ -125,6 +142,8 @@ public class RoundTripTest {
                 "Arthur Dent was created with age 32",
                 "name was changed to Arthur Danto"
         ));
+
+        assertThat(aggregateCatalogue.getUuids("person"), hasItems(personId2));
     }
 
     private Function<Consumer<String>, PersonEvents> eventSummariser() {
@@ -142,6 +161,11 @@ public class RoundTripTest {
             @Override
             public void updatedName(StreamTimestamp timestamp, UUID personId, String newName) {
                 caller.accept("name was changed to " + newName);
+            }
+
+            @Override
+            public void deleted(StreamTimestamp timestamp, UUID personId) {
+                caller.accept("person was deleted");
             }
         };
     }

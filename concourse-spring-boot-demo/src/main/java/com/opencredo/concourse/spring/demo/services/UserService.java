@@ -1,5 +1,6 @@
 package com.opencredo.concourse.spring.demo.services;
 
+import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.views.EventView;
 import com.opencredo.concourse.mapping.events.methods.history.EventHistoryFetcher;
@@ -22,12 +23,14 @@ public class UserService {
     private final EventSource eventSource;
     private final UserStateRepository userStateRepository;
     private final GroupStateRepository groupStateRepository;
+    private final AggregateCatalogue aggregateCatalogue;
 
     @Autowired
-    public UserService(EventSource eventSource, UserStateRepository userStateRepository, GroupStateRepository groupStateRepository) {
+    public UserService(EventSource eventSource, UserStateRepository userStateRepository, GroupStateRepository groupStateRepository, AggregateCatalogue aggregateCatalogue) {
         this.eventSource = eventSource;
         this.userStateRepository = userStateRepository;
         this.groupStateRepository = groupStateRepository;
+        this.aggregateCatalogue = aggregateCatalogue;
     }
 
     public List<EventView> getHistory(UUID userId) {
@@ -54,4 +57,12 @@ public class UserService {
         ));
     }
 
+    public Map<String, String> getUsers() {
+        List<UUID> users = aggregateCatalogue.getUuids("user");
+        return userStateRepository.getUserStates(users).entrySet().stream().collect(
+                Collectors.toMap(
+                        e -> e.getValue().getName(),
+                        e -> "/api/v1/users/" + e.getKey())
+                );
+    }
 }
