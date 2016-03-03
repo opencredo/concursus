@@ -1,6 +1,5 @@
-package com.codepoetics.concourse.cassandra.events;
+package com.opencredo.concourse.redis;
 
-import com.datastax.driver.core.Cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
 import com.opencredo.concourse.domain.events.caching.CachingEventSource;
@@ -8,6 +7,7 @@ import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.filtering.EventLogPostFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
+import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.writing.EventWriter;
 import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
@@ -18,13 +18,11 @@ import com.opencredo.concourse.mapping.annotations.Terminal;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
-import org.cassandraunit.CassandraCQLUnit;
-import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
-import org.junit.*;
-import org.springframework.data.cassandra.core.CassandraTemplate;
+import org.junit.Rule;
+import org.junit.Test;
+import redis.clients.jedis.Jedis;
 
 import java.time.Instant;
 import java.util.List;
@@ -38,39 +36,27 @@ import static org.hamcrest.Matchers.hasItems;
 
 public class RoundTripTest {
 
-    @ClassRule
-    public static final CassandraCQLUnit CASSANDRA_CQL_UNIT =
-            new CassandraCQLUnit(new ClassPathCQLDataSet("cql/tables.cql"), EmbeddedCassandraServerHelper.CASSANDRA_RNDPORT_YML_FILE);
-
-    @BeforeClass
-    public static void setUpCassandraServer() {
-        System.setProperty("spring.data.cassandra.port",
-                Integer.toString(CASSANDRA_CQL_UNIT.getCluster().getConfiguration().getProtocolOptions().getPort()));
-    }
-
     @Rule
     public ContiPerfRule contiPerfRule = new ContiPerfRule();
 
-    private final Cluster cluster = CASSANDRA_CQL_UNIT.getCluster();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final EventLog cassandraEventLog = CassandraEventLog.create(
-            new CassandraTemplate(cluster.connect("Concourse")),
-            JsonSerialiser.using(objectMapper));
+    private final Jedis jedis = new Jedis();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-    private final AggregateCatalogue aggregateCatalogue = CassandraAggregateCatalogue.create(new CassandraTemplate(cluster.connect("Concourse")), 16);
+    private final EventLog eventLog = RedisEventLog.using(jedis, objectMapper);
+
+
+    private final AggregateCatalogue aggregateCatalogue = RedisAggregateCatalogue.using(jedis);
     private final EventLogPostFilter aggregateCatalogueFilter = (publisher, events) -> {
         events.forEach(aggregateCatalogue);
         return events;
     };
 
-    private final EventWriter eventWriter = PublishingEventWriter.using(aggregateCatalogueFilter.apply(cassandraEventLog), event -> {});
+    private final EventWriter eventWriter = PublishingEventWriter.using(aggregateCatalogueFilter.apply(eventLog), evt -> {});
 
-    private final CassandraEventRetriever cassandraEventRetriever = CassandraEventRetriever.create(
-            new CassandraTemplate(cluster.connect("Concourse")),
-            JsonDeserialiser.using(objectMapper));
+    private final EventRetriever eventRetriever = RedisEventRetriever.using(jedis, objectMapper);
 
-    private final EventSource eventSource = CachingEventSource.retrievingWith(cassandraEventRetriever);
+    private final EventSource eventSource = CachingEventSource.retrievingWith(eventRetriever);
     private final DispatchingEventSourceFactory eventSourceDispatching = DispatchingEventSourceFactory.dispatching(eventSource);
 
     private final EventBus eventBus = () -> SimpleEventBatch.writingTo(eventWriter);
@@ -88,7 +74,7 @@ public class RoundTripTest {
     }
 
     @Test
-    public void writeAndReadBatch() {
+    public void writeAndReadBatch() throws InterruptedException {
         UUID personId1 = UUID.randomUUID();
         UUID personId2 = UUID.randomUUID();
         Instant start = Instant.now();
@@ -170,7 +156,6 @@ public class RoundTripTest {
         };
     }
 
-    @Ignore
     @PerfTest(invocations = 100, warmUp = 5000)
     @Test
     public void writeAThousandEvents() {

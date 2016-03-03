@@ -1,6 +1,6 @@
 package com.opencredo.concourse.spring.cassandra;
 
-import com.codepoetics.concourse.cassandra.events.CassandraAggregateCatalogue;
+import com.opencredo.concourse.cassandra.events.CassandraAggregateCatalogue;
 import com.datastax.driver.core.Cluster;
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import org.springframework.beans.factory.annotation.Autowired;

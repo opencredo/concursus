@@ -1,4 +1,4 @@
-package com.codepoetics.concourse.cassandra.events;
+package com.opencredo.concourse.cassandra.events;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

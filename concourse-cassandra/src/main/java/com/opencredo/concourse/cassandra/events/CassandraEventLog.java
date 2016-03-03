@@ -1,4 +1,4 @@
-package com.codepoetics.concourse.cassandra.events;
+package com.opencredo.concourse.cassandra.events;
 
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.PreparedStatement;
