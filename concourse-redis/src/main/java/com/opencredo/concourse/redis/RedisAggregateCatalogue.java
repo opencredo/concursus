@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public final class RedisAggregateCatalogue implements AggregateCatalogue {
 
-    public static RedisAggregateCatalogue using(Jedis jedis) {
+    public static RedisAggregateCatalogue create(Jedis jedis) {
         return new RedisAggregateCatalogue(jedis);
     }
 
