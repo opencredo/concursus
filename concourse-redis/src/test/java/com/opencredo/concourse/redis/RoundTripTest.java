@@ -20,6 +20,7 @@ import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEve
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -34,7 +35,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItems;
 
-//@Ignore("Needs a local redis server to run")
+@Ignore("Needs a local redis server to run")
 public class RoundTripTest {
 
     @Rule

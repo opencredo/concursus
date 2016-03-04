@@ -1,5 +1,7 @@
 # concourse
 
+[![Build Status](https://travis-ci.org/opencredo/concourse.svg?branch=master)](https://travis-ci.org/opencredo/concourse)
+
 _Concourse_ is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.
 
 Events are defined using methods on Java interfaces, like so:
