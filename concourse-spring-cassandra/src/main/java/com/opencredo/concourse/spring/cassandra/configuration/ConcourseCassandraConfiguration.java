@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring.cassandra;
+package com.opencredo.concourse.spring.cassandra.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

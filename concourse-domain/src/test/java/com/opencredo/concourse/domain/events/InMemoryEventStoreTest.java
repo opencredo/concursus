@@ -6,6 +6,7 @@ import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.caching.CachingEventSource;
 import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
@@ -39,7 +40,7 @@ public class InMemoryEventStoreTest {
     private final EventTypeMatcher eventTypeMatcher = et -> Optional.of(emptySchema);
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
-    private final EventSource eventSource = eventStore.getEventSource();
+    private final EventSource eventSource = CachingEventSource.retrievingWith(eventStore);
     private final EventLog eventLog = eventStore;
     private final EventWriter eventWriter = PublishingEventWriter.using(eventLog, event -> {});
 

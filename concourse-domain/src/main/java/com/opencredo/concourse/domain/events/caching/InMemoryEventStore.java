@@ -4,7 +4,6 @@ import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
-import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.TimeRange;
 import com.opencredo.concourse.domain.time.TimeUUID;
@@ -35,10 +34,6 @@ public final class InMemoryEventStore implements EventLog, EventRetriever {
 
     private InMemoryEventStore(ConcurrentMap<AggregateId, Set<Event>> events) {
         this.events = events;
-    }
-
-    public EventSource getEventSource() {
-        return CachingEventSource.retrievingWith(this);
     }
 
     @Override

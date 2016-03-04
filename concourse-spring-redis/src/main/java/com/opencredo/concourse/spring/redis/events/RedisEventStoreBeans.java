@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring.redis;
+package com.opencredo.concourse.spring.redis.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.caching.CachingEventSource;
@@ -15,19 +15,11 @@ import org.springframework.context.annotation.Primary;
 import redis.clients.jedis.Jedis;
 
 @Configuration
-@EnableAutoConfiguration
-@ComponentScan
-public class RedisBeans {
+public class RedisEventStoreBeans {
 
     @Bean
     public EventRetriever eventRetriever(Jedis jedis, ObjectMapper objectMapper) {
         return RedisEventRetriever.create(jedis, objectMapper);
-    }
-
-    @Bean
-    @Primary
-    public EventSource eventSource(EventRetriever eventRetriever) {
-        return CachingEventSource.retrievingWith(eventRetriever);
     }
 
     @Bean

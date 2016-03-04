@@ -8,6 +8,8 @@ import com.opencredo.concourse.spring.events.filtering.Filter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.cassandra.CassandraDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +20,11 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
         EventSystemBeans.class,
         CommandSystemBeans.class,
         Application.class })
-@EnableAutoConfiguration
 @EnableWebMvc
+@EnableAutoConfiguration(exclude = {
+        CassandraAutoConfiguration.class,
+        CassandraDataAutoConfiguration.class
+})
 @Configuration
 public class Application {
 

@@ -1,13 +1,14 @@
 package com.opencredo.concourse.spring.events;
 
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
-import com.opencredo.concourse.domain.events.cataloguing.InMemoryAggregateCatalogue;
+import com.opencredo.concourse.domain.events.caching.CachingEventSource;
+import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.publishing.EventPublisher;
 import com.opencredo.concourse.domain.events.publishing.EventSubscribable;
 import com.opencredo.concourse.domain.events.publishing.SubscribableEventPublisher;
+import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.writing.EventWriter;
 import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
@@ -24,6 +25,22 @@ import org.springframework.context.annotation.Configuration;
 public class EventSystemBeans {
 
     private final SubscribableEventPublisher subscribableEventPublisher = new SubscribableEventPublisher();
+    private final InMemoryEventStore inMemoryEventStore = InMemoryEventStore.empty();
+
+    @Bean
+    public EventRetriever eventRetriever() {
+        return inMemoryEventStore;
+    }
+
+    @Bean
+    public EventLog eventLog() {
+        return inMemoryEventStore;
+    }
+
+    @Bean
+    public EventSource eventSource(EventRetriever eventRetriever) {
+        return CachingEventSource.retrievingWith(eventRetriever);
+    }
 
     @Bean
     public DispatchingEventSourceFactory dispatchingEventSourceFactory(EventSource eventSource) {

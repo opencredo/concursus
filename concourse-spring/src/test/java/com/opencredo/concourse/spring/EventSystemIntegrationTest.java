@@ -2,8 +2,8 @@ package com.opencredo.concourse.spring;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.spring.commands.CommandSystemBeans;
 import com.opencredo.concourse.spring.events.EventSystemBeans;
 import org.junit.Test;
@@ -23,7 +23,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { EventSystemBeans.class, CommandSystemBeans.class, TestConfiguration.class })
+@SpringApplicationConfiguration(classes = {
+        EventSystemBeans.class,
+        CommandSystemBeans.class,
+        TestConfiguration.class
+})
 public class EventSystemIntegrationTest {
 
     @Autowired

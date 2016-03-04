@@ -2,6 +2,7 @@ package com.opencredo.concourse.mapping.events.methods.history;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.caching.CachingEventSource;
 import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.writing.EventWriter;
@@ -25,7 +26,7 @@ public class EventHistoryFetcherTest {
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
     private final EventWriter eventWriter = PublishingEventWriter.using(eventStore, event -> {});
-    private final EventSource eventSource = eventStore.getEventSource();
+    private final EventSource eventSource = CachingEventSource.retrievingWith(eventStore);
 
     private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventWriter));
 

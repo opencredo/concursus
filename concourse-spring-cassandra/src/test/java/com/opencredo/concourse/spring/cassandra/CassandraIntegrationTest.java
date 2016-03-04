@@ -1,9 +1,10 @@
 package com.opencredo.concourse.spring.cassandra;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
+import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
+import com.opencredo.concourse.spring.cassandra.events.CassandraEventStoreBeans;
 import com.opencredo.concourse.spring.events.EventSystemBeans;
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
@@ -26,7 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { CassandraBeans.class,  EventSystemBeans.class, TestConfiguration.class })
+@SpringApplicationConfiguration(classes = { CassandraEventStoreBeans.class,  EventSystemBeans.class, TestConfiguration.class })
 public class CassandraIntegrationTest {
 
     @ClassRule

@@ -1,4 +1,4 @@
-package com.opencredo.concourse.spring.redis;
+package com.opencredo.concourse.spring.redis.catalogue;
 
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.redis.RedisAggregateCatalogue;
@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Primary;
 import redis.clients.jedis.Jedis;
 
 @Configuration
-@EnableAutoConfiguration
-@ComponentScan
 public class RedisCatalogueBeans {
 
     @Bean
