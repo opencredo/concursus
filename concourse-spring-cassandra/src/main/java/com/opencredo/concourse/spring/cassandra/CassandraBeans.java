@@ -1,9 +1,9 @@
 package com.opencredo.concourse.spring.cassandra;
 
-import com.codepoetics.concourse.cassandra.events.CassandraEventLog;
-import com.codepoetics.concourse.cassandra.events.CassandraEventRetriever;
-import com.codepoetics.concourse.cassandra.events.JsonDeserialiser;
-import com.codepoetics.concourse.cassandra.events.JsonSerialiser;
+import com.opencredo.concourse.cassandra.events.CassandraEventLog;
+import com.opencredo.concourse.cassandra.events.CassandraEventRetriever;
+import com.opencredo.concourse.cassandra.events.JsonDeserialiser;
+import com.opencredo.concourse.cassandra.events.JsonSerialiser;
 import com.datastax.driver.core.Cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.caching.CachingEventSource;

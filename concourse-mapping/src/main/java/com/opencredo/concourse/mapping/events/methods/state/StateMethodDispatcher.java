@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.opencredo.concourse.domain.events.EventCharacteristics.IS_INITIAL;
 
 final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventReplayer, Optional<T>> {
 
@@ -34,9 +35,9 @@ final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventR
     public void accept(Event event) {
         checkNotNull(event, "event must not be null");
 
-        if (!state.isPresent()) {
+        if (!state.isPresent() && event.hasCharacteristic(IS_INITIAL)) {
             state = Optional.of(initialEventDispatcher.apply(event));
-        } else {
+        } else if (!event.hasCharacteristic(IS_INITIAL)) {
             state.ifPresent(s -> updateMethodDispatcher.accept(s, event));
         }
     }
@@ -44,6 +45,7 @@ final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventR
     @Override
     public Optional<T> apply(EventReplayer eventReplayer) {
         state = Optional.empty();
+        eventReplayer.replayAll(System.out::println);
         eventReplayer.inAscendingOrder(causalOrder).replayAll(this);
         return state;
     }

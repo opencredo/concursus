@@ -1,8 +1,6 @@
 package com.opencredo.concourse.spring.demo;
 
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
-import com.opencredo.concourse.spring.cassandra.CassandraBeans;
-import com.opencredo.concourse.spring.cassandra.CassandraCatalogueBeans;
 import com.opencredo.concourse.spring.commands.CommandSystemBeans;
 import com.opencredo.concourse.spring.events.EventSystemBeans;
 import com.opencredo.concourse.spring.events.filtering.AggregateCatalogueUpdatingFilter;
@@ -19,8 +17,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @ComponentScan(basePackageClasses = {
         EventSystemBeans.class,
         CommandSystemBeans.class,
-        CassandraBeans.class,
-        CassandraCatalogueBeans.class,
         Application.class })
 @EnableAutoConfiguration
 @EnableWebMvc
