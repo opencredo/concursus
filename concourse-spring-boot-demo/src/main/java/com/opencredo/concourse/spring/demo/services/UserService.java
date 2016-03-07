@@ -62,7 +62,7 @@ public class UserService {
         return userStateRepository.getUserStates(users).entrySet().stream().collect(
                 Collectors.toMap(
                         e -> e.getValue().getName(),
-                        e -> "/api/v1/users/" + e.getKey())
+                        e -> "/api/v1/acl/users/" + e.getKey())
                 );
     }
 }
