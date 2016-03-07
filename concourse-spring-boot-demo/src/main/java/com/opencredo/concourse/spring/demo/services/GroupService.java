@@ -41,7 +41,7 @@ public class GroupService {
         return groupStateRepository.getGroupStates(groups).entrySet().stream().collect(
                 Collectors.toMap(
                         e -> e.getValue().getName(),
-                        e -> "/api/v1/groups/" + e.getKey())
+                        e -> "/api/v1/acl/groups/" + e.getKey())
         );
     }
 
