@@ -1,16 +1,14 @@
 package com.opencredo.concourse.spring.demo.services;
 
+import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.spring.demo.repositories.GroupStateRepository;
 import com.opencredo.concourse.spring.demo.repositories.UserStateRepository;
 import com.opencredo.concourse.spring.demo.views.GroupView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -18,11 +16,13 @@ public class GroupService {
 
     private final GroupStateRepository groupStateRepository;
     private final UserStateRepository userStateRepository;
+    private final AggregateCatalogue aggregateCatalogue;
 
     @Autowired
-    public GroupService(GroupStateRepository groupStateRepository, UserStateRepository userStateRepository) {
+    public GroupService(GroupStateRepository groupStateRepository, UserStateRepository userStateRepository, AggregateCatalogue aggregateCatalogue) {
         this.groupStateRepository = groupStateRepository;
         this.userStateRepository = userStateRepository;
+        this.aggregateCatalogue = aggregateCatalogue;
     }
 
     public Optional<GroupView> getGroup(UUID groupId) {
@@ -34,6 +34,15 @@ public class GroupService {
                 Entry::getKey,
                 e -> e.getValue().getName()
         ));
+    }
+
+    public Map<String, String> getGroups() {
+        List<UUID> groups = aggregateCatalogue.getUuids("group");
+        return groupStateRepository.getGroupStates(groups).entrySet().stream().collect(
+                Collectors.toMap(
+                        e -> e.getValue().getName(),
+                        e -> "/api/v1/groups/" + e.getKey())
+        );
     }
 
 }
