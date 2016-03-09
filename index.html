@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Concourse by opencredo</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Concourse</h1>
+        <p>An Event-Sourcing Framework for Java 8</p>
+
+        <p class="view"><a href="https://github.com/opencredo/concourse">View the Project on GitHub <small>opencredo/concourse</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/opencredo/concourse/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/opencredo/concourse/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/opencredo/concourse">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="concourse" class="anchor" href="#concourse" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>concourse</h1>
+
+<p><a href="https://travis-ci.org/opencredo/concourse"><img src="https://travis-ci.org/opencredo/concourse.svg?branch=master" alt="Build Status"></a></p>
+
+<p><em>Concourse</em> is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.</p>
+
+<p>Events are defined using methods on Java interfaces, like so:</p>
+
+<div class="highlight highlight-source-java"><pre>@HandlesEventsFor(<span class="pl-s"><span class="pl-pds">"</span>person<span class="pl-pds">"</span></span>)
+<span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">PersonEvents</span> {
+
+    <span class="pl-k">void</span> <span class="pl-en">created</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-smi">LocalDate</span> <span class="pl-v">dateOfBirth</span>);
+    <span class="pl-k">void</span> <span class="pl-en">changedName</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">String</span> <span class="pl-v">newName</span>);
+    <span class="pl-k">void</span> <span class="pl-en">phoneNumberAdded</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">phoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">description</span>);
+
+    <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>);
+
+    <span class="pl-k">@Name</span>(<span class="pl-c1">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>phoneNumberChanged<span class="pl-pds">"</span></span>, <span class="pl-c1">version</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>2<span class="pl-pds">"</span></span>)
+    <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">newDescription</span>);
+
+    <span class="pl-k">void</span> <span class="pl-en">phoneNumberRemoved</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>);
+    <span class="pl-k">void</span> <span class="pl-en">deleted</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>);
+
+}</pre></div>
+
+<p>We send events to an <code>EventBus</code> by getting a dispatcher for the desired interface:</p>
+
+<div class="highlight highlight-source-java"><pre>eventBus<span class="pl-k">.</span>dispatch(<span class="pl-smi">PersonEvents</span><span class="pl-k">.</span>class, events <span class="pl-k">-</span><span class="pl-k">&gt;</span>
+    events<span class="pl-k">.</span>phoneNumberChanged(ts, personId, phoneNumberId, <span class="pl-s"><span class="pl-pds">"</span>0898505050<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>work phone<span class="pl-pds">"</span></span>));</pre></div>
+
+<p>Events are recorded in the event log and then published to event handlers which can update query-optimised views or propagate integration events out to the wider system.</p>
+
+<p>To retrieve the state of an entity, we replay its event history, typically to an object that builds up a picture of its current state:</p>
+
+<div class="highlight highlight-source-java"><pre>@HandlesEventsFor(<span class="pl-s"><span class="pl-pds">"</span>person<span class="pl-pds">"</span></span>)
+<span class="pl-k">public</span> <span class="pl-k">final</span> <span class="pl-k">class</span> <span class="pl-en">PersonState</span> {
+
+    <span class="pl-k">@HandlesEvent</span>
+    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-smi">PersonState</span> <span class="pl-en">created</span>(<span class="pl-smi">UUID</span> <span class="pl-v">id</span>, <span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-smi">LocalDate</span> <span class="pl-v">dateOfBirth</span>) {
+        <span class="pl-k">return</span> <span class="pl-k">new</span> <span class="pl-smi">PersonState</span>(id, name, dateOfBirth);
+    }
+
+    <span class="pl-k">private</span> <span class="pl-k">final</span> <span class="pl-c1">UUID</span> id;
+    <span class="pl-k">private</span> <span class="pl-smi">String</span> name;
+    <span class="pl-k">private</span> <span class="pl-k">final</span> <span class="pl-smi">LocalDate</span> dateOfBirth;
+    <span class="pl-k">private</span> <span class="pl-k">final</span> <span class="pl-k">Map&lt;<span class="pl-smi">UUID</span>, <span class="pl-k">String</span>[]&gt;</span> phoneNumbers <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">HashMap&lt;&gt;</span>();
+    <span class="pl-k">private</span> <span class="pl-k">boolean</span> isDeleted <span class="pl-k">=</span> <span class="pl-c1">false</span>;
+
+    <span class="pl-k">private</span> <span class="pl-en">PersonState</span>(<span class="pl-smi">UUID</span> <span class="pl-v">id</span>, <span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-smi">LocalDate</span> <span class="pl-v">dateOfBirth</span>) {
+        <span class="pl-v">this</span><span class="pl-k">.</span>id <span class="pl-k">=</span> id;
+        <span class="pl-v">this</span><span class="pl-k">.</span>name <span class="pl-k">=</span> name;
+        <span class="pl-v">this</span><span class="pl-k">.</span>dateOfBirth <span class="pl-k">=</span> dateOfBirth;
+    }
+
+    <span class="pl-k">@HandlesEvent</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">changedName</span>(<span class="pl-smi">String</span> <span class="pl-v">newName</span>) {
+        name <span class="pl-k">=</span> newName;
+    }
+
+    <span class="pl-k">@HandlesEvent</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberAdded</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">phoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">description</span>) {
+        phoneNumbers<span class="pl-k">.</span>put(phoneNumberId, <span class="pl-k">new</span> <span class="pl-smi">String</span>[] { phoneNumber, description });
+    }
+
+    <span class="pl-k">@HandlesEvent</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>) {
+        phoneNumbers<span class="pl-k">.</span>computeIfAbsent(phoneNumberId, id <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-k">new</span> <span class="pl-smi">String</span>[] { <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> })[<span class="pl-c1">0</span>] <span class="pl-k">=</span> newPhoneNumber;
+    }
+
+    <span class="pl-k">@HandlesEvent</span>(<span class="pl-c1">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>phoneNumberChanged<span class="pl-pds">"</span></span>, <span class="pl-c1">version</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>2<span class="pl-pds">"</span></span>)
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">newDescription</span>) {
+        <span class="pl-k">String</span>[] phoneNumberDetails <span class="pl-k">=</span> phoneNumbers<span class="pl-k">.</span>computeIfAbsent(phoneNumberId, id <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-k">new</span> <span class="pl-smi">String</span>[<span class="pl-c1">2</span>]);
+        phoneNumberDetails[<span class="pl-c1">0</span>] <span class="pl-k">=</span> newPhoneNumber;
+        phoneNumberDetails[<span class="pl-c1">1</span>] <span class="pl-k">=</span> newDescription;
+    }
+
+    <span class="pl-k">@HandlesEvent</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberRemoved</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>) {
+        phoneNumbers<span class="pl-k">.</span>remove(phoneNumberId);
+    }
+
+    <span class="pl-k">@HandlesEvent</span>
+    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">deleted</span>() {
+        isDeleted <span class="pl-k">=</span> <span class="pl-c1">true</span>;
+    }
+
+    <span class="pl-c">// getters go here</span>
+}
+
+<span class="pl-k">Optional&lt;<span class="pl-smi">PersonState</span>&gt;</span> personState <span class="pl-k">=</span> <span class="pl-smi">StateBuilder</span><span class="pl-k">.</span>forStateClass(<span class="pl-smi">PersonState</span><span class="pl-k">.</span>class)
+    .buildState(eventSource, personId)
+    .filter(p <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-k">!</span>p<span class="pl-k">.</span>isDeleted());</pre></div>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/opencredo">opencredo</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
