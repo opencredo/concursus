@@ -40,7 +40,7 @@ public final class Tuple {
     public <T> T get(TupleKey<T> key) {
         checkNotNull(key, "key must not be null");
         checkArgument(key.belongsToSchema(schema),
-                "key %s of schema %s does not belong to schema %s", key, key.getSchema(), schema);
+                "key %s does not belong to schema %s", key, schema);
 
         return key.get(values);
     }

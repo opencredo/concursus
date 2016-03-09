@@ -1,5 +1,7 @@
 package com.opencredo.concourse.data.tuples;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -43,10 +45,7 @@ public class TupleKey<T> {
         return new TupleKeyValue(this, value);
     }
 
-    TupleSchema getSchema() {
-        return schema;
-    }
-
+    @VisibleForTesting
     public String getName() {
         return name;
     }

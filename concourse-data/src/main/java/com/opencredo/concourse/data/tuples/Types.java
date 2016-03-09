@@ -9,6 +9,9 @@ import java.util.Optional;
 
 final class Types {
 
+    private Types() {
+    }
+
     static <T> TypeToken<List<T>> listOf(Class<T> elementType) {
         return new TypeToken<List<T>>() {}
                 .where(new TypeParameter<T>() {}, elementType);
