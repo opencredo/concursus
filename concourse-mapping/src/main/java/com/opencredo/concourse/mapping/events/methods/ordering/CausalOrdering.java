@@ -18,7 +18,7 @@ public final class CausalOrdering {
 
     public static Comparator<Event> onEventTypes(Map<EventType, Integer> eventTypeMap) {
         return Comparator.comparing((Event evt) -> eventTypeMap.getOrDefault(EventType.of(evt),
-                getDefaultOrderBasedOnCharacteristics(evt)))
+                PRE_TERMINAL))
                 .thenComparing(Event::getEventTimestamp);
     }
 

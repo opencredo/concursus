@@ -9,9 +9,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -26,16 +26,13 @@ public final class ParameterArgs {
                 "method %s must have at least %s arguments", method, skip);
 
         Parameter[] parameters = method.getParameters();
-        Type[] types = method.getGenericParameterTypes();
+        String[] names = Stream.of(parameters).skip(skip).map(ParameterArgs::getParameterName).toArray(String[]::new);
+        Type[] types = Stream.of(method.getGenericParameterTypes()).skip(skip).toArray(Type[]::new);
 
-        Map<String, Type> typesByName = IntStream.range(skip, method.getParameterCount())
-                .mapToObj(Integer::valueOf)
-                .collect(Collectors.toMap(
-                        i -> getParameterName(parameters[i]),
-                        i -> types[i]
-                ));
+        Map<String, Type> typesByName = IntStream.range(0, names.length)
+                .collect(HashMap::new, (m, i) -> m.put(names[i], types[i]), null);
 
-        return new ParameterArgs(typesByName);
+        return new ParameterArgs(names, typesByName);
     }
 
     private static String getParameterName(Parameter parameter) {
@@ -44,9 +41,11 @@ public final class ParameterArgs {
                 : parameter.getName();
     }
 
+    private final String[] names;
     private final Map<String, Type> typesByName;
 
-    private ParameterArgs(Map<String, Type> typesByName) {
+    private ParameterArgs(String[] names, Map<String, Type> typesByName) {
+        this.names = names;
         this.typesByName = typesByName;
     }
 
@@ -65,6 +64,6 @@ public final class ParameterArgs {
     }
 
     public TupleKey[] getTupleKeys(TupleSchema schema) {
-        return streamOverNamesAndTypes(schema::getKey).toArray(TupleKey[]::new);
+        return Stream.of(names).map(name -> schema.getKey(name, typesByName.get(name))).toArray(TupleKey[]::new);
     }
 }

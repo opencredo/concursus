@@ -14,11 +14,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-parameter-names</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.opencredo</groupId>
             <artifactId>concourse-spring</artifactId>
         </dependency>

@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -23,7 +24,17 @@ import static java.util.stream.Collectors.toMap;
 public final class EventMethodMapping {
 
     public static EventTypeMatcher makeEventTypeMatcher(Collection<? extends EventMethodMapping> typeMappings) {
-        return EventTypeMatcher.matchingAgainst(typeMappings.stream().collect(toMap(EventMethodMapping::getEventType, EventMethodMapping::getTupleSchema)));
+        checkArgument(
+                typeMappings.stream().map(EventMethodMapping::getEventType).distinct().count() == typeMappings.size(),
+                "Duplicate event types detected: %s", typeMappings.stream()
+                        .map(EventMethodMapping::getEventType)
+                        .map(EventType::toString)
+                        .collect(Collectors.toList()));
+
+        return EventTypeMatcher.matchingAgainst(typeMappings.stream()
+                .collect(toMap(
+                        EventMethodMapping::getEventType,
+                        EventMethodMapping::getTupleSchema)));
     }
 
     public static Comparator<Event> makeCausalOrdering(Collection<? extends EventMethodMapping> typeMappings) {

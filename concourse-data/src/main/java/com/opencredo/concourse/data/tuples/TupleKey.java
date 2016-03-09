@@ -43,6 +43,14 @@ public class TupleKey<T> {
         return new TupleKeyValue(this, value);
     }
 
+    TupleSchema getSchema() {
+        return schema;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     @Override
     public boolean equals(Object o) {
         return this == o

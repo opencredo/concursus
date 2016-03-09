@@ -39,6 +39,10 @@ final class EventMethodReflection {
     }
 
     static int getOrdering(Method method) {
+        if (MethodSelectors.isFactoryMethod.test(method)) {
+            return CausalOrdering.INITIAL;
+        }
+
         if (method.isAnnotationPresent(Initial.class)) {
             return CausalOrdering.INITIAL;
         }

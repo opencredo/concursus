@@ -45,7 +45,6 @@ final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventR
     @Override
     public Optional<T> apply(EventReplayer eventReplayer) {
         state = Optional.empty();
-        eventReplayer.replayAll(System.out::println);
         eventReplayer.inAscendingOrder(causalOrder).replayAll(this);
         return state;
     }
