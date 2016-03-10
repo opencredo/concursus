@@ -6,6 +6,7 @@ import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesCommandsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
+import com.opencredo.concourse.mapping.reflection.MethodInvoking;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class CommandInterfaceReflection {
+
     public static String getAggregateType(Class<?> klass) {
         return klass.getAnnotation(HandlesCommandsFor.class).value();
     }
@@ -71,13 +73,12 @@ public final class CommandInterfaceReflection {
     }
 
     private static BiFunction<Object, Command, CompletableFuture<?>> getCommandDispatcher(Method method, CommandMethodMapping commandMethodMapping) {
+        BiFunction<Object, Object[], CompletableFuture> invoker = MethodInvoking.invokingInstance(CompletableFuture.class, method);
         return (target, command) -> {
             try {
-                return CompletableFuture.class.cast(method.invoke(target, commandMethodMapping.mapCommand(command)));
-            } catch (InvocationTargetException e) {
+                return invoker.apply(target, commandMethodMapping.mapCommand(command));
+            } catch (RuntimeException e) {
                 return CompletableFutures.failing(e.getCause());
-            } catch (IllegalAccessException e) {
-                return CompletableFutures.failing(e);
             }
         };
     }

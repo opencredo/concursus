@@ -1,4 +1,4 @@
-package com.opencredo.concourse.mapping.events.methods.reflection.interpreting;
+package com.opencredo.concourse.mapping.reflection;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEvent;
@@ -7,9 +7,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-final class MethodSelectors {
+public final class MethodSelectors {
 
     private MethodSelectors() {
     }
@@ -20,7 +21,13 @@ final class MethodSelectors {
 
     private static final Predicate<Method> handlesEvent = isAnnotatedWith(HandlesEvent.class);
 
-    private static final Predicate<Method> returnsVoid = method -> method.getReturnType().equals(void.class);
+    private static Predicate<Method> returnsType(Class<?> returnType) {
+        return method -> method.getReturnType().equals(returnType);
+    }
+
+    private static final Predicate<Method> returnsVoid = returnsType(void.class);
+    private static final Predicate<Method> returnsCompletableFuture = returnsType(CompletableFuture.class);
+
     private static final Predicate<Method> isStatic = method -> Modifier.isStatic(method.getModifiers());
 
     private static final Predicate<Method> isInstance = isStatic.negate();
@@ -41,17 +48,21 @@ final class MethodSelectors {
         return hasParameterType(1, expected);
     }
 
-    static final Predicate<Method> isEventEmittingMethod =
-            returnsVoid
-                    .and(parameterCountGte(2))
-                    .and(firstParameterIs(StreamTimestamp.class))
-                    .and(secondParameterIs(UUID.class));
+    private static Predicate<Method> hasTimestampAndUUIDParameters = parameterCountGte(2)
+            .and(firstParameterIs(StreamTimestamp.class))
+            .and(secondParameterIs(UUID.class));
 
-    static final Predicate<Method> isFactoryMethod = handlesEvent
+    public static final Predicate<Method> isEventEmittingMethod =
+            returnsVoid.and(isInstance).and(hasTimestampAndUUIDParameters);
+
+    public static final Predicate<Method> isFactoryMethod = handlesEvent
             .and(isStatic)
             .and(parameterCountGte(1))
             .and(firstParameterIs(UUID.class));
 
-    static final Predicate<Method> isUpdateMethod = handlesEvent.and(isInstance).and(returnsVoid);
+    public static final Predicate<Method> isUpdateMethod = handlesEvent.and(isInstance).and(returnsVoid);
+
+    public static final Predicate<Method> isCommandIssuingMethod =
+            returnsCompletableFuture.and(isInstance).and(hasTimestampAndUUIDParameters);
 
 }

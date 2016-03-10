@@ -1,7 +1,10 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
+import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
+import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
@@ -41,9 +44,11 @@ public final class StateClassInfo<T> {
         Map<Method, EventMethodMapping> updateMethodMappings = EventMethodType.UPDATER.getEventMethodInfo(aggregateType, stateClass);
 
         Collection<? extends EventMethodMapping> typeMappings = getTypeMappings(factoryMethodMappings, updateMethodMappings);
+        Map<EventType, TupleSchema> eventTypeMappings = EventMethodMapping.getEventTypeMappings(typeMappings);
 
         return new StateClassInfo<>(
-                makeEventTypeBinding(aggregateType, typeMappings),
+                eventTypeMappings,
+                EventTypeBinding.of(aggregateType, EventTypeMatcher.matchingAgainst(eventTypeMappings)),
                 EventMethodMapping.makeCausalOrdering(typeMappings),
                 EventDispatchers.dispatchingInitialEventsByType(stateClass, factoryMethodMappings),
                 EventDispatchers.dispatchingEventsByType(updateMethodMappings));
@@ -55,20 +60,22 @@ public final class StateClassInfo<T> {
                     updateMethodMappings.values().stream()).collect(toList());
     }
 
-    private static EventTypeBinding makeEventTypeBinding(String aggregateType, Collection<? extends EventMethodMapping> typeMappings) {
-        return EventTypeBinding.of(aggregateType, EventMethodMapping.makeEventTypeMatcher(typeMappings));
-    }
-
+    private final Map<EventType, TupleSchema> eventTypeMappings;
     private final EventTypeBinding eventTypeBinding;
     private final Comparator<Event> causalOrder;
     private final InitialEventDispatcher<T> initialEventDispatcher;
     private final EventDispatcher<T> updateEventDispatcher;
 
-    public StateClassInfo(EventTypeBinding eventTypeBinding, Comparator<Event> causalOrder, InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateEventDispatcher) {
+    public StateClassInfo(Map<EventType, TupleSchema> eventTypeMappings, EventTypeBinding eventTypeBinding, Comparator<Event> causalOrder, InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateEventDispatcher) {
+        this.eventTypeMappings = eventTypeMappings;
         this.eventTypeBinding = eventTypeBinding;
         this.causalOrder = causalOrder;
         this.initialEventDispatcher = initialEventDispatcher;
         this.updateEventDispatcher = updateEventDispatcher;
+    }
+
+    public Map<EventType, TupleSchema> getEventTypeMappings() {
+        return eventTypeMappings;
     }
 
     public EventTypeBinding getEventTypeBinding() {

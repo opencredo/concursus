@@ -1,8 +1,12 @@
 package com.opencredo.concourse.mapping.commands.methods.reflection;
 
-import com.opencredo.concourse.data.tuples.*;
+import com.opencredo.concourse.data.tuples.Tuple;
+import com.opencredo.concourse.data.tuples.TupleKey;
+import com.opencredo.concourse.data.tuples.TupleKeyValue;
+import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.commands.Command;
 import com.opencredo.concourse.domain.commands.CommandType;
+import com.opencredo.concourse.domain.commands.CommandTypeInfo;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
@@ -20,12 +24,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class CommandMethodMapping {
 
-    public static CommandMethodMapping forMethod(Method method) {
+    public static CommandMethodMapping forMethod(Method method, String aggregateType) {
         checkNotNull(method, "method must not be null");
 
-        Class<?> klass = method.getDeclaringClass();
-
-        final String aggregateType = CommandInterfaceReflection.getAggregateType(klass);
         final VersionedName commandName = CommandInterfaceReflection.getCommandName(method);
 
         ParameterArgs parameterArgs = ParameterArgs.forMethod(method, 2);
@@ -72,6 +73,10 @@ public final class CommandMethodMapping {
 
     public CommandType getCommandType() {
         return CommandType.of(aggregateType, commandName);
+    }
+
+    public CommandTypeInfo getCommandTypeInfo() {
+        return CommandTypeInfo.of(tupleSchema, resultType);
     }
 
     private Tuple makeTupleFromArgs(Object[] args) {

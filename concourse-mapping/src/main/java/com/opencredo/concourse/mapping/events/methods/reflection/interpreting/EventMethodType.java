@@ -5,6 +5,7 @@ import com.opencredo.concourse.data.tuples.TupleKey;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
+import com.opencredo.concourse.mapping.reflection.MethodSelectors;
 import com.opencredo.concourse.mapping.reflection.ParameterArgs;
 
 import java.lang.reflect.Method;

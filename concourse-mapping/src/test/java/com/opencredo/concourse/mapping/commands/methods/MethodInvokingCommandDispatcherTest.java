@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.fail;
 
-public class CommandDispatcherTest {
+public class MethodInvokingCommandDispatcherTest {
 
     private final DispatchingCommandProcessor dispatchingCommandProcessor = DispatchingCommandProcessor.create();
     private final MethodDispatchingCommandProcessor dispatchingProcessor = MethodDispatchingCommandProcessor.dispatchingTo(dispatchingCommandProcessor);

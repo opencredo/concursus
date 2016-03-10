@@ -5,6 +5,7 @@ import com.opencredo.concourse.domain.events.EventCharacteristics;
 import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.mapping.annotations.*;
 import com.opencredo.concourse.mapping.events.methods.ordering.CausalOrdering;
+import com.opencredo.concourse.mapping.reflection.MethodSelectors;
 
 import java.lang.reflect.Method;
 
