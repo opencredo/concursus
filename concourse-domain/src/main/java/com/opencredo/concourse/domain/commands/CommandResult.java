@@ -1,12 +1,14 @@
 package com.opencredo.concourse.domain.commands;
 
 import com.google.common.reflect.TypeToken;
+import com.opencredo.concourse.domain.functional.Either;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -28,7 +30,7 @@ public final class CommandResult {
             resultValue.ifPresent(v -> checkArgument(TypeToken.of(resultType).getRawType().isAssignableFrom(v.getClass()),
                     "%s cannot be assigned to a command result of type %s", v, resultType));
         }
-        return new CommandResult(processingId, processedTimestamp, resultType, resultValue, Optional.empty(), true);
+        return new CommandResult(processingId, processedTimestamp, resultType, Either.ofLeft(resultValue));
     }
 
     public static CommandResult ofFailure(UUID processingId, Instant processedTimestamp, Type resultType, Exception failure) {
@@ -37,24 +39,20 @@ public final class CommandResult {
         checkNotNull(resultType, "resultType must not be null");
         checkNotNull(failure, "failure must not be null");
 
-        return new CommandResult(processingId, processedTimestamp, resultType, Optional.empty(), Optional.of(failure), false);
+        return new CommandResult(processingId, processedTimestamp, resultType, Either.ofRight(failure));
     }
 
-    private CommandResult(UUID processingId, Instant processedTimestamp, Type resultType, Optional<Object> resultValue, Optional<Exception> exception, boolean succeeded) {
+    private CommandResult(UUID processingId, Instant processedTimestamp, Type resultType, Either<Optional<Object>, Exception> result) {
         this.processingId = processingId;
         this.processedTimestamp = processedTimestamp;
         this.resultType = resultType;
-        this.resultValue = resultValue;
-        this.exception = exception;
-        this.succeeded = succeeded;
+        this.result = result;
     }
 
     private final UUID processingId;
     private final Instant processedTimestamp;
     private final Type resultType;
-    private final Optional<Object> resultValue;
-    private final Optional<Exception> exception;
-    private final boolean succeeded;
+    private final Either<Optional<Object>, Exception> result;
 
     public UUID getProcessingId() {
         return processingId;
@@ -69,25 +67,19 @@ public final class CommandResult {
     }
 
     public Optional<Object> getResultValue() {
-        if (!succeeded) {
-            throw new IllegalStateException("getResultValue called on failed command result");
-        }
-        return resultValue;
+        return result.join(
+                Function.identity(),
+                e -> { throw new IllegalStateException("getResultValue called on failed command result"); });
     }
 
     public Exception getException() {
-        return exception.orElseThrow(() -> new IllegalStateException("getException called on successful command result"));
-    }
-
-    public Object get() throws Exception {
-        if (succeeded) {
-            return resultValue.orElse(null);
-        }
-        throw exception.orElseThrow(IllegalStateException::new);
+        return result.join(
+                r -> { throw new IllegalStateException("getException called on successful command result"); },
+                Function.identity());
     }
 
     public boolean succeeded() {
-        return succeeded;
+        return result.isLeft();
     }
 
     @Override
@@ -100,19 +92,17 @@ public final class CommandResult {
         return o.processingId.equals(processingId)
                 && o.processedTimestamp.equals(processedTimestamp)
                 && o.resultType.equals(resultType)
-                && o.resultValue.equals(resultValue)
-                && o.exception.equals(exception)
-                && o.succeeded == succeeded;
+                && o.result.equals(result);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(processingId, processedTimestamp, resultType, resultValue, exception, succeeded);
+        return Objects.hash(processingId, processedTimestamp, resultType, result);
     }
 
     @Override
     public String toString() {
         return String.format("Command %s processed at %s with result %s",
-                processingId, processedTimestamp, succeeded ? resultValue.orElse(null) : exception.get());
+                processingId, processedTimestamp, result.join(Object::toString, Object::toString));
     }
 }

@@ -1,10 +1,11 @@
 package com.opencredo.concourse.mapping.commands.methods;
 
+import com.opencredo.concourse.domain.commands.channels.CommandOutChannel;
 import com.opencredo.concourse.domain.commands.dispatching.CommandBus;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeUUID;
 import com.opencredo.concourse.mapping.annotations.HandlesCommandsFor;
-import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -17,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 
-public class ProxyingCommandBusTest {
+public class CommandProxyFactoryTest {
 
     @HandlesCommandsFor("person")
     public interface PersonCommands {
@@ -30,9 +31,9 @@ public class ProxyingCommandBusTest {
         CommandBus commandBus = command -> CompletableFuture.completedFuture(
                 command.processed(TimeUUID.timeBased()).complete(timeCompleted, Optional.of("OK")));
 
-        ProxyingCommandBus proxyingCommandBus = ProxyingCommandBus.proxying(commandBus);
+        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
 
-        assertThat(proxyingCommandBus.getDispatcherFor(PersonCommands.class).create(
+        assertThat(commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),
                 UUID.randomUUID(),
                 "Arthur Putey").get(), equalTo("OK"));
@@ -46,9 +47,9 @@ public class ProxyingCommandBusTest {
                         timeCompleted,
                         new IllegalStateException("Out of cheese")));
 
-        ProxyingCommandBus proxyingCommandBus = ProxyingCommandBus.proxying(commandBus);
+        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
 
-        CompletableFuture<String> result = proxyingCommandBus.getDispatcherFor(PersonCommands.class).create(
+        CompletableFuture<String> result = commandProxyFactory.getProxy(PersonCommands.class).create(
                     StreamTimestamp.of("test", Instant.now()),
                     UUID.randomUUID(),
                     "Arthur Putey");
@@ -57,6 +58,7 @@ public class ProxyingCommandBusTest {
             result.get();
             fail("Expected exception");
         } catch (ExecutionException e) {
+            e.printStackTrace();
             assertThat(e.getCause().getMessage(), equalTo("Out of cheese"));
         }
     }

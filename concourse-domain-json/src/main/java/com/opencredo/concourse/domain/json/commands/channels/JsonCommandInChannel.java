@@ -1,29 +1,30 @@
-package com.opencredo.concourse.domain.json;
+package com.opencredo.concourse.domain.json.commands.channels;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.commands.Command;
 import com.opencredo.concourse.domain.commands.CommandTypeMatcher;
 import com.opencredo.concourse.domain.commands.channels.CommandInChannel;
-import com.opencredo.concourse.domain.commands.dispatching.CommandBus;
+import com.opencredo.concourse.domain.commands.channels.CommandOutChannel;
+import com.opencredo.concourse.domain.json.commands.CommandJson;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public final class JsonCommandInChannel implements CommandInChannel<String, String> {
 
-    public static JsonCommandInChannel using(CommandTypeMatcher commandTypeMatcher, ObjectMapper objectMapper, CommandBus commandBus) {
-        return new JsonCommandInChannel(commandTypeMatcher, objectMapper, commandBus);
+    public static JsonCommandInChannel using(CommandTypeMatcher commandTypeMatcher, ObjectMapper objectMapper, CommandOutChannel outChannel) {
+        return new JsonCommandInChannel(commandTypeMatcher, objectMapper, outChannel);
     }
 
     private final CommandTypeMatcher commandTypeMatcher;
     private final ObjectMapper objectMapper;
-    private final CommandBus commandBus;
+    private final CommandOutChannel outChannel;
 
-    private JsonCommandInChannel(CommandTypeMatcher commandTypeMatcher, ObjectMapper objectMapper, CommandBus commandBus) {
+    private JsonCommandInChannel(CommandTypeMatcher commandTypeMatcher, ObjectMapper objectMapper, CommandOutChannel outChannel) {
         this.commandTypeMatcher = commandTypeMatcher;
         this.objectMapper = objectMapper;
-        this.commandBus = commandBus;
+        this.outChannel = outChannel;
     }
 
     @Override
@@ -37,7 +38,7 @@ public final class JsonCommandInChannel implements CommandInChannel<String, Stri
                                     commandJson.getCommandType() +
                                     " not recognised"));
 
-            return commandBus.dispatchAsync(command).thenApply(this::serialiseResult);
+            return outChannel.apply(command).thenApply(this::serialiseResult);
         } catch (Exception e) {
             CompletableFuture<String> future = new CompletableFuture<>();
             future.completeExceptionally(e);

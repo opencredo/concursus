@@ -1,17 +1,13 @@
 package com.opencredo.concourse.mapping.commands.methods.dispatching;
 
-import com.google.common.base.Preconditions;
 import com.opencredo.concourse.domain.commands.Command;
-import com.opencredo.concourse.domain.commands.CommandType;
 import com.opencredo.concourse.domain.commands.dispatching.CommandProcessor;
 import com.opencredo.concourse.domain.commands.dispatching.CommandSubscribable;
-import com.opencredo.concourse.mapping.commands.methods.reflection.CommandInterfaceReflection;
+import com.opencredo.concourse.mapping.commands.methods.reflection.CommandInterfaceInfo;
+import com.opencredo.concourse.mapping.commands.methods.reflection.MultiTypeCommandDispatcher;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiFunction;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,27 +17,23 @@ public final class CommandMethodDispatcher implements CommandProcessor {
         checkNotNull(handlerInterface, "handlerInterface must not be null");
         checkNotNull(target, "target must not be null");
 
-        return new CommandMethodDispatcher(target, CommandInterfaceReflection.getCommandDispatchers(handlerInterface));
+        return new CommandMethodDispatcher(target, CommandInterfaceInfo.forInterface(handlerInterface).getCommandDispatcher());
     }
 
     private final Object target;
-    private final Map<CommandType, BiFunction<Object, Command, CompletableFuture<?>>> commandMappers;
+    private final MultiTypeCommandDispatcher commandDispatcher;
 
-    private CommandMethodDispatcher(Object target, Map<CommandType, BiFunction<Object, Command, CompletableFuture<?>>> commandMappers) {
+    private CommandMethodDispatcher(Object target, MultiTypeCommandDispatcher commandDispatcher) {
         this.target = target;
-        this.commandMappers = commandMappers;
+        this.commandDispatcher = commandDispatcher;
     }
 
     @Override
     public Optional<Object> process(Command command) throws Exception {
         checkNotNull(command, "command must not be null");
 
-        BiFunction<Object, Command, CompletableFuture<?>> methodDispatcher = commandMappers.get(CommandType.of(command));
-        Preconditions.checkState(methodDispatcher != null,
-                "No method dispatcher found for command %s", command);
-
         try {
-            return Optional.ofNullable(methodDispatcher.apply(target, command).get());
+            return Optional.ofNullable(commandDispatcher.apply(target, command).get());
         } catch (ExecutionException e) {
             if (e.getCause() instanceof Exception) {
                 throw Exception.class.cast(e.getCause());
@@ -51,6 +43,6 @@ public final class CommandMethodDispatcher implements CommandProcessor {
     }
 
     public void subscribeTo(CommandSubscribable publisher) {
-        commandMappers.keySet().forEach(commandType -> publisher.subscribe(commandType, this));
+        commandDispatcher.getHandledCommandTypes().forEach(commandType -> publisher.subscribe(commandType, this));
     }
 }

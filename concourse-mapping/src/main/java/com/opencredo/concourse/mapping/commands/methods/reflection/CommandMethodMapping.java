@@ -10,6 +10,7 @@ import com.opencredo.concourse.domain.commands.CommandTypeInfo;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
+import com.opencredo.concourse.mapping.annotations.Name;
 import com.opencredo.concourse.mapping.reflection.ParameterArgs;
 
 import java.lang.reflect.Method;
@@ -27,7 +28,7 @@ public final class CommandMethodMapping {
     public static CommandMethodMapping forMethod(Method method, String aggregateType) {
         checkNotNull(method, "method must not be null");
 
-        final VersionedName commandName = CommandInterfaceReflection.getCommandName(method);
+        final VersionedName commandName = getCommandName(method);
 
         ParameterArgs parameterArgs = ParameterArgs.forMethod(method, 2);
         TupleSchema schema = parameterArgs.getTupleSchema(CommandType.of(aggregateType, commandName).toString());
@@ -41,6 +42,14 @@ public final class CommandMethodMapping {
                 schema,
                 tupleKeys,
                 returnType);
+    }
+
+    private static VersionedName getCommandName(Method method) {
+        if (method.isAnnotationPresent(Name.class)) {
+            Name name = method.getAnnotation(Name.class);
+            return VersionedName.of(name.value(), name.version());
+        }
+        return VersionedName.of(method.getName(), "0");
     }
 
     private final String aggregateType;

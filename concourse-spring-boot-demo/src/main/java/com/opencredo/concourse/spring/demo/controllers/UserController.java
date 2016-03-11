@@ -2,7 +2,7 @@ package com.opencredo.concourse.spring.demo.controllers;
 
 import com.opencredo.concourse.domain.events.views.EventView;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concourse.spring.demo.commands.UserCommands;
 import com.opencredo.concourse.spring.demo.services.UserService;
 import com.opencredo.concourse.spring.demo.views.CreateUserRequest;
@@ -28,8 +28,8 @@ public class UserController {
     private final UserService userService;
 
     @Autowired
-    public UserController(ProxyingCommandBus commandBus, UserService userService) {
-        userCommands = commandBus.getDispatcherFor(UserCommands.class);
+    public UserController(CommandProxyFactory commandBus, UserService userService) {
+        userCommands = commandBus.getProxy(UserCommands.class);
         this.userService = userService;
     }
 

@@ -1,6 +1,7 @@
-package com.opencredo.concourse.domain.json;
+package com.opencredo.concourse.domain.json.commands;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -128,6 +129,7 @@ public final class CommandJson {
         };
     }
 
+    @JsonIgnore
     public CommandType getCommandType() {
         return CommandType.of(aggregateType, VersionedName.of(name, version));
     }

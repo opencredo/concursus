@@ -2,10 +2,12 @@ package com.opencredo.concourse.mapping.commands.methods.reflection;
 
 import com.opencredo.concourse.domain.commands.Command;
 import com.opencredo.concourse.domain.commands.CommandType;
+import com.opencredo.concourse.domain.functional.CompletableFutures;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -18,8 +20,8 @@ public final class CommandDispatchers {
         return new MethodInvokingCommandDispatcher(method, mapping);
     }
 
-    public static CommandDispatcher dispatchingCommandsByType(Map<Method, CommandMethodMapping> mappings) {
-        return new MultiTypeCommandDispatcher(mappings.entrySet().stream().collect(Collectors.toMap(
+    public static TypeMappingCommandDispatcher dispatchingCommandsByType(Map<Method, CommandMethodMapping> mappings) {
+        return new TypeMappingCommandDispatcher(mappings.entrySet().stream().collect(Collectors.toMap(
                 e -> e.getValue().getCommandType(),
                 e -> toMethod(e.getKey(), e.getValue())
         )));
@@ -47,11 +49,11 @@ public final class CommandDispatchers {
         }
     }
 
-    private static final class MultiTypeCommandDispatcher implements CommandDispatcher {
+    private static final class TypeMappingCommandDispatcher implements MultiTypeCommandDispatcher {
 
         private final Map<CommandType, CommandDispatcher> dispatcherMap;
 
-        private MultiTypeCommandDispatcher(Map<CommandType, CommandDispatcher> dispatcherMap) {
+        private TypeMappingCommandDispatcher(Map<CommandType, CommandDispatcher> dispatcherMap) {
             this.dispatcherMap = dispatcherMap;
         }
 
@@ -60,6 +62,11 @@ public final class CommandDispatchers {
             CommandDispatcher dispatcher = dispatcherMap.get(CommandType.of(command));
 
             return dispatcher.apply(o, command);
+        }
+
+        @Override
+        public Set<CommandType> getHandledCommandTypes() {
+            return dispatcherMap.keySet();
         }
     }
 }

@@ -10,6 +10,6 @@ public interface CommandTypeMatcher {
         return commandType -> Optional.ofNullable(map.get(commandType));
     }
 
-    Optional<CommandTypeInfo> match(CommandType eventType);
+    Optional<CommandTypeInfo> match(CommandType commandType);
 
 }

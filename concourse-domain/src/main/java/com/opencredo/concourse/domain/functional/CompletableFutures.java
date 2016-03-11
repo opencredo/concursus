@@ -1,4 +1,4 @@
-package com.opencredo.concourse.mapping.commands.methods.reflection;
+package com.opencredo.concourse.domain.functional;
 
 import java.util.concurrent.CompletableFuture;
 

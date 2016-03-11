@@ -2,6 +2,7 @@ package com.opencredo.concourse.mapping.commands.methods.reflection;
 
 import com.opencredo.concourse.domain.commands.CommandType;
 import com.opencredo.concourse.domain.commands.CommandTypeInfo;
+import com.opencredo.concourse.domain.commands.CommandTypeMatcher;
 import com.opencredo.concourse.mapping.annotations.HandlesCommandsFor;
 import com.opencredo.concourse.mapping.reflection.MethodSelectors;
 
@@ -36,9 +37,9 @@ public final class CommandInterfaceInfo {
                 CommandMethodMapping::getCommandType,
                 CommandMethodMapping::getCommandTypeInfo
         ));
-        CommandDispatcher commandDispatcher = CommandDispatchers.dispatchingCommandsByType(commandMappers);
+        MultiTypeCommandDispatcher commandDispatcher = CommandDispatchers.dispatchingCommandsByType(commandMappers);
 
-
+        return new CommandInterfaceInfo(typeInfoMap, commandMappers, CommandTypeMatcher.matchingAgainst(typeInfoMap), commandDispatcher);
     }
 
     private static Map<Method, CommandMethodMapping> getCommandMappers(Class<?> iface, String aggregateType) {
@@ -49,6 +50,37 @@ public final class CommandInterfaceInfo {
                             Function.identity(),
                             method -> CommandMethodMapping.forMethod(method, aggregateType)
                     ));
-        }
+    }
+
+    private final Map<CommandType, CommandTypeInfo> typeInfoMap;
+    private final Map<Method, CommandMethodMapping> commandMappers;
+    private final CommandTypeMatcher commandTypeMatcher;
+    private final MultiTypeCommandDispatcher commandDispatcher;
+
+    private CommandInterfaceInfo(Map<CommandType, CommandTypeInfo> typeInfoMap, Map<Method, CommandMethodMapping> commandMappers, CommandTypeMatcher commandTypeMatcher, MultiTypeCommandDispatcher commandDispatcher) {
+        this.typeInfoMap = typeInfoMap;
+        this.commandMappers = commandMappers;
+        this.commandTypeMatcher = commandTypeMatcher;
+        this.commandDispatcher = commandDispatcher;
+    }
+
+    public static ConcurrentMap<Class<?>, CommandInterfaceInfo> getCache() {
+        return cache;
+    }
+
+    public Map<CommandType, CommandTypeInfo> getTypeInfoMap() {
+        return typeInfoMap;
+    }
+
+    public CommandTypeMatcher getCommandTypeMatcher() {
+        return commandTypeMatcher;
+    }
+
+    public MultiTypeCommandDispatcher getCommandDispatcher() {
+        return commandDispatcher;
+    }
+
+    public Map<Method,CommandMethodMapping> getCommandMappers() {
+        return commandMappers;
     }
 }
