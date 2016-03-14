@@ -1,5 +1,8 @@
 package com.opencredo.concourse.data.tuples;
 
+/**
+ * A {@link TupleKey} together with the value to be stored in the corresponding {@link TupleSlot}
+ */
 public final class TupleKeyValue {
 
     private final TupleKey<?> tupleKey;

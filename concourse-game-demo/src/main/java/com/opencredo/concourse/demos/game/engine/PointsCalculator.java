@@ -11,18 +11,21 @@ import java.util.UUID;
 
 @Component
 public final class PointsCalculator {
+
     private final PlayerStateRepository playerStateRepository;
+    private final ScoringAlgorithm scoringAlgorithm;
 
     @Autowired
-    public PointsCalculator(PlayerStateRepository playerStateRepository) {
+    public PointsCalculator(PlayerStateRepository playerStateRepository, ScoringAlgorithm scoringAlgorithm) {
         this.playerStateRepository = playerStateRepository;
+        this.scoringAlgorithm = scoringAlgorithm;
     }
 
     public int calculatePoints(UUID winnerId, UUID loserId) {
         Map<UUID, PlayerState> playerStates = playerStateRepository.getAll(Arrays.asList(winnerId, loserId));
         int winnerScore = playerStates.get(winnerId).getRating();
         int loserScore = playerStates.get(loserId).getRating();
-        int scoreDifference = winnerScore - loserScore;
-        return 50 - Math.min(0, scoreDifference / 100);
+
+        return scoringAlgorithm.applyAsInt(winnerScore, loserScore);
     }
 }

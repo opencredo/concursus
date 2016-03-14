@@ -1,9 +1,11 @@
 package com.opencredo.concourse.data.tuples;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -12,22 +14,40 @@ import java.util.function.BiFunction;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * A slot in a TupleSchema which has a name and a type.
+ * A slot in a {@link TupleSchema} which has a name and a type.
  */
 public final class TupleSlot {
-
+    /**
+     * Create a new {@link List} TupleSlot, with the supplied name and element type.
+     * @param name The name of the TupleSlot.
+     * @param elementType The element type of the TupleSlot.
+     * @return The created TupleSlot.
+     */
     public static <T> TupleSlot ofList(String name, Class<T> elementType) {
         checkNotNull(elementType, "elementType must not be null");
 
         return of(name, Types.listOf(elementType).getType());
     }
 
+    /**
+     * Create a new {@link Optional} TupleSlot, with the supplied name and value type.
+     * @param name The name of the TupleSlot.
+     * @param valueType The value type of the TupleSlot.
+     * @return The created TupleSlot.
+     */
     public static <T> TupleSlot ofOptional(String name, Class<T> valueType) {
         checkNotNull(valueType, "valueType must not be null");
 
         return of(name, Types.optionalOf(valueType).getType());
     }
 
+    /**
+     * Create a new {@link Map} TupleSlot, with the supplied name and key and value types.
+     * @param name The name of the TupleSlot.
+     * @param keyType The key type of the TupleSlot.
+     * @param valueType The value type of the TupleSlot.
+     * @return The created TupleSlot.
+     */
     public static <K, V> TupleSlot ofMap(String name, Class<K> keyType, Class<V> valueType) {
         checkNotNull(keyType, "keyType must not be null");
         checkNotNull(valueType, "valueType must not be null");
@@ -91,18 +111,20 @@ public final class TupleSlot {
                 || this.type.getRawType().isPrimitive() && this.type.isAssignableFrom(unboxed(type));
     }
 
+    private static final Map<Type, Type> unboxed = ImmutableMap.<Type, Type>builder()
+            .put(Integer.class, int.class)
+            .put(Short.class, short.class)
+            .put(Long.class, long.class)
+            .put(Float.class, float.class)
+            .put(Double.class, double.class)
+            .put(Byte.class, byte.class)
+            .put(Boolean.class, boolean.class)
+            .put(Character.class, char.class)
+            .put(Void.class, void.class)
+            .build();
+
     private Type unboxed(Type boxed) {
-        return boxed == Integer.class
-                ? int.class
-                : boxed == Short.class
-                    ? short.class
-                    : boxed == Long.class
-                        ? long.class
-                        : boxed == Float.class
-                            ? float.class
-                            : boxed == Double.class
-                                ? double.class
-                                : boxed;
+        return unboxed.get(boxed);
     }
 
     <V> Object deserialise(BiFunction<V, Type, Object> deserialiser, Map<String, V> values) {

@@ -10,7 +10,6 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>concourse-data</module>
-        <module>concourse-data-json</module>
         <module>concourse-domain</module>
         <module>concourse-mapping</module>
         <module>concourse-cassandra</module>
@@ -189,26 +188,14 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
+                            <aggregate>true</aggregate>
                             <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>1.3.2.RELEASE</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
+
     </build>
 
 </project>

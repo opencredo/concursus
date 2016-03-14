@@ -73,4 +73,23 @@ public class TupleSlotTest {
         assertTrue(slot.acceptsType(Types.mapOf(String.class, Integer.class).getType()));
         assertFalse(slot.acceptsType(Types.mapOf(String.class, String.class).getType()));
     }
+
+    @Test
+    public void unboxingScalars() {
+        assertTrue(TupleSlot.of("int", int.class).accepts(1));
+        assertTrue(TupleSlot.of("long", long.class).accepts(1L));
+        assertTrue(TupleSlot.of("short", short.class).accepts(Short.valueOf("1")));
+        assertTrue(TupleSlot.of("byte", byte.class).accepts(Byte.valueOf("1")));
+        assertTrue(TupleSlot.of("boolean", boolean.class).accepts(true));
+        assertTrue(TupleSlot.of("boolean", boolean.class).accepts(true));
+        assertTrue(TupleSlot.of("char", char.class).accepts('c'));
+        assertTrue(TupleSlot.of("double", double.class).accepts(1.0));
+        assertTrue(TupleSlot.of("float", float.class).accepts(Float.valueOf("1.0")));
+    }
+
+    @Test
+    public void unboxingArrays() {
+        assertTrue(TupleSlot.of("int[]", int[].class).accepts(new int[] { 1, 2 }));
+        assertTrue(TupleSlot.of("double[]", double[].class).accepts(new double[] { 1.0, 2.0 }));
+    }
 }
