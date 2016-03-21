@@ -110,7 +110,7 @@ public final class DispatchingEventReplayer<T> {
      * Collect only the first {@link Event} in the sequence.
      * @param collector The collector to collect the event with.
      * @param <V> The type of value returned by the collector.
-     * @return The collected value, or {@link Optional::empty} if the sequence is empty.
+     * @return The collected value, or {@link Optional}::empty if the sequence is empty.
      */
     public <V> Optional<V> collectFirst(Function<Consumer<V>, T> collector) {
         return eventReplayer.collectFirst(caller -> BoundEventDispatcher.binding(dispatcher, collector.apply(caller)));

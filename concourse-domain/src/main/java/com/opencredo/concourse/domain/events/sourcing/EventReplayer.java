@@ -107,7 +107,7 @@ public final class EventReplayer {
      * Collect only the first {@link Event} in the sequence.
      * @param collector The collector to collect the event with.
      * @param <T> The type of value returned by the collector.
-     * @return The collected value, or {@link Optional::empty} if the sequence is empty.
+     * @return The collected value, or {@link Optional}::empty if the sequence is empty.
      */
     public <T> Optional<T> collectFirst(Function<Consumer<T>, Consumer<Event>> collector) {
         AtomicReference<T> ref = new AtomicReference<>();

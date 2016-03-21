@@ -56,7 +56,7 @@ public final class StateBuilder<T> {
      * aggregate id.
      * @param eventSource The {@link EventSource} to use to fetch events.
      * @param aggregateId The aggregate id to fetch events for.
-     * @return The constructed state object, or {@link Optional::empty} if the aggregate has no state.
+     * @return The constructed state object, or {@link Optional}::empty if the aggregate has no state.
      */
     public Optional<T> buildState(EventSource eventSource, UUID aggregateId) {
         return buildState(eventSource, aggregateId, TimeRange.unbounded());
@@ -68,7 +68,7 @@ public final class StateBuilder<T> {
      * @param eventSource The {@link EventSource} to use to fetch events.
      * @param aggregateId The aggregate id to fetch events for.
      * @param timeRange The {@link TimeRange} to restricts the replayed events to.
-     * @return The constructed state object, or {@link Optional::empty} if the aggregate has no state.
+     * @return The constructed state object, or {@link Optional}::empty if the aggregate has no state.
      */
     public Optional<T> buildState(EventSource eventSource, UUID aggregateId, TimeRange timeRange) {
         return createDispatcher().apply(typeBinding.replaying(eventSource, aggregateId, timeRange));
@@ -79,7 +79,7 @@ public final class StateBuilder<T> {
      * aggregate id.
      * @param cachedEventSource The {@link CachedEventSource} to use to fetch events.
      * @param aggregateId The aggregate id to fetch events for.
-     * @return The constructed state object, or {@link Optional::empty} if the aggregate has no state.
+     * @return The constructed state object, or {@link Optional}::empty if the aggregate has no state.
      */
     public Optional<T> buildState(CachedEventSource cachedEventSource, UUID aggregateId) {
         return buildState(cachedEventSource, aggregateId, TimeRange.unbounded());
@@ -91,7 +91,7 @@ public final class StateBuilder<T> {
      * @param cachedEventSource The {@link CachedEventSource} to use to fetch events.
      * @param aggregateId The aggregate id to fetch events for.
      * @param timeRange The {@link TimeRange} to restricts the replayed events to.
-     * @return The constructed state object, or {@link Optional::empty} if the aggregate has no state.
+     * @return The constructed state object, or {@link Optional}::empty if the aggregate has no state.
      */
     public Optional<T> buildState(CachedEventSource cachedEventSource, UUID aggregateId, TimeRange timeRange) {
         return createDispatcher().apply(typeBinding.replaying(cachedEventSource, aggregateId, timeRange));

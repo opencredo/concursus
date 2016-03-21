@@ -22,7 +22,7 @@ public interface EventTypeMatcher {
     }
 
     /**
-     * Return the {@link TupleSchema} matching the supplied {@link EventType}, if known, or {@link Optional::empty} otherwise.
+     * Return the {@link TupleSchema} matching the supplied {@link EventType}, if known, or {@link Optional}::empty otherwise.
      * @param eventType The {@link EventType} to find a {@link TupleSchema} for.
      * @return The matching {@link TupleSchema}.
      */

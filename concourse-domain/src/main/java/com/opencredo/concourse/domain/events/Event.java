@@ -95,7 +95,7 @@ public final class Event {
     /**
      * Get the processing time of this event.
      * @return An {@link Optional} containing {@link Instant} at which the event was processed, or
-     * {@link Optional::empty} if it has not.
+     * {@link Optional}::empty if it has not.
      */
     public Optional<Instant> getProcessingTime() {
         return processingId.map(TimeUUID::getInstant);
@@ -120,7 +120,7 @@ public final class Event {
     /**
      * Get the processing ID of this event (if it has been processed).
      * @return An {@link Optional} containing the event's processing {@link UUID} if it has been processed, or
-     * {@link Optional::empty} if it has not.
+     * {@link Optional}::empty if it has not.
      */
     public Optional<UUID> getProcessingId() {
         return processingId;
