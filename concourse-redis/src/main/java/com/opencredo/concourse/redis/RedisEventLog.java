@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.logging.EventLog;
-import com.opencredo.concourse.domain.json.EventJson;
+import com.opencredo.concourse.domain.json.events.EventJson;
 import com.opencredo.concourse.domain.time.TimeUUID;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;

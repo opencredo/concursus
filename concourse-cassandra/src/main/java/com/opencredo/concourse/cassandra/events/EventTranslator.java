@@ -29,7 +29,7 @@ final class EventTranslator implements RowCallbackHandler {
     private static final int PARAMETERS = 7;
     private static final int CHARACTERISTICS = 8;
 
-    public static EventTranslator using(EventTypeMatcher matcher, BiFunction<String, Type, Object> deserialiser, Consumer<Event> eventCollector) {
+    static EventTranslator using(EventTypeMatcher matcher, BiFunction<String, Type, Object> deserialiser, Consumer<Event> eventCollector) {
         return new EventTranslator(matcher, deserialiser, eventCollector);
     }
 

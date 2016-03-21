@@ -3,6 +3,7 @@ package com.opencredo.concourse.cassandra.events;
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.persisting.EventPersister;
 import org.springframework.data.cassandra.core.CassandraTemplate;
@@ -11,9 +12,30 @@ import java.sql.Date;
 import java.util.Collection;
 import java.util.function.Function;
 
+/**
+ * An {@link EventPersister} that writes events into Cassandra.
+ */
 public final class CassandraEventPersister implements EventPersister {
 
-    public static CassandraEventPersister create(CassandraTemplate cassandraTemplate, Function<Object, String> serialiser) {
+    /**
+     * Create an {@link EventPersister} that writes events into Cassandra using the supplied {@link CassandraTemplate}
+     * and {@link ObjectMapper}
+     * @param cassandraTemplate The {@link CassandraTemplate} to use to execute Cassandra queries.
+     * @param objectMapper The {@link ObjectMapper} to use to serialise event data.
+     * @return The constructed {@link EventPersister}.
+     */
+    public static EventPersister create(CassandraTemplate cassandraTemplate, ObjectMapper objectMapper) {
+        return create(cassandraTemplate, JsonSerialiser.using(objectMapper));
+    }
+
+    /**
+     * Create an {@link EventPersister} that writes events into Cassandra using the supplied {@link CassandraTemplate}
+     * and serialisation {@link Function}.
+     * @param cassandraTemplate The {@link CassandraTemplate} to use to execute Cassandra queries.
+     * @param serialiser The serialiser to use to serialise event data.
+     * @return The constructed {@link EventPersister}.
+     */
+    public static EventPersister create(CassandraTemplate cassandraTemplate, Function<Object, String> serialiser) {
         return new CassandraEventPersister(cassandraTemplate, prepareInsert(cassandraTemplate.getSession()), serialiser);
     }
 
@@ -27,7 +49,7 @@ public final class CassandraEventPersister implements EventPersister {
     private final PreparedStatement preparedStatement;
     private final Function<Object, String> serialiser;
 
-    public CassandraEventPersister(CassandraTemplate cassandraTemplate, PreparedStatement preparedStatement, Function<Object, String> serialiser) {
+    private CassandraEventPersister(CassandraTemplate cassandraTemplate, PreparedStatement preparedStatement, Function<Object, String> serialiser) {
         this.cassandraTemplate = cassandraTemplate;
         this.preparedStatement = preparedStatement;
         this.serialiser = serialiser;

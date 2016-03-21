@@ -111,4 +111,12 @@ public final class EmitterInterfaceInfo<T> {
     public MultiTypeEventDispatcher<T> getEventDispatcher() {
         return eventDispatcher;
     }
+
+    /**
+     * Get an {@link EventTypeMatcher} for the interface.
+     * @return
+     */
+    public EventTypeMatcher getEventTypeMatcher() {
+        return EventTypeMatcher.matchingAgainst(eventTypeMatcherMap);
+    }
 }

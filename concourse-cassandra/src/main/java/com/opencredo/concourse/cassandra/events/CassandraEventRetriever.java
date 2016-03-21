@@ -3,6 +3,7 @@ package com.opencredo.concourse.cassandra.events;
 import com.datastax.driver.core.querybuilder.Clause;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
@@ -17,9 +18,30 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * An {@link EventRetriever} that retrieves events from Cassandra.
+ */
 public final class CassandraEventRetriever implements EventRetriever {
 
-    public static CassandraEventRetriever create(CassandraTemplate cassandraTemplate, BiFunction<String, Type, Object> deserialiser) {
+    /**
+     * Construct an {@link EventRetriever} that retrieves events from Cassandra using the supplied
+     * {@link CassandraTemplate} and {@link ObjectMapper}
+     * @param cassandraTemplate The {@link CassandraTemplate} to use to execute Cassandra queries.
+     * @param objectMapper The {@link ObjectMapper} to use to deserialise Event data.
+     * @return The constructed {@link EventRetriever}.
+     */
+    public static EventRetriever create(CassandraTemplate cassandraTemplate, ObjectMapper objectMapper) {
+        return create(cassandraTemplate, JsonDeserialiser.using(objectMapper));
+    }
+
+    /**
+     * Construct an {@link EventRetriever} that retrieves events from Cassandra using the supplied
+     * {@link CassandraTemplate} and deserialising {@link BiFunction}.
+     * @param cassandraTemplate The {@link CassandraTemplate} to use to execute Cassandra queries.
+     * @param deserialiser The deserialiser to use to deserialise Event data.
+     * @return The constructed {@link EventRetriever}.
+     */
+    public static EventRetriever create(CassandraTemplate cassandraTemplate, BiFunction<String, Type, Object> deserialiser) {
         return new CassandraEventRetriever(cassandraTemplate, deserialiser);
     }
 

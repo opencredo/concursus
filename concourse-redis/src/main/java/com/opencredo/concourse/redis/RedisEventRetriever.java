@@ -5,7 +5,7 @@ import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
 import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
-import com.opencredo.concourse.domain.json.EventJson;
+import com.opencredo.concourse.domain.json.events.EventJson;
 import com.opencredo.concourse.domain.time.TimeRange;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;

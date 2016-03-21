@@ -1,12 +1,10 @@
-package com.opencredo.concourse.domain.json;
+package com.opencredo.concourse.domain.json.commands.channels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.commands.CommandTypeMatcher;
 import com.opencredo.concourse.domain.commands.channels.CommandInChannel;
 import com.opencredo.concourse.domain.commands.channels.CommandOutChannel;
 import com.opencredo.concourse.domain.commands.dispatching.*;
-import com.opencredo.concourse.domain.json.commands.channels.JsonCommandInChannel;
-import com.opencredo.concourse.domain.json.commands.channels.JsonCommandOutChannel;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesCommandsFor;
 import com.opencredo.concourse.mapping.commands.methods.dispatching.MethodDispatchingCommandProcessor;

@@ -1,5 +1,6 @@
 package com.opencredo.concourse.cassandra.events;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.storing.ComposedEventStore;
 import com.opencredo.concourse.domain.storing.EventStore;
@@ -17,6 +18,19 @@ import java.util.function.Function;
 public final class CassandraEventStore {
 
     private CassandraEventStore() {
+    }
+
+    /**
+     * Create an {@link EventStore} that persists and retrieves {@link Event}s using Cassandra.
+     * @param cassandraTemplate The {@link CassandraTemplate} to use to perform queries against Cassandra.
+     * @param objectMapper the {@link ObjectMapper} to use to serialise and deserialise event data.
+     * @return The constructed {@link EventStore}
+     */
+    public static EventStore create(CassandraTemplate cassandraTemplate, ObjectMapper objectMapper) {
+        return ComposedEventStore.create(
+                CassandraEventPersister.create(cassandraTemplate, objectMapper),
+                CassandraEventRetriever.create(cassandraTemplate, objectMapper)
+        );
     }
 
     /**

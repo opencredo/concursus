@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.function.Function;
 
-public final class JsonSerialiser implements Function<Object, String> {
+final class JsonSerialiser implements Function<Object, String> {
 
     public static JsonSerialiser using(ObjectMapper objectMapper) {
         return new JsonSerialiser(objectMapper);

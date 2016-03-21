@@ -8,6 +8,7 @@ import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.filtering.log.EventLogPostFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
+import com.opencredo.concourse.domain.events.sourcing.EventRetriever;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
@@ -64,7 +65,7 @@ public class RoundTripTest {
 
     private final EventBatchProcessor batchProcessor = EventBatchProcessor.loggingWith(aggregateCatalogueFilter.apply(cassandraEventLog));
 
-    private final CassandraEventRetriever cassandraEventRetriever = CassandraEventRetriever.create(
+    private final EventRetriever cassandraEventRetriever = CassandraEventRetriever.create(
             new CassandraTemplate(cluster.connect("Concourse")),
             JsonDeserialiser.using(objectMapper));
 

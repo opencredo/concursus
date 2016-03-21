@@ -1,4 +1,4 @@
-package com.opencredo.concourse.domain.json;
+package com.opencredo.concourse.domain.json.events;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
