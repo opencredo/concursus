@@ -1,7 +1,7 @@
 package com.opencredo.concourse.spring.events.filtering;
 
 import com.opencredo.concourse.domain.events.batching.EventBatch;
-import com.opencredo.concourse.domain.events.filtering.EventBatchFilter;
+import com.opencredo.concourse.domain.events.filtering.batch.EventBatchFilter;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

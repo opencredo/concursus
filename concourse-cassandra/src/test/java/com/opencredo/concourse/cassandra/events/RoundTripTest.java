@@ -2,15 +2,13 @@ package com.opencredo.concourse.cassandra.events;
 
 import com.datastax.driver.core.Cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.caching.CachingEventSource;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
-import com.opencredo.concourse.domain.events.filtering.EventLogPostFilter;
+import com.opencredo.concourse.domain.events.filtering.log.EventLogPostFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Initial;
@@ -54,9 +52,9 @@ public class RoundTripTest {
     private final Cluster cluster = CASSANDRA_CQL_UNIT.getCluster();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final EventLog cassandraEventLog = CassandraEventLog.create(
+    private final EventLog cassandraEventLog = EventLog.loggingTo(CassandraEventPersister.create(
             new CassandraTemplate(cluster.connect("Concourse")),
-            JsonSerialiser.using(objectMapper));
+            JsonSerialiser.using(objectMapper)));
 
     private final AggregateCatalogue aggregateCatalogue = CassandraAggregateCatalogue.create(new CassandraTemplate(cluster.connect("Concourse")), 16);
     private final EventLogPostFilter aggregateCatalogueFilter = (publisher, events) -> {
@@ -64,16 +62,16 @@ public class RoundTripTest {
         return events;
     };
 
-    private final EventWriter eventWriter = PublishingEventWriter.using(aggregateCatalogueFilter.apply(cassandraEventLog), event -> {});
+    private final EventBatchProcessor batchProcessor = EventBatchProcessor.loggingWith(aggregateCatalogueFilter.apply(cassandraEventLog));
 
     private final CassandraEventRetriever cassandraEventRetriever = CassandraEventRetriever.create(
             new CassandraTemplate(cluster.connect("Concourse")),
             JsonDeserialiser.using(objectMapper));
 
-    private final EventSource eventSource = CachingEventSource.retrievingWith(cassandraEventRetriever);
+    private final EventSource eventSource = EventSource.retrievingWith(cassandraEventRetriever);
     private final DispatchingEventSourceFactory eventSourceDispatching = DispatchingEventSourceFactory.dispatching(eventSource);
 
-    private final EventBus eventBus = () -> SimpleEventBatch.writingTo(eventWriter);
+    private final EventBus eventBus = () -> ProcessingEventBatch.processingWith(batchProcessor);
 
     private final ProxyingEventBus proxyingEventBus = ProxyingEventBus.proxying(eventBus);
 

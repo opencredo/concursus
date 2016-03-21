@@ -2,7 +2,7 @@ package com.opencredo.concourse.spring.events.filtering;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
-import com.opencredo.concourse.domain.events.filtering.EventBatchPostFilter;
+import com.opencredo.concourse.domain.events.filtering.batch.EventBatchPostFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

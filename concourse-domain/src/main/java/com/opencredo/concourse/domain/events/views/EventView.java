@@ -9,8 +9,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * A view of an {@link Event} suitable for serialisation, e.g. into JSON.
+ */
 public final class EventView {
 
+    /**
+     * Construact an {@link EventView} representing the data of the supplied {@link Event}.
+     * @param event The {@link Event} to create a view of.
+     * @return The created {@link EventView}.
+     */
     public static EventView of(Event event) {
         return new EventView(
                 event.getAggregateId().getType(),

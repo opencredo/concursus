@@ -1,6 +1,6 @@
 package com.opencredo.concourse.spring.events.filtering;
 
-import com.opencredo.concourse.domain.events.filtering.EventLogFilter;
+import com.opencredo.concourse.domain.events.filtering.log.EventLogFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

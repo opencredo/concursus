@@ -15,6 +15,12 @@ import java.util.UUID;
  */
 public final class EventTypeBinding {
 
+    /**
+     * Create an {@link EventTypeBinding} with the supplied aggregate type and {@link EventTypeMatcher}.
+     * @param aggregateType The aggregate type to bind.
+     * @param eventTypeMatcher The {@link EventTypeMatcher} to bind.
+     * @return The constructed {@link EventTypeBinding}.
+     */
     public static EventTypeBinding of(String aggregateType, EventTypeMatcher eventTypeMatcher) {
         return new EventTypeBinding(aggregateType, eventTypeMatcher);
     }

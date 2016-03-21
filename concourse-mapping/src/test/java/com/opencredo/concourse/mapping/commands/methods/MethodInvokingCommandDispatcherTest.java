@@ -27,7 +27,7 @@ public class MethodInvokingCommandDispatcherTest {
             new Slf4jCommandLog(),
             SynchronousCommandExecutor.processingWith(dispatchingCommandProcessor));
 
-    private final CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
+    private final CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
     @HandlesCommandsFor("person")
     public interface PersonCommands {
@@ -52,7 +52,7 @@ public class MethodInvokingCommandDispatcherTest {
             return future;
         });
 
-        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
+        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
         CompletableFuture<String> result = commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),
@@ -74,7 +74,7 @@ public class MethodInvokingCommandDispatcherTest {
             throw new IllegalStateException("Out of cheese");
         });
 
-        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
+        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
         CompletableFuture<String> result = commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),

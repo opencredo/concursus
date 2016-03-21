@@ -1,7 +1,7 @@
 package com.opencredo.concourse.spring.events.filtering;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.filtering.EventLogPostFilter;
+import com.opencredo.concourse.domain.events.filtering.log.EventLogPostFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

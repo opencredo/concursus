@@ -1,7 +1,7 @@
 package com.opencredo.concourse.spring.events.filtering;
 
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
-import com.opencredo.concourse.domain.events.filtering.EventBusFilter;
+import com.opencredo.concourse.domain.events.filtering.bus.EventBusFilter;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

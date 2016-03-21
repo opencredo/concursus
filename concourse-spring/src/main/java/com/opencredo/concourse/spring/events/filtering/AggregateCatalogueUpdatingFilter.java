@@ -2,7 +2,7 @@ package com.opencredo.concourse.spring.events.filtering;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
-import com.opencredo.concourse.domain.events.filtering.EventLogPostFilter;
+import com.opencredo.concourse.domain.events.filtering.log.EventLogPostFilter;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import org.springframework.beans.factory.annotation.Autowired;
 

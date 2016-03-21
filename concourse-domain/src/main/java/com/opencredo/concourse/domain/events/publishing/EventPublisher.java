@@ -1,10 +1,9 @@
 package com.opencredo.concourse.domain.events.publishing;
 
-import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.channels.EventOutChannel;
 
-import java.util.function.Consumer;
-
-@FunctionalInterface
-public interface EventPublisher extends Consumer<Event> {
-
+/**
+ * An {@link EventOutChannel} that publishes events to event handlers after they have been logged.
+ */
+public interface EventPublisher extends EventOutChannel {
 }

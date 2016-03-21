@@ -31,7 +31,7 @@ public class CommandProxyFactoryTest {
         CommandBus commandBus = command -> CompletableFuture.completedFuture(
                 command.processed(TimeUUID.timeBased()).complete(timeCompleted, Optional.of("OK")));
 
-        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
+        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
         assertThat(commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),
@@ -47,7 +47,7 @@ public class CommandProxyFactoryTest {
                         timeCompleted,
                         new IllegalStateException("Out of cheese")));
 
-        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(CommandOutChannel.toBus(commandBus));
+        CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
         CompletableFuture<String> result = commandProxyFactory.getProxy(PersonCommands.class).create(
                     StreamTimestamp.of("test", Instant.now()),

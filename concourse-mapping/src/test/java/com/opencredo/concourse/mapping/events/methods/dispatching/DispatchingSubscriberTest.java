@@ -1,10 +1,11 @@
 package com.opencredo.concourse.mapping.events.methods.dispatching;
 
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.logging.EventLog;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
+import com.opencredo.concourse.domain.events.processing.PublishingEventBatchProcessor;
 import com.opencredo.concourse.domain.events.publishing.SubscribableEventPublisher;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
+import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
@@ -33,8 +34,8 @@ public class DispatchingSubscriberTest {
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
     private final SubscribableEventPublisher publisher = new SubscribableEventPublisher();
-    private final EventWriter eventWriter = PublishingEventWriter.using(eventStore, publisher);
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventWriter));
+    private final EventBatchProcessor batchProcessor = PublishingEventBatchProcessor.using(EventLog.loggingTo(eventStore), publisher);
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(batchProcessor));
     private final DispatchingSubscriber subscriber = DispatchingSubscriber.subscribingTo(publisher);
 
     private final Instant timestampStart = Instant.now();

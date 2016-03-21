@@ -5,9 +5,9 @@ import java.util.ListIterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-public final class ReverseListSpliterator<T> implements Spliterator<T> {
+final class ReverseListSpliterator<T> implements Spliterator<T> {
 
-    public static <T> ReverseListSpliterator<T> over(List<T> list) {
+    static <T> ReverseListSpliterator<T> over(List<T> list) {
         return new ReverseListSpliterator<>(list.listIterator(list.size()), list.size());
     }
 

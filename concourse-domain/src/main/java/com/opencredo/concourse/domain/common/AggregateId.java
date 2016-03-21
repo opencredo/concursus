@@ -5,8 +5,17 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * The identity of an aggregate.
+ */
 public final class AggregateId {
 
+    /**
+     * Create an {@link AggregateId} with the given type and id.
+     * @param type The type of the aggregate.
+     * @param id The id of the aggregate.
+     * @return The constructed {@link AggregateId}
+     */
     public static AggregateId of(String type, UUID id) {
         checkNotNull(type, "type must not be null");
         checkNotNull(id, "id must not be null");
@@ -22,10 +31,18 @@ public final class AggregateId {
         this.id = id;
     }
 
+    /**
+     * Get the type of the aggregate bearing this id.
+     * @return The type of the aggregate bearing this id.
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Get the {@link UUID} of the aggregate bearing this id.
+     * @return The {@link UUID} of the aggregate bearing this id.
+     */
     public UUID getId() {
         return id;
     }

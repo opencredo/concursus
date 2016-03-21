@@ -17,7 +17,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class CassandraEventRetriever implements EventRetriever {
+public final class CassandraEventRetriever implements EventRetriever {
 
     public static CassandraEventRetriever create(CassandraTemplate cassandraTemplate, BiFunction<String, Type, Object> deserialiser) {
         return new CassandraEventRetriever(cassandraTemplate, deserialiser);
@@ -47,21 +47,6 @@ public class CassandraEventRetriever implements EventRetriever {
         return results;
     }
 
-    private Consumer<TimeRangeBound> constrainUpperBound(Select select) {
-        return constrainBound(select, QueryBuilder::lte, QueryBuilder::lt);
-    }
-
-    private Consumer<TimeRangeBound> constrainLowerBound(Select select) {
-        return constrainBound(select, QueryBuilder::gte, QueryBuilder::gt);
-    }
-
-    private Consumer<TimeRangeBound> constrainBound(
-            Select select,
-            BiFunction<String, Long, Clause> inclusive,
-            BiFunction<String, Long, Clause> exclusive) {
-        return bound -> select.where((bound.isInclusive() ? inclusive : exclusive).apply("eventTimestamp", bound.getInstant().toEpochMilli()));
-    }
-
     @Override
     public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
         final Select select = selectFromEvent();
@@ -77,6 +62,21 @@ public class CassandraEventRetriever implements EventRetriever {
         runAndTranslate(matcher, select, addToResults);
 
         return results;
+    }
+
+    private Consumer<TimeRangeBound> constrainUpperBound(Select select) {
+        return constrainBound(select, QueryBuilder::lte, QueryBuilder::lt);
+    }
+
+    private Consumer<TimeRangeBound> constrainLowerBound(Select select) {
+        return constrainBound(select, QueryBuilder::gte, QueryBuilder::gt);
+    }
+
+    private Consumer<TimeRangeBound> constrainBound(
+            Select select,
+            BiFunction<String, Long, Clause> inclusive,
+            BiFunction<String, Long, Clause> exclusive) {
+        return bound -> select.where((bound.isInclusive() ? inclusive : exclusive).apply("eventTimestamp", bound.getInstant().toEpochMilli()));
     }
 
     private void runAndTranslate(EventTypeMatcher matcher, Select select, Consumer<Event> addToResults) {

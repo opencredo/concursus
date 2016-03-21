@@ -45,7 +45,7 @@ public class LoggingCommandBusTest {
                 emptySchema.makeWith(),
                 String.class
         );
-        Optional<Object> result = commandBus.dispatch(command);
+        Optional<Object> result = commandBus.apply(command).get().getResultValue();
 
         assertThat(result, equalTo(Optional.of("OK")));
         assertThat(getLoggedCommands(), contains(command));
@@ -66,12 +66,8 @@ public class LoggingCommandBusTest {
                 emptySchema.makeWith(),
                 String.class
         );
-        try {
-            commandBus.dispatch(command);
-            fail("Failure should be propagated up to caller");
-        } catch (CommandException e) {
-            assertThat(e.getCause().getMessage(), equalTo("Out of cheese"));
-        }
+        Exception exception = commandBus.apply(command).get().getException();
+        assertThat(exception.getMessage(), equalTo("Out of cheese"));
 
         assertThat(getLoggedCommands(), contains(command));
         assertThat(loggedResults.get(0).getException().getMessage(), equalTo("Out of cheese"));
@@ -92,7 +88,7 @@ public class LoggingCommandBusTest {
         );
 
         try {
-            commandBus.dispatch(command);
+            commandBus.apply(command).get();
             fail("Failure should be propagated up to caller");
         } catch (CancellationException e) {
         }

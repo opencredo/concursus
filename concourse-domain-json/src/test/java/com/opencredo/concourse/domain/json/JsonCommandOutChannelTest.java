@@ -41,7 +41,7 @@ public class JsonCommandOutChannelTest {
                             DispatchingCommandProcessor.create())
                             .subscribe(TestCommands.class, commandProcessor)));
 
-    private final CommandOutChannel channelToBus = CommandOutChannel.toBus(commandBus);
+    private final CommandOutChannel channelToBus = commandBus.toCommandOutChannel();
     private final CommandInChannel<String, String> jsonInChannel = JsonCommandInChannel.using(typeMatcher, objectMapper, channelToBus);
     private final CommandInChannel<String, String> loggingInChannel = jsonIn -> {
         System.out.println(jsonIn);

@@ -1,6 +1,6 @@
 package com.opencredo.concourse.spring.events.filtering;
 
-import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
+import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;

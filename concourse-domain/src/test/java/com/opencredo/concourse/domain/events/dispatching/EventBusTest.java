@@ -4,12 +4,11 @@ import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.logging.EventLog;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
+import com.opencredo.concourse.domain.events.processing.PublishingEventBatchProcessor;
 import com.opencredo.concourse.domain.events.publishing.EventPublisher;
-import com.opencredo.concourse.domain.events.publishing.LoggingEventPublisher;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import org.junit.Test;
 
@@ -27,15 +26,14 @@ public class EventBusTest {
     private final List<Collection<Event>> loggedEvents = new ArrayList<>();
     private final List<Event> publishedEvents = new ArrayList<>();
 
-    private final EventPublisher eventPublisher = LoggingEventPublisher.logging(publishedEvents::add);
+    private final EventPublisher eventPublisher = publishedEvents::add;
     private final EventLog eventLog = events -> {
         loggedEvents.add(events);
         return events;
     };
+    private final EventBatchProcessor batchProcessor = PublishingEventBatchProcessor.using(eventLog, eventPublisher);
 
-    private final EventWriter eventWriter = PublishingEventWriter.using(eventLog, eventPublisher);
-
-    private final EventBus bus = () -> SimpleEventBatch.writingTo(eventWriter);
+    private final EventBus bus = () -> ProcessingEventBatch.processingWith(batchProcessor);
 
     @Test
     public void dispatchesEventsSinglyToLogAndPublisher() {
