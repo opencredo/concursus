@@ -4,7 +4,7 @@ import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;

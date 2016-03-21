@@ -1,4 +1,4 @@
-package com.opencredo.concourse.domain.events.sourcing;
+package com.opencredo.concourse.domain.events.matching;
 
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.EventType;

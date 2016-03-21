@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.channels.EventsInChannel;
 import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.domain.json.events.EventsJson;
 
 /**

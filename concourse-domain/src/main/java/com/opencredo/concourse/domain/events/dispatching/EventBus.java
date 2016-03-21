@@ -2,8 +2,10 @@ package com.opencredo.concourse.domain.events.dispatching;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.channels.EventOutChannel;
 import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 
 import java.util.function.Consumer;
 
@@ -13,6 +15,10 @@ import java.util.function.Consumer;
  */
 @FunctionalInterface
 public interface EventBus extends EventOutChannel {
+
+    static EventBus processingWith(EventBatchProcessor processor) {
+        return () -> ProcessingEventBatch.processingWith(processor);
+    }
 
     /**
      * Starts a new {@link EventBatch}.

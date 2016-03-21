@@ -35,8 +35,8 @@ public class DispatchingEventSourceTest {
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
 
     private final EventSource eventSource = EventSource.retrievingWith(eventStore);
-    private final DispatchingEventSource<PersonEvents> testEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).to(PersonEvents.class);
-    private final DispatchingEventSource<CreatedEventReceiver> creadedEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).to(CreatedEventReceiver.class);
+    private final DispatchingEventSource<PersonEvents> testEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(PersonEvents.class);
+    private final DispatchingEventSource<CreatedEventReceiver> creadedEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(CreatedEventReceiver.class);
     private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
     private final Function<Consumer<String>, PersonEvents> nameCollector = caller -> new PersonEvents() {
         @Override

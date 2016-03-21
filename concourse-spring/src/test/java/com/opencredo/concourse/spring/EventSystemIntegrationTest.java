@@ -70,7 +70,7 @@ public class EventSystemIntegrationTest {
                 "Arthur Danto",
                 32).get();
 
-        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
+        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.dispatchingTo(PersonEvents.class)
                 .preload(personId1, personId2);
 
         List<String> personHistory1 = preloaded.replaying(personId1).collectAll(eventSummariser());
@@ -88,7 +88,6 @@ public class EventSystemIntegrationTest {
                 "name was changed to Arthur Danto"
         ));
 
-        System.out.println(personEventHandler.getPublishedEvents());
         assertThat(personEventHandler.getPublishedEvents(), contains(
                 "Arthur Putey was created with age 41",
                 "age was changed to 42",

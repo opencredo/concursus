@@ -3,7 +3,7 @@ package com.opencredo.concourse.domain.json.events;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 
 import java.io.IOException;
 import java.util.Collection;

@@ -1,10 +1,9 @@
-package com.opencredo.concourse.mapping.events.methods;
+package com.opencredo.concourse.mapping.events.methods.proxying;
 
-import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
-import com.opencredo.concourse.mapping.events.methods.proxying.EventEmittingProxy;
 import org.junit.Test;
 
 import java.time.Instant;

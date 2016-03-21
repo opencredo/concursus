@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class CommandMethodDispatcher implements CommandProcessor {
+final class CommandMethodDispatcher implements CommandProcessor {
 
     public static <H> CommandMethodDispatcher toHandler(Class<? extends H> handlerInterface, H target) {
         checkNotNull(handlerInterface, "handlerInterface must not be null");

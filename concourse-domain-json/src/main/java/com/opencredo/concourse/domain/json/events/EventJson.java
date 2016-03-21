@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 
 import java.io.IOException;

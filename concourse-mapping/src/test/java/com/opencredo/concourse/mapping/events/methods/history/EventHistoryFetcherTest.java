@@ -42,7 +42,7 @@ public class EventHistoryFetcherTest {
             batch.nameUpdated(nextTimestamp(), id2, "Arthur Mumby");
         });
 
-        Map<UUID, List<Event>> histories = EventHistoryFetcher.of(PersonEvents.class)
+        Map<UUID, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
                 .getHistories(eventSource, Arrays.asList(id1, id2));
 
         assertThat(histories.get(id1).get(0).getParameters().get("name"),
@@ -67,7 +67,7 @@ public class EventHistoryFetcherTest {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
         });
 
-        Map<UUID, List<Event>> histories = EventHistoryFetcher.of(PersonEvents.class)
+        Map<UUID, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
                 .getHistories(eventSource, Arrays.asList(id1, id2));
 
         assertThat(histories.get(id1).get(0).getParameters().get("name"),

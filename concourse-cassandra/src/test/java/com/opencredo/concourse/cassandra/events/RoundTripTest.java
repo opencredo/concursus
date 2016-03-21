@@ -124,7 +124,7 @@ public class RoundTripTest {
             batch.deleted(StreamTimestamp.of("test", start.plusMillis(3)), personId1);
         });
 
-        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
+        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.dispatchingTo(PersonEvents.class)
                 .preload(personId1, personId2);
 
         List<String> personHistory1 = preloaded.replaying(personId1).collectAll(eventSummariser());
