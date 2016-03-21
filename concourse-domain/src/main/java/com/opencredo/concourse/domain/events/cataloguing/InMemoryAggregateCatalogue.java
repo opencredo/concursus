@@ -5,6 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * An in-memory implementation of {@link AggregateCatalogue}, for testing purposes.
+ */
 public final class InMemoryAggregateCatalogue implements AggregateCatalogue {
 
     private final ConcurrentMap<String, Set<UUID>> aggregateIdsByType = new ConcurrentHashMap<>();

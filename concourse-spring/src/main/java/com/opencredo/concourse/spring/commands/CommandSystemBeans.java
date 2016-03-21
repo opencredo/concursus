@@ -2,7 +2,7 @@ package com.opencredo.concourse.spring.commands;
 
 import com.opencredo.concourse.domain.commands.dispatching.*;
 import com.opencredo.concourse.mapping.commands.methods.dispatching.MethodDispatchingCommandProcessor;
-import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,8 +37,8 @@ public class CommandSystemBeans {
     }
 
     @Bean
-    public ProxyingCommandBus proxyingCommandBus(CommandBus commandBus) {
-        return ProxyingCommandBus.proxying(commandBus);
+    public CommandProxyFactory proxyingCommandOutChannel(CommandBus commandBus) {
+        return CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
     }
 
 }

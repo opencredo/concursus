@@ -10,7 +10,7 @@ import com.opencredo.concourse.demos.game.repositories.GameStateRepository;
 import com.opencredo.concourse.demos.game.repositories.PlayerStateRepository;
 import com.opencredo.concourse.demos.game.states.PlayerState;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concourse.spring.events.EventSystemBeans;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class PlayerCommandsTest {
 
     @Autowired
-    public ProxyingCommandBus commandBus;
+    public CommandProxyFactory commandBus;
 
     @Autowired
     public EngineRegistry engineRegistry;
@@ -57,7 +57,7 @@ public class PlayerCommandsTest {
     public void mockEngine() {
         engineRegistry.register("0.0.1", engine);
         when(engine.deal()).thenReturn(Deal.from(Card.values()).withFirstPlayerIndex(PlayerIndex.PLAYER_1));
-        cmd = commandBus.getDispatcherFor(PlayerCommands.class);
+        cmd = commandBus.getProxy(PlayerCommands.class);
     }
 
     private StreamTimestamp now() {

@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.function.BiFunction;
 
-public class JsonDeserialiser implements BiFunction<String, Type, Object> {
+final class JsonDeserialiser implements BiFunction<String, Type, Object> {
 
     public static JsonDeserialiser using(ObjectMapper objectMapper) {
         return new JsonDeserialiser(objectMapper);

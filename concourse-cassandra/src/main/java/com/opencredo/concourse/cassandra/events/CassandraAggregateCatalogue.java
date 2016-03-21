@@ -13,9 +13,18 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * An {@link AggregateCatalogue} that uses Cassandra for persistence.
+ */
 public class CassandraAggregateCatalogue implements AggregateCatalogue {
 
-    public static CassandraAggregateCatalogue create(CassandraTemplate cassandraTemplate, int bucketCount) {
+    /**
+     * Create a new {@link AggregateCatalogue} that uses Cassandra for persistence.
+     * @param cassandraTemplate The {@link CassandraTemplate} to use to execute Cassandra queries.
+     * @param bucketCount The number of buckets to use to distribute the catalogue data over multiple rows.
+     * @return The constructed {@link AggregateCatalogue}.
+     */
+    public static AggregateCatalogue create(CassandraTemplate cassandraTemplate, int bucketCount) {
         PreparedStatement insertStatement = cassandraTemplate.getSession().prepare(
                 "INSERT INTO Catalogue (aggregateType, bucket, aggregateId) VALUES (?, ?, ?)");
         PreparedStatement deleteStatement = cassandraTemplate.getSession().prepare(
@@ -28,8 +37,7 @@ public class CassandraAggregateCatalogue implements AggregateCatalogue {
     private final PreparedStatement insertStatement;
     private final PreparedStatement deleteStatement;
 
-
-    public CassandraAggregateCatalogue(int bucketCount, CassandraTemplate cassandraTemplate, PreparedStatement insertStatement, PreparedStatement deleteStatement) {
+    private CassandraAggregateCatalogue(int bucketCount, CassandraTemplate cassandraTemplate, PreparedStatement insertStatement, PreparedStatement deleteStatement) {
         this.bucketCount = bucketCount;
         this.cassandraTemplate = cassandraTemplate;
         this.insertStatement = insertStatement;

@@ -1,11 +1,9 @@
 package com.opencredo.concourse.mapping.events.methods.dispatching;
 
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.caching.CachingEventSource;
-import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
+import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.annotations.Name;
@@ -35,11 +33,11 @@ public class DispatchingEventSourceTest {
     }
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
-    private final EventWriter eventWriter = PublishingEventWriter.using(eventStore, event -> {});
-    private final EventSource eventSource = CachingEventSource.retrievingWith(eventStore);
-    private final DispatchingEventSource<PersonEvents> testEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).to(PersonEvents.class);
-    private final DispatchingEventSource<CreatedEventReceiver> creadedEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).to(CreatedEventReceiver.class);
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventWriter));
+
+    private final EventSource eventSource = EventSource.retrievingWith(eventStore);
+    private final DispatchingEventSource<PersonEvents> testEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(PersonEvents.class);
+    private final DispatchingEventSource<CreatedEventReceiver> creadedEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(CreatedEventReceiver.class);
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
     private final Function<Consumer<String>, PersonEvents> nameCollector = caller -> new PersonEvents() {
         @Override
         public void createdV1(StreamTimestamp timestamp, UUID aggregateId, String name) {

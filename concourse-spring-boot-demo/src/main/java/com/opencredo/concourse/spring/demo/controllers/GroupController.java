@@ -1,7 +1,7 @@
 package com.opencredo.concourse.spring.demo.controllers;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concourse.spring.demo.commands.GroupCommands;
 import com.opencredo.concourse.spring.demo.services.GroupService;
 import com.opencredo.concourse.spring.demo.views.GroupView;
@@ -23,8 +23,8 @@ public class GroupController {
     private final GroupService groupService;
 
     @Autowired
-    public GroupController(ProxyingCommandBus commandBus, GroupService groupService) {
-        groupCommands = commandBus.getDispatcherFor(GroupCommands.class);
+    public GroupController(CommandProxyFactory commandBus, GroupService groupService) {
+        groupCommands = commandBus.getProxy(GroupCommands.class);
         this.groupService = groupService;
     }
 

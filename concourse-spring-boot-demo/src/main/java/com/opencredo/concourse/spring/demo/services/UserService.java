@@ -3,7 +3,7 @@ package com.opencredo.concourse.spring.demo.services;
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.events.views.EventView;
-import com.opencredo.concourse.mapping.events.methods.history.EventHistoryFetcher;
+import com.opencredo.concourse.mapping.events.methods.history.MappingEventHistoryFetcher;
 import com.opencredo.concourse.spring.demo.events.UserEvents;
 import com.opencredo.concourse.spring.demo.repositories.GroupStateRepository;
 import com.opencredo.concourse.spring.demo.repositories.UserStateRepository;
@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public List<EventView> getHistory(UUID userId) {
-        return EventHistoryFetcher.of(UserEvents.class).getHistory(eventSource, userId)
+        return MappingEventHistoryFetcher.mapping(UserEvents.class).getHistory(eventSource, userId)
                 .stream().map(EventView::of).collect(toList());
     }
 

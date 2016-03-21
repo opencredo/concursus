@@ -1,9 +1,13 @@
 package com.opencredo.concourse.domain.commands;
 
+import com.opencredo.concourse.data.tuples.Tuple;
+import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
+import com.opencredo.concourse.domain.time.StreamTimestamp;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -32,6 +36,7 @@ public final class CommandType {
         this.commandName = commandName;
     }
 
+
     @Override
     public boolean equals(Object o) {
         return this == o ||
@@ -51,4 +56,12 @@ public final class CommandType {
     }
 
 
+    public Command makeCommand(UUID uuid, StreamTimestamp timestamp, Tuple parameters, Type resultType) {
+        return Command.of(
+                AggregateId.of(aggregateType, uuid),
+                timestamp,
+                commandName,
+                parameters,
+                resultType);
+    }
 }

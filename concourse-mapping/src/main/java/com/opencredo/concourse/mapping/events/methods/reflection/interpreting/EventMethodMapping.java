@@ -6,35 +6,35 @@ import com.opencredo.concourse.data.tuples.TupleKeyValue;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.events.methods.ordering.CausalOrdering;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public final class EventMethodMapping {
 
-    public static EventTypeMatcher makeEventTypeMatcher(Collection<? extends EventMethodMapping> typeMappings) {
-        checkArgument(
-                typeMappings.stream().map(EventMethodMapping::getEventType).distinct().count() == typeMappings.size(),
-                "Duplicate event types detected: %s", typeMappings.stream()
-                        .map(EventMethodMapping::getEventType)
-                        .map(EventType::toString)
-                        .collect(Collectors.toList()));
+    public static Map<EventType, TupleSchema> getEventTypeMappings(Collection<? extends EventMethodMapping> typeMappings) {
+        if (typeMappings.stream().map(EventMethodMapping::getEventType).distinct().count() != typeMappings.size()) {
+            throw new IllegalStateException(String.format("Duplicate event types detected: %s", typeMappings.stream()
+                    .map(EventMethodMapping::getEventType)
+                    .map(EventType::toString)
+                    .collect(toList())));
+        }
 
-        return EventTypeMatcher.matchingAgainst(typeMappings.stream()
+        return typeMappings.stream()
                 .collect(toMap(
                         EventMethodMapping::getEventType,
-                        EventMethodMapping::getTupleSchema)));
+                        EventMethodMapping::getTupleSchema));
     }
 
     public static Comparator<Event> makeCausalOrdering(Collection<? extends EventMethodMapping> typeMappings) {

@@ -1,7 +1,7 @@
 package com.opencredo.concourse.spring;
 
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.commands.methods.proxying.ProxyingCommandBus;
+import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingCachedEventSource;
 import com.opencredo.concourse.mapping.events.methods.dispatching.DispatchingEventSourceFactory;
 import com.opencredo.concourse.spring.commands.CommandSystemBeans;
@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.contains;
 public class EventSystemIntegrationTest {
 
     @Autowired
-    private ProxyingCommandBus proxyingCommandBus;
+    private CommandProxyFactory commandProxyFactory;
 
     @Autowired
     private DispatchingEventSourceFactory eventSourceDispatching;
@@ -45,7 +45,7 @@ public class EventSystemIntegrationTest {
         UUID personId2 = UUID.randomUUID();
         Instant start = Instant.now();
 
-        final PersonCommands personCommands = proxyingCommandBus.getDispatcherFor(PersonCommands.class);
+        final PersonCommands personCommands = commandProxyFactory.getProxy(PersonCommands.class);
 
         personCommands.create(StreamTimestamp.of("test", start),
                 personId1,
@@ -70,7 +70,7 @@ public class EventSystemIntegrationTest {
                 "Arthur Danto",
                 32).get();
 
-        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.to(PersonEvents.class)
+        final DispatchingCachedEventSource<PersonEvents> preloaded = eventSourceDispatching.dispatchingTo(PersonEvents.class)
                 .preload(personId1, personId2);
 
         List<String> personHistory1 = preloaded.replaying(personId1).collectAll(eventSummariser());
@@ -88,7 +88,6 @@ public class EventSystemIntegrationTest {
                 "name was changed to Arthur Danto"
         ));
 
-        System.out.println(personEventHandler.getPublishedEvents());
         assertThat(personEventHandler.getPublishedEvents(), contains(
                 "Arthur Putey was created with age 41",
                 "age was changed to 42",

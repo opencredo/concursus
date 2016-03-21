@@ -1,11 +1,9 @@
 package com.opencredo.concourse.mapping.events.methods.state;
 
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.caching.CachingEventSource;
-import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
+import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEvent;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
@@ -26,10 +24,9 @@ import static org.hamcrest.Matchers.equalTo;
 public class StateBuilderTest {
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
-    private final EventWriter eventWriter = PublishingEventWriter.using(eventStore, event -> {});
-    private final EventSource eventSource = CachingEventSource.retrievingWith(eventStore);
+    private final EventSource eventSource = EventSource.retrievingWith(eventStore);
 
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventWriter));
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
 
     @HandlesEventsFor("person")
     public static final class PersonState {

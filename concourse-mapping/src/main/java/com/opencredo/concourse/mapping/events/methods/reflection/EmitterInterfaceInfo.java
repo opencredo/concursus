@@ -1,7 +1,10 @@
 package com.opencredo.concourse.mapping.events.methods.reflection;
 
+import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.EventType;
 import com.opencredo.concourse.domain.events.binding.EventTypeBinding;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatchers;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
@@ -45,23 +48,36 @@ public final class EmitterInterfaceInfo<T> {
         String aggregateType = iface.getAnnotation(HandlesEventsFor.class).value();
         Map<Method, EventMethodMapping> eventMappers = EventMethodType.EMITTER.getEventMethodInfo(aggregateType, iface);
 
+        Map<EventType, TupleSchema> eventTypeMatcherMap = EventMethodMapping.getEventTypeMappings(eventMappers.values());
+
         return new EmitterInterfaceInfo<>(
-                EventTypeBinding.of(aggregateType, EventMethodMapping.makeEventTypeMatcher(eventMappers.values())),
+                eventTypeMatcherMap,
+                EventTypeBinding.of(aggregateType, EventTypeMatcher.matchingAgainst(eventTypeMatcherMap)),
                 EventMethodMapper.mappingWith(eventMappers),
                 EventDispatchers.dispatchingEventsByType(eventMappers),
                 EventMethodMapping.makeCausalOrdering(eventMappers.values()));
     }
 
+    private final Map<EventType, TupleSchema> eventTypeMatcherMap;
     private final EventTypeBinding eventTypeBinding;
     private final EventMethodMapper eventMethodMapper;
     private final MultiTypeEventDispatcher<T> eventDispatcher;
     private final Comparator<Event> causalOrderComparator;
 
-    private EmitterInterfaceInfo(EventTypeBinding eventTypeBinding, EventMethodMapper eventMethodMapper, MultiTypeEventDispatcher<T> eventDispatcher, Comparator<Event> causalOrderComparator) {
+    private EmitterInterfaceInfo(Map<EventType, TupleSchema> eventTypeMatcherMap, EventTypeBinding eventTypeBinding, EventMethodMapper eventMethodMapper, MultiTypeEventDispatcher<T> eventDispatcher, Comparator<Event> causalOrderComparator) {
+        this.eventTypeMatcherMap = eventTypeMatcherMap;
         this.eventTypeBinding = eventTypeBinding;
         this.eventMethodMapper = eventMethodMapper;
         this.eventDispatcher = eventDispatcher;
         this.causalOrderComparator = causalOrderComparator;
+    }
+
+    /**
+     * Get a {@link Map} of {@link EventType}s to {@link TupleSchema}s that can be used to build an {@link EventTypeMatcher}
+     * @return
+     */
+    public Map<EventType, TupleSchema> getEventTypeMatcherMap() {
+        return eventTypeMatcherMap;
     }
 
     /**
@@ -94,5 +110,13 @@ public final class EmitterInterfaceInfo<T> {
      */
     public MultiTypeEventDispatcher<T> getEventDispatcher() {
         return eventDispatcher;
+    }
+
+    /**
+     * Get an {@link EventTypeMatcher} for the interface.
+     * @return
+     */
+    public EventTypeMatcher getEventTypeMatcher() {
+        return EventTypeMatcher.matchingAgainst(eventTypeMatcherMap);
     }
 }

@@ -5,16 +5,13 @@ import com.opencredo.concourse.data.tuples.Tuple;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.caching.CachingEventSource;
-import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
-import com.opencredo.concourse.domain.events.logging.EventLog;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
-import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
+import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
+import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeRange;
 import org.junit.Test;
@@ -40,11 +37,9 @@ public class InMemoryEventStoreTest {
     private final EventTypeMatcher eventTypeMatcher = et -> Optional.of(emptySchema);
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
-    private final EventSource eventSource = CachingEventSource.retrievingWith(eventStore);
-    private final EventLog eventLog = eventStore;
-    private final EventWriter eventWriter = PublishingEventWriter.using(eventLog, event -> {});
+    private final EventSource eventSource = EventSource.retrievingWith(eventStore);
 
-    private final EventBus bus = () -> SimpleEventBatch.writingTo(eventWriter);
+    private final EventBus bus = () -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore));
 
     @Test
     public void storesEventsInTimeDescendingOrder() {

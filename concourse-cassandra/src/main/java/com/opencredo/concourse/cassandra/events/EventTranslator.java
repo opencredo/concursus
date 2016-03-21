@@ -8,7 +8,7 @@ import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.EventType;
-import com.opencredo.concourse.domain.events.sourcing.EventTypeMatcher;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import org.springframework.cassandra.core.RowCallbackHandler;
 
@@ -29,7 +29,7 @@ final class EventTranslator implements RowCallbackHandler {
     private static final int PARAMETERS = 7;
     private static final int CHARACTERISTICS = 8;
 
-    public static EventTranslator using(EventTypeMatcher matcher, BiFunction<String, Type, Object> deserialiser, Consumer<Event> eventCollector) {
+    static EventTranslator using(EventTypeMatcher matcher, BiFunction<String, Type, Object> deserialiser, Consumer<Event> eventCollector) {
         return new EventTranslator(matcher, deserialiser, eventCollector);
     }
 

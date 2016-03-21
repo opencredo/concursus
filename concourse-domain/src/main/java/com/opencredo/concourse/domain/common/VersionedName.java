@@ -1,26 +1,30 @@
 package com.opencredo.concourse.domain.common;
 
-import com.google.common.base.Preconditions;
-
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * A name/version combination.
+ */
 public final class VersionedName {
 
-    public static VersionedName parse(String formatted) {
-        checkNotNull(formatted, "formatted must not be null");
-
-        String[] parts = formatted.split("_", 2);
-
-        Preconditions.checkArgument(parts.length == 2);
-        return of(parts[0], parts[1]);
-    }
-
+    /**
+     * Create a {@link VersionedName} with the supplied name and version "0".
+     * @param name The name of the {@link VersionedName}.
+     * @return The constructed {@link VersionedName}.
+     */
     public static VersionedName of(String name) {
         return of(name, "0");
     }
 
+
+    /**
+     * Create a {@link VersionedName} with the supplied name and version.
+     * @param name The name of the {@link VersionedName}.
+     * @param version The version of the {@link VersionedName}.
+     * @return The constructed {@link VersionedName}.
+     */
     public static VersionedName of(String name, String version) {
         checkNotNull(name, "name must not be null");
         checkNotNull(version, "version must not be null");
@@ -36,14 +40,26 @@ public final class VersionedName {
         this.version = version;
     }
 
+    /**
+     * Get the "name" part of the {@link VersionedName}.
+     * @return The "name" part of the {@link VersionedName}.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the "version" part of the {@link VersionedName}.
+     * @return The "version" part of the {@link VersionedName}.
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Get the {@link VersionedName} formatted as a single string.
+     * @return The name and version concatenated with an underscore separator.
+     */
     public String getFormatted() {
         return name + "_" + version;
     }

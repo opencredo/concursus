@@ -1,15 +1,13 @@
 package com.opencredo.concourse.mapping.events.methods.history;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.batching.SimpleEventBatch;
-import com.opencredo.concourse.domain.events.caching.CachingEventSource;
-import com.opencredo.concourse.domain.events.caching.InMemoryEventStore;
+import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.writing.EventWriter;
-import com.opencredo.concourse.domain.events.writing.PublishingEventWriter;
+import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
-import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concourse.mapping.events.methods.helper.PersonEvents;
+import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -25,10 +23,9 @@ import static org.hamcrest.Matchers.equalTo;
 public class EventHistoryFetcherTest {
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
-    private final EventWriter eventWriter = PublishingEventWriter.using(eventStore, event -> {});
-    private final EventSource eventSource = CachingEventSource.retrievingWith(eventStore);
+    private final EventSource eventSource = EventSource.retrievingWith(eventStore);
 
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> SimpleEventBatch.writingTo(eventWriter));
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
 
     private final Instant timestampStart = Instant.now();
     private final AtomicInteger timestampOffset = new AtomicInteger(0);
@@ -45,7 +42,7 @@ public class EventHistoryFetcherTest {
             batch.nameUpdated(nextTimestamp(), id2, "Arthur Mumby");
         });
 
-        Map<UUID, List<Event>> histories = EventHistoryFetcher.of(PersonEvents.class)
+        Map<UUID, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
                 .getHistories(eventSource, Arrays.asList(id1, id2));
 
         assertThat(histories.get(id1).get(0).getParameters().get("name"),
@@ -70,7 +67,7 @@ public class EventHistoryFetcherTest {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
         });
 
-        Map<UUID, List<Event>> histories = EventHistoryFetcher.of(PersonEvents.class)
+        Map<UUID, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
                 .getHistories(eventSource, Arrays.asList(id1, id2));
 
         assertThat(histories.get(id1).get(0).getParameters().get("name"),
