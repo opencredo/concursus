@@ -13,9 +13,12 @@ import java.util.function.Function;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * The result of processing a {@link Command}, which may be either success or failure.
+ */
 public final class CommandResult {
 
-    public static CommandResult ofSuccess(UUID processingId, Instant processedTimestamp, Type resultType, Optional<Object> resultValue) {
+    static CommandResult ofSuccess(UUID processingId, Instant processedTimestamp, Type resultType, Optional<Object> resultValue) {
         checkNotNull(processingId, "processingId must not be null");
         checkNotNull(processedTimestamp, "processedTimestamp must not be null");
         checkNotNull(resultType, "resultType must not be null");
@@ -33,7 +36,7 @@ public final class CommandResult {
         return new CommandResult(processingId, processedTimestamp, resultType, Either.ofLeft(resultValue));
     }
 
-    public static CommandResult ofFailure(UUID processingId, Instant processedTimestamp, Type resultType, Exception failure) {
+    static CommandResult ofFailure(UUID processingId, Instant processedTimestamp, Type resultType, Exception failure) {
         checkNotNull(processingId, "processingId must not be null");
         checkNotNull(processedTimestamp, "processedTimestamp must not be null");
         checkNotNull(resultType, "resultType must not be null");
@@ -66,16 +69,8 @@ public final class CommandResult {
         return resultType;
     }
 
-    public Optional<Object> getResultValue() {
-        return result.join(
-                Function.identity(),
-                e -> { throw new IllegalStateException("getResultValue called on failed command result"); });
-    }
-
-    public Exception getException() {
-        return result.join(
-                r -> { throw new IllegalStateException("getException called on successful command result"); },
-                Function.identity());
+    public <T> T join(Function<Optional<Object>, T> left, Function<Exception, T> right) {
+        return result.join(left, right);
     }
 
     public boolean succeeded() {

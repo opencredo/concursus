@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +46,7 @@ public class LoggingCommandBusTest {
                 emptySchema.makeWith(),
                 String.class
         );
-        Optional<Object> result = commandBus.apply(command).get().getResultValue();
+        Optional<Object> result = commandBus.apply(command).get().join(Function.identity(), r -> Optional.empty());
 
         assertThat(result, equalTo(Optional.of("OK")));
         assertThat(getLoggedCommands(), contains(command));
@@ -66,11 +67,11 @@ public class LoggingCommandBusTest {
                 emptySchema.makeWith(),
                 String.class
         );
-        Exception exception = commandBus.apply(command).get().getException();
-        assertThat(exception.getMessage(), equalTo("Out of cheese"));
+        String exceptionMessage = commandBus.apply(command).get().join(left -> null, Exception::getMessage);
+        assertThat(exceptionMessage, equalTo("Out of cheese"));
 
         assertThat(getLoggedCommands(), contains(command));
-        assertThat(loggedResults.get(0).getException().getMessage(), equalTo("Out of cheese"));
+        assertThat(loggedResults.get(0).join(left -> null, Exception::getMessage), equalTo("Out of cheese"));
     }
 
     @Test

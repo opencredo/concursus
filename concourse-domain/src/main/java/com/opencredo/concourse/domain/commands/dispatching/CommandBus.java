@@ -12,12 +12,7 @@ public interface CommandBus extends Function<Command, CompletableFuture<CommandR
 
     default CommandOutChannel toCommandOutChannel() {
         return command ->
-                apply(command).thenApply(UnsafeFunction.of(result -> {
-                    if (result.succeeded()) {
-                        return result.getResultValue();
-                    } else {
-                        throw result.getException();
-                    }
-                }));
+                apply(command).thenApply(result ->
+                        result.join(Function.identity(), UnsafeFunction.of(e -> { throw e; })));
     }
 }
