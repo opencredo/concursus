@@ -11,12 +11,25 @@ public final class StreamTimestamp implements Comparable<StreamTimestamp> {
     public static final Comparator<StreamTimestamp> COMPARATOR =
             Comparator.comparing(StreamTimestamp::getTimestamp).thenComparing(StreamTimestamp::getStreamId);
 
+    public static StreamTimestamp now() {
+        return now("");
+    }
+
+    public static StreamTimestamp now(String streamId) {
+        return of(streamId, Instant.now());
+    }
+
+    public static StreamTimestamp of(Instant timestamp) {
+        return of("", timestamp);
+    }
+
     public static StreamTimestamp of(String streamId, Instant timestamp) {
         checkNotNull(streamId, "streamId must not be null");
         checkNotNull(timestamp, "timestamp must not be null");
 
         return new StreamTimestamp(streamId, timestamp);
     }
+
     private final String streamId;
 
     private final Instant timestamp;

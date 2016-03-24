@@ -20,6 +20,7 @@
         <module>concourse-domain-json</module>
         <module>concourse-spring-redis</module>
         <module>concourse-game-demo</module>
+        <module>concourse-examples</module>
     </modules>
 
     <properties>
