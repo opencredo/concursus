@@ -37,4 +37,9 @@ public final class TimeRangeBound {
         return instant.isBefore(this.instant)
                 || instant.equals(this.instant) && isInclusive;
     }
+
+    @Override
+    public String toString() {
+        return instant.toString() + " " + (isInclusive ? "inclusive" : "exclusive");
+    }
 }

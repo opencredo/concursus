@@ -1,34 +1,29 @@
 package com.opencredo.concourse.mapping.events.methods.state;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.sourcing.EventReplayer;
+import com.opencredo.concourse.domain.state.StateBuilder;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.EventDispatcher;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.InitialEventDispatcher;
 
-import java.util.Comparator;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.opencredo.concourse.domain.events.EventCharacteristics.IS_INITIAL;
 
-final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventReplayer, Optional<T>> {
+final class DispatchingStateBuilder<T> implements StateBuilder<T> {
 
-    public static <T> StateMethodDispatcher<T> dispatching(InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateMethodDispatcher, Comparator<Event> causalOrder) {
-        return new StateMethodDispatcher<>(initialEventDispatcher, updateMethodDispatcher, causalOrder);
+    public static <T> DispatchingStateBuilder<T> dispatching(InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateMethodDispatcher) {
+        return new DispatchingStateBuilder<>(initialEventDispatcher, updateMethodDispatcher);
     }
 
     private Optional<T> state = Optional.empty();
 
     private final InitialEventDispatcher<T> initialEventDispatcher;
     private final EventDispatcher<T> updateMethodDispatcher;
-    private final Comparator<Event> causalOrder;
 
-    private StateMethodDispatcher(InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateMethodDispatcher, Comparator<Event> causalOrder) {
+    private DispatchingStateBuilder(InitialEventDispatcher<T> initialEventDispatcher, EventDispatcher<T> updateMethodDispatcher) {
         this.initialEventDispatcher = initialEventDispatcher;
         this.updateMethodDispatcher = updateMethodDispatcher;
-        this.causalOrder = causalOrder;
     }
 
     @Override
@@ -43,9 +38,7 @@ final class StateMethodDispatcher<T> implements Consumer<Event>, Function<EventR
     }
 
     @Override
-    public Optional<T> apply(EventReplayer eventReplayer) {
-        state = Optional.empty();
-        eventReplayer.inAscendingOrder(causalOrder).replayAll(this);
+    public Optional<T> get() {
         return state;
     }
 }

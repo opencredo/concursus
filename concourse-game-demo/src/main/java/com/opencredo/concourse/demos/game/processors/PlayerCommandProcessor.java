@@ -9,8 +9,8 @@ import com.opencredo.concourse.demos.game.events.GameEvents;
 import com.opencredo.concourse.demos.game.events.PlayerEvents;
 import com.opencredo.concourse.demos.game.exceptions.IllegalGameStateException;
 import com.opencredo.concourse.demos.game.exceptions.NoSuchGameException;
-import com.opencredo.concourse.demos.game.repositories.GameStateRepository;
 import com.opencredo.concourse.demos.game.states.GameState;
+import com.opencredo.concourse.domain.state.StateRepository;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concourse.spring.commands.processing.CommandHandler;
@@ -27,11 +27,11 @@ public final class PlayerCommandProcessor implements PlayerCommands {
 
     private final ProxyingEventBus eventBus;
     private final EngineRegistry engineRegistry;
-    private final GameStateRepository gameStateRepository;
+    private final StateRepository<GameState> gameStateRepository;
     private final PointsCalculator pointsCalculator;
 
     @Autowired
-    public PlayerCommandProcessor(ProxyingEventBus eventBus, EngineRegistry engineRegistry, GameStateRepository gameStateRepository, PointsCalculator pointsCalculator) {
+    public PlayerCommandProcessor(ProxyingEventBus eventBus, EngineRegistry engineRegistry, StateRepository<GameState> gameStateRepository, PointsCalculator pointsCalculator) {
         this.eventBus = eventBus;
         this.engineRegistry = engineRegistry;
         this.gameStateRepository = gameStateRepository;
@@ -70,7 +70,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
 
     @Override
     public CompletableFuture<Void> joinGame(StreamTimestamp ts, UUID playerId, UUID gameId) {
-        GameState gameState = gameStateRepository.get(gameId).orElseThrow(NoSuchGameException::new);
+        GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isAwaitingSecondPlayer()) {
             throw new IllegalStateException("Second player already joined");
@@ -89,7 +89,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
 
     @Override
     public CompletableFuture<Void> playTurn(StreamTimestamp ts, UUID playerId, UUID gameId, Card card, Optional<BoardSlot> toSlot) {
-        GameState gameState = gameStateRepository.get(gameId).orElseThrow(NoSuchGameException::new);
+        GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isPlayersTurn(playerId)) {
             throw new IllegalGameStateException("Not this player's turn");
@@ -147,7 +147,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
 
     @Override
     public CompletableFuture<Void> surrender(StreamTimestamp ts, UUID playerId, UUID gameId) {
-        GameState gameState = gameStateRepository.get(gameId).orElseThrow(NoSuchGameException::new);
+        GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isPlayersTurn(playerId)) {
             throw new IllegalGameStateException("Not this player's turn");

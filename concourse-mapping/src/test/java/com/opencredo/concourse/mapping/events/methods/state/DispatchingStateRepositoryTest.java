@@ -3,6 +3,7 @@ package com.opencredo.concourse.mapping.events.methods.state;
 import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
+import com.opencredo.concourse.domain.state.StateRepository;
 import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.annotations.HandlesEvent;
@@ -12,7 +13,6 @@ import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class StateBuilderTest {
+public class DispatchingStateRepositoryTest {
 
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
     private final EventSource eventSource = EventSource.retrievingWith(eventStore);
@@ -77,18 +77,31 @@ public class StateBuilderTest {
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
 
+        StreamTimestamp createTimestamp = nextTimestamp();
+        StreamTimestamp updateTimestamp = nextTimestamp();
+
         eventBus.dispatch(PersonEvents.class, batch -> {
-            batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
-            batch.createdV1(nextTimestamp(), id2, "Arthur Dent");
-            batch.nameUpdated(nextTimestamp(), id1, "Arthur Daley");
-            batch.nameUpdated(nextTimestamp(), id2, "Arthur Mumby");
+            batch.createdV2(createTimestamp, id1, "Arthur Putey", 41);
+            batch.createdV1(createTimestamp, id2, "Arthur Dent");
+            batch.nameUpdated(updateTimestamp, id1, "Arthur Daley");
+            batch.nameUpdated(updateTimestamp, id2, "Arthur Mumby");
         });
 
-        Map<UUID, PersonState> states = StateBuilder.forStateClass(PersonState.class)
-                .buildStates(eventSource, Arrays.asList(id1, id2));
+        StateRepository<PersonState> cache = DispatchingStateRepository.using(eventSource, PersonState.class);
+
+        Map<UUID, PersonState> statesBeforeUpdate = cache.getStates(id1, id2);
+
+        assertThat(statesBeforeUpdate.get(id1).getName(), equalTo("Arthur Daley"));
+        assertThat(statesBeforeUpdate.get(id2).getName(), equalTo("Arthur Mumby"));
+
+        eventBus.dispatch(PersonEvents.class, batch -> {
+            batch.nameUpdated(updateTimestamp.subStream("substream"), id2, "Arthur, King of the Britons");
+        });
+
+        Map<UUID, PersonState> states = cache.getStates(id1, id2);
 
         assertThat(states.get(id1).getName(), equalTo("Arthur Daley"));
-        assertThat(states.get(id2).getName(), equalTo("Arthur Mumby"));
+        assertThat(states.get(id2).getName(), equalTo("Arthur, King of the Britons"));
     }
 
     private StreamTimestamp nextTimestamp() {

@@ -1,5 +1,6 @@
 package com.opencredo.concourse.spring.demo.processors;
 
+import com.opencredo.concourse.domain.state.StateRepository;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concourse.spring.commands.processing.CommandHandler;
@@ -8,7 +9,6 @@ import com.opencredo.concourse.spring.demo.controllers.UserNotFoundException;
 import com.opencredo.concourse.spring.demo.events.GroupEvents;
 import com.opencredo.concourse.spring.demo.events.UserEvents;
 import com.opencredo.concourse.spring.demo.repositories.UserState;
-import com.opencredo.concourse.spring.demo.repositories.UserStateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.UUID;
@@ -17,11 +17,11 @@ import java.util.concurrent.CompletableFuture;
 @CommandHandler
 public class UserCommandsProcessor implements UserCommands {
 
-    private final UserStateRepository userStateRepository;
+    private final StateRepository<UserState> userStateRepository;
     private final ProxyingEventBus proxyingEventBus;
 
     @Autowired
-    public UserCommandsProcessor(UserStateRepository userStateRepository, ProxyingEventBus proxyingEventBus) {
+    public UserCommandsProcessor(StateRepository<UserState> userStateRepository, ProxyingEventBus proxyingEventBus) {
         this.userStateRepository = userStateRepository;
         this.proxyingEventBus = proxyingEventBus;
     }
@@ -61,7 +61,7 @@ public class UserCommandsProcessor implements UserCommands {
 
     @Override
     public CompletableFuture<Void> delete(StreamTimestamp ts, UUID userId) {
-        UserState userState = userStateRepository.getUserState(userId).orElseThrow(UserNotFoundException::new);
+        UserState userState = userStateRepository.getState(userId).orElseThrow(UserNotFoundException::new);
 
         proxyingEventBus.dispatch(UserEvents.class, GroupEvents.class, (userEvents, groupEvents) -> {
             userState.getGroupIds().forEach(groupId -> groupEvents.userRemoved(ts, groupId, userId));

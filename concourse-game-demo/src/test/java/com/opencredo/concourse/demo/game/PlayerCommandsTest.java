@@ -6,9 +6,9 @@ import com.opencredo.concourse.demos.game.domain.*;
 import com.opencredo.concourse.demos.game.engine.Deal;
 import com.opencredo.concourse.demos.game.engine.Engine;
 import com.opencredo.concourse.demos.game.engine.EngineRegistry;
-import com.opencredo.concourse.demos.game.repositories.GameStateRepository;
-import com.opencredo.concourse.demos.game.repositories.PlayerStateRepository;
+import com.opencredo.concourse.demos.game.states.GameState;
 import com.opencredo.concourse.demos.game.states.PlayerState;
+import com.opencredo.concourse.domain.state.StateRepository;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concourse.spring.events.EventSystemBeans;
@@ -44,10 +44,10 @@ public class PlayerCommandsTest {
     public EngineRegistry engineRegistry;
 
     @Autowired
-    public GameStateRepository gameStateRepository;
+    public StateRepository<GameState> gameStateRepository;
 
     @Autowired
-    public PlayerStateRepository playerStateRepository;
+    public StateRepository<PlayerState> playerStateRepository;
 
     private final Engine engine = mock(Engine.class);
 
@@ -80,8 +80,8 @@ public class PlayerCommandsTest {
         cmd.playTurn(now(), playerTwoId, gameId, Card.CHAOS_BADGER, Optional.of(BoardSlot.of(2, BoardRow.PLAYER))).get();
         cmd.playTurn(now(), playerOneId, gameId, Card.NECROTIC_TOXICITY, Optional.empty()).get();
 
-        PlayerState playerOneState = playerStateRepository.get(playerOneId).get();
-        PlayerState playerTwoState = playerStateRepository.get(playerTwoId).get();
+        PlayerState playerOneState = playerStateRepository.getState(playerOneId).get();
+        PlayerState playerTwoState = playerStateRepository.getState(playerTwoId).get();
 
         assertThat(playerOneState.getRating(), equalTo(50));
         assertThat(playerTwoState.getRating(), equalTo(-50));

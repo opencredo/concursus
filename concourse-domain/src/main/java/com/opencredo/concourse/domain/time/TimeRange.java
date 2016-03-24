@@ -64,4 +64,10 @@ public final class TimeRange {
     public Optional<TimeRangeBound> getUpperBound() {
         return upperBound;
     }
+
+    @Override
+    public String toString() {
+        return "TimeRange from " + lowerBound.map(TimeRangeBound::toString).orElse("unbounded") + " to "
+                + upperBound.map(TimeRangeBound::toString).orElse("unbounded");
+    }
 }
