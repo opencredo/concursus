@@ -1,6 +1,7 @@
 package com.opencredo.concourse.examples;
 
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
+import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.state.StateRepository;
@@ -18,9 +19,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -89,9 +88,15 @@ public class Lightbulb {
     }
 
     private final EventStore eventStore = InMemoryEventStore.empty();
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() ->
-            ProcessingEventBatch.processingWith(
-                    EventBatchProcessor.forwardingTo(eventStore)));
+
+    private final EventSource eventSource = EventSource.retrievingWith(eventStore);
+    private final EventLog eventLog = EventLog.loggingTo(eventStore);
+
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(
+            EventBus.processingWith(EventBatchProcessor.loggingWith(eventLog)));
+
+    private final StateRepository<LightbulbState> lightbulbStateRepository = DispatchingStateRepository.using(
+            eventSource, LightbulbState.class);
 
     @Test
     public void createAndRetrieveState() {
@@ -99,9 +104,6 @@ public class Lightbulb {
         Instant start = Instant.now().minus(3, DAYS);
 
         recordEventHistory(lightbulbId, start);
-
-        StateRepository<LightbulbState> lightbulbStateRepository = DispatchingStateRepository.using(
-                EventSource.retrievingWith(eventStore), LightbulbState.class);
 
         LightbulbState lightbulbState = lightbulbStateRepository.getState(lightbulbId).get();
 
@@ -116,9 +118,6 @@ public class Lightbulb {
         Instant start = Instant.now().minus(3, DAYS);
 
         recordEventHistory(lightbulbId, start);
-
-        StateRepository<LightbulbState> lightbulbStateRepository = DispatchingStateRepository.using(
-                EventSource.retrievingWith(eventStore), LightbulbState.class);
 
         // Lightbulb is still in the kitchen, and is switched off.
         LightbulbState lightbulbState = lightbulbStateRepository.getState(lightbulbId, start.plus(4, HOURS)).get();
