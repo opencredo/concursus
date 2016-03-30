@@ -1,6 +1,7 @@
 package com.opencredo.concourse.domain.time;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -49,6 +50,14 @@ public final class StreamTimestamp implements Comparable<StreamTimestamp> {
 
     public StreamTimestamp subStream(String substreamName) {
         return new StreamTimestamp(streamId + ":" + substreamName, timestamp);
+    }
+
+    public StreamTimestamp plus(int i, ChronoUnit unit) {
+        return new StreamTimestamp(streamId, timestamp.plus(i, unit));
+    }
+
+    public StreamTimestamp minus(int i, ChronoUnit unit) {
+        return new StreamTimestamp(streamId, timestamp.minus(i, unit));
     }
 
     @Override

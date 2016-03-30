@@ -21,6 +21,7 @@
         <module>concourse-spring-redis</module>
         <module>concourse-game-demo</module>
         <module>concourse-examples</module>
+        <module>concourse-kafka</module>
     </modules>
 
     <properties>

@@ -37,7 +37,7 @@ public final class DispatchingSubscriber {
     }
 
     private <H> DispatchingSubscriber subscribe(EmitterInterfaceInfo<H> mapper, H handler) {
-        BoundEventDispatcher<H> dispatcher = BoundEventDispatcher.binding(mapper.getEventDispatcher(), handler);
+        DispatchingEventOutChannel<H> dispatcher = DispatchingEventOutChannel.binding(mapper.getEventDispatcher(), handler);
         dispatcher.subscribeTo(eventPublisher);
         return this;
     }

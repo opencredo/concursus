@@ -3,7 +3,24 @@ package com.opencredo.concourse.domain.events.filtering.batch;
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 public interface EventBatchPreFilter extends EventBatchIntercepter {
+
+    static EventBatchPreFilter of(Function<EventBatch, Boolean> beforeComplete, BiFunction<EventBatch, Event, Boolean> beforeAccept) {
+        return new EventBatchPreFilter() {
+            @Override
+            public boolean beforeComplete(EventBatch eventBatch) {
+                return beforeComplete.apply(eventBatch);
+            }
+
+            @Override
+            public boolean beforeAccept(EventBatch eventBatch, Event event) {
+                return beforeAccept.apply(eventBatch, event);
+            }
+        };
+    }
 
     @Override
     default void onComplete(EventBatch eventBatch) {

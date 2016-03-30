@@ -8,6 +8,7 @@ import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 /**
  * Provides {@link EventBatch}es which are used to send groups of {@link Event}s for processing by an
@@ -18,6 +19,10 @@ public interface EventBus extends EventOutChannel {
 
     static EventBus processingWith(EventBatchProcessor processor) {
         return () -> ProcessingEventBatch.processingWith(processor);
+    }
+
+    static EventBus processingWith(EventBatchProcessor processor, UnaryOperator<EventBatch> batchFilter) {
+        return () -> batchFilter.apply(ProcessingEventBatch.processingWith(processor));
     }
 
     /**

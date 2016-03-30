@@ -95,7 +95,7 @@ public final class DispatchingEventReplayer<T> {
      * @param handler The event handler to replay the event to.
      */
     public void replayFirst(T handler) {
-        eventReplayer.replayFirst(BoundEventDispatcher.binding(dispatcher, handler));
+        eventReplayer.replayFirst(DispatchingEventOutChannel.binding(dispatcher, handler));
     }
 
     /**
@@ -103,7 +103,7 @@ public final class DispatchingEventReplayer<T> {
      * @param handler The event handler to replay the events to.
      */
     public void replayAll(T handler) {
-        eventReplayer.replayAll(BoundEventDispatcher.binding(dispatcher, handler));
+        eventReplayer.replayAll(DispatchingEventOutChannel.binding(dispatcher, handler));
     }
 
     /**
@@ -113,7 +113,7 @@ public final class DispatchingEventReplayer<T> {
      * @return The collected value, or {@link Optional}::empty if the sequence is empty.
      */
     public <V> Optional<V> collectFirst(Function<Consumer<V>, T> collector) {
-        return eventReplayer.collectFirst(caller -> BoundEventDispatcher.binding(dispatcher, collector.apply(caller)));
+        return eventReplayer.collectFirst(caller -> DispatchingEventOutChannel.binding(dispatcher, collector.apply(caller)));
     }
 
     /**
@@ -123,6 +123,6 @@ public final class DispatchingEventReplayer<T> {
      * @return The collected values.
      */
     public <V> List<V> collectAll(Function<Consumer<V>, T> collector) {
-        return eventReplayer.collectAll(caller -> BoundEventDispatcher.binding(dispatcher, collector.apply(caller)));
+        return eventReplayer.collectAll(caller -> DispatchingEventOutChannel.binding(dispatcher, collector.apply(caller)));
     }
 }

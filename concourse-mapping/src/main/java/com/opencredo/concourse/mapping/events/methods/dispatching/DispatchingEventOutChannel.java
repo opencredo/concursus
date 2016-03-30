@@ -1,26 +1,30 @@
 package com.opencredo.concourse.mapping.events.methods.dispatching;
 
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.channels.EventOutChannel;
 import com.opencredo.concourse.domain.events.publishing.EventSubscribable;
+import com.opencredo.concourse.mapping.events.methods.reflection.EmitterInterfaceInfo;
 import com.opencredo.concourse.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
-
-import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-final class BoundEventDispatcher<H> implements Consumer<Event> {
+public final class DispatchingEventOutChannel<H> implements EventOutChannel {
 
-    static <H> BoundEventDispatcher<H> binding(MultiTypeEventDispatcher<H> dispatcher, H target) {
-        checkNotNull(dispatcher, "dispatcher must not be null");
-        checkNotNull(target, "target must not be null");
+    public static <T> EventOutChannel toHandler(Class<? extends T> iface, T handler) {
+        checkNotNull(iface, "iface must not be null");
 
-        return new BoundEventDispatcher<>(target, dispatcher);
+        return binding(EmitterInterfaceInfo.forInterface(iface).getEventDispatcher(), handler);
+    }
+
+    static <H> DispatchingEventOutChannel<H> binding(MultiTypeEventDispatcher<H> dispatcher, H handler) {
+        checkNotNull(handler, "handler must not be null");
+        return new DispatchingEventOutChannel<>(handler, dispatcher);
     }
 
     private final H target;
     private final MultiTypeEventDispatcher<H> eventDispatcher;
 
-    private BoundEventDispatcher(H target, MultiTypeEventDispatcher<H> eventDispatcher) {
+    private DispatchingEventOutChannel(H target, MultiTypeEventDispatcher<H> eventDispatcher) {
         this.target = target;
         this.eventDispatcher = eventDispatcher;
     }
