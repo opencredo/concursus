@@ -19,11 +19,11 @@ public class ProxyingAndDispatchingExample {
     @Test
     public void proxyAndDispatch() {
         // Create a mock handler for person events, and an outChannel that sends events to the handler.
-        PersonEvents handler = mock(PersonEvents.class);
-        EventOutChannel outChannel = DispatchingEventOutChannel.toHandler(PersonEvents.class, handler);
+        Person.Events handler = mock(Person.Events.class);
+        EventOutChannel outChannel = DispatchingEventOutChannel.toHandler(Person.Events.class, handler);
 
         // Create a proxy that sends events to the outChannel.
-        PersonEvents proxy = EventEmittingProxy.proxying(outChannel, PersonEvents.class);
+        Person.Events proxy = EventEmittingProxy.proxying(outChannel, Person.Events.class);
 
         // Send an event via the proxy.
         proxy.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));

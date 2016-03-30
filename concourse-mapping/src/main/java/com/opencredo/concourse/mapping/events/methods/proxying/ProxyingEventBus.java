@@ -1,10 +1,18 @@
 package com.opencredo.concourse.mapping.events.methods.proxying;
 
+import com.opencredo.concourse.domain.common.AggregateId;
+import com.opencredo.concourse.domain.events.channels.EventOutChannel;
+import com.opencredo.concourse.domain.events.channels.RoutingEventOutChannel;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.functional.Consumers;
+import com.opencredo.concourse.mapping.events.methods.state.DispatchingStateBuilder;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * An {@link EventBus} that generates proxies for event-emitter interfaces.
@@ -57,6 +65,57 @@ public interface ProxyingEventBus extends EventBus {
      */
     default <T> T getDispatcherFor(Class<T> klass) {
         return EventEmittingProxy.proxying(this, klass);
+    }
+
+
+    /**
+     * Create a copy of this event bus that additionally sends events to the supplied state instance on batch completion.
+     * @param stateInstance The state instance to send events to.
+     * @param busConsumer A {@link Consumer} that will use the subscribed bus.
+     * @param <S> The type of the state instance.
+     */
+    default <S> void updating(S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
+        updating(stateInstance.getClass(), stateInstance, busConsumer);
+    }
+
+    /**
+     * Create a copy of this event bus that additionally sends events to the supplied state instance on batch completion.
+     * @param stateClass The class of the state instance.
+     * @param stateInstance The state instance to send events to.
+     * @param busConsumer A {@link Consumer} that will use the subscribed bus.
+     * @param <S> The type of the state instance.
+     */
+    default <S> void updating(Class<? extends S> stateClass, S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
+        DispatchingStateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateClass, stateInstance);
+        notifying(stateBuilder.toEventsOutChannel(), Consumers.transform(busConsumer, ProxyingEventBus::proxying));
+    }
+
+    /**
+     * Create a copy of this event bus that additionally sends events to the supplied state class on batch completion.
+     * @param stateClass The class of the state instance.
+     * @param busConsumer A {@link Consumer} that will use the subscribed bus.
+     * @param <S> The type of the state instance.
+     * @return The constructed state, if present.
+     */
+    default <S> Optional<S> creating(Class<? extends S> stateClass, Consumer<ProxyingEventBus> busConsumer) {
+        DispatchingStateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateClass);
+        notifying(stateBuilder.toEventsOutChannel(), Consumers.transform(busConsumer, ProxyingEventBus::proxying));
+        return stateBuilder.get();
+    }
+
+    /**
+     * Create a copy of this event bus that additionally sends events to the supplied state objects (mapped by
+     * aggregate id) on batch completion.
+     * @param stateObjectsById The state objects to send events to on batch completion.
+     * @param busConsumer A {@link Consumer} that will use the subscribed bus.
+     */
+    default void updating(Map<AggregateId, Object> stateObjectsById, Consumer<ProxyingEventBus> busConsumer) {
+        EventOutChannel outChannel = RoutingEventOutChannel.routingWith(stateObjectsById.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Entry::getKey,
+                        e -> DispatchingStateBuilder.dispatchingTo(e.getValue()))));
+
+        notifying(outChannel.toEventsOutChannel(), Consumers.transform(busConsumer, ProxyingEventBus::proxying));
     }
 
 }

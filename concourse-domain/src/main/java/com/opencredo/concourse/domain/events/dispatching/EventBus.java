@@ -5,6 +5,7 @@ import com.opencredo.concourse.domain.events.batching.EventBatch;
 import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.channels.EventOutChannel;
 import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
+import com.opencredo.concourse.domain.events.filtering.batch.BufferingEventBatchFilter;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 
 import java.util.function.Consumer;
@@ -53,5 +54,16 @@ public interface EventBus extends EventOutChannel {
 
     default EventsOutChannel toEventsOutChannel() {
         return events -> dispatch(batch -> events.forEach(batch::accept));
+    }
+
+    /**
+     * Create a copy of this event bus that notifies the supplied {@link EventsOutChannel} on batch completion.
+     * @param outChannel The {@link EventsOutChannel} to notify.
+     * @param busConsumer A {@link Consumer} that will use the subscribed bus.
+     */
+    default void notifying(EventsOutChannel outChannel, Consumer<EventBus> busConsumer) {
+        BufferingEventBatchFilter bufferingEventBatchFilter = BufferingEventBatchFilter.writingOnCompleteTo(outChannel);
+        EventBus subscribedBus = () -> bufferingEventBatchFilter.apply(startBatch());
+        busConsumer.accept(subscribedBus);
     }
 }

@@ -33,15 +33,15 @@ public class JsonExample {
         List<String> serialisedBatches = new ArrayList<>();
 
         // Create a channel that sends events to a mocked handler.
-        PersonEvents handler = mock(PersonEvents.class);
-        EventOutChannel channelToHandler = DispatchingEventOutChannel.toHandler(PersonEvents.class, handler);
+        Person.Events handler = mock(Person.Events.class);
+        EventOutChannel channelToHandler = DispatchingEventOutChannel.toHandler(Person.Events.class, handler);
 
         // Create in and out channels that map event batches into JSON lists.
         ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
         JsonEventsOutChannel jsonOut = JsonEventsOutChannel.using(mapper, serialisedBatches::add);
         JsonEventsInChannel jsonIn = JsonEventsInChannel.using(
                 mapper,
-                EmitterInterfaceInfo.forInterface(PersonEvents.class).getEventTypeMatcher(),
+                EmitterInterfaceInfo.forInterface(Person.Events.class).getEventTypeMatcher(),
                 channelToHandler.toEventsOutChannel());
 
         // Create an event bus that sends events to the JSON out channel.
@@ -50,12 +50,12 @@ public class JsonExample {
                         EventBatchProcessor.forwardingTo(jsonOut)));
 
         // Send two batches of events.
-        eventBus.dispatch(PersonEvents.class, e -> {
+        eventBus.dispatch(Person.Events.class, e -> {
             e.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
             e.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Mumby", LocalDate.parse("1954-02-17"));
         });
 
-        eventBus.dispatch(PersonEvents.class, e -> {
+        eventBus.dispatch(Person.Events.class, e -> {
             e.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Daley", LocalDate.parse("1962-08-12"));
         });
 

@@ -36,8 +36,8 @@ public class EventBusExample {
                 (batch, event) -> currentBatch.add(event));
 
         // A mock handler, and an EventOutChannel that dispatches events to that handler.
-        PersonEvents handler = mock(PersonEvents.class);
-        EventOutChannel outChannel = DispatchingEventOutChannel.toHandler(PersonEvents.class, handler);
+        Person.Events handler = mock(Person.Events.class);
+        EventOutChannel outChannel = DispatchingEventOutChannel.toHandler(Person.Events.class, handler);
 
         // An EventBatchProcessor that forwards all the events in the batch to the outChannel
         EventBatchProcessor batchProcessor = EventBatchProcessor.forwardingTo(outChannel.toEventsOutChannel());
@@ -50,7 +50,7 @@ public class EventBusExample {
         UUID personId = UUID.randomUUID();
 
         // Send three events, in a single batch, to the EventBus.
-        eventBus.dispatch(PersonEvents.class, e -> {
+        eventBus.dispatch(Person.Events.class, e -> {
             e.created(timestamp, personId, "Arthur Putey", LocalDate.parse("1968-05-28"));
             e.changedName(timestamp.plus(1, MINUTES), personId, "Arthur Mumby");
             e.deleted(timestamp.plus(2, MINUTES), personId);
