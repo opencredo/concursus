@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.opencredo</groupId>
     <artifactId>concourse</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
+
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
     <modules>
         <module>concourse-data</module>
         <module>concourse-domain</module>
@@ -35,56 +40,56 @@
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-data</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-domain</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-domain-json</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-mapping</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-spring</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-cassandra</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-redis</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-spring-cassandra</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concourse-spring-redis</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>0.1</version>
             </dependency>
 
             <dependency>
@@ -199,5 +204,11 @@
         </plugins>
 
     </build>
+
+    <scm>
+        <connection>scm:git:git://github.com/opencredo/concourse.git</connection>
+        <developerConnection>scm:git:git@github.com:opencredo/concourse.git</developerConnection>
+        <url>http://github.com/opencredo/concourse</url>
+    </scm>
 
 </project>
