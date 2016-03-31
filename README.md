@@ -5,6 +5,8 @@
 
 _Concursus_ is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.
 
+See the [wiki](https://github.com/opencredo/concursus/wiki) for further documentation.
+
 ## Getting Started
 
 Create a project with dependencies on `concursus-mapping`, `concursus-domain-json` and `jackson-datatype-jsr310`:
