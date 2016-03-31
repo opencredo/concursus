@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.opencredo</groupId>
-    <artifactId>concourse</artifactId>
+    <artifactId>concursus</artifactId>
     <packaging>pom</packaging>
     <version>0.2-SNAPSHOT</version>
 
@@ -14,19 +14,19 @@
     </parent>
 
     <modules>
-        <module>concourse-data</module>
-        <module>concourse-domain</module>
-        <module>concourse-mapping</module>
-        <module>concourse-cassandra</module>
-        <module>concourse-spring</module>
-        <module>concourse-spring-cassandra</module>
-        <module>concourse-spring-boot-demo</module>
-        <module>concourse-redis</module>
-        <module>concourse-domain-json</module>
-        <module>concourse-spring-redis</module>
-        <module>concourse-game-demo</module>
-        <module>concourse-examples</module>
-        <module>concourse-kafka</module>
+        <module>concursus-data</module>
+        <module>concursus-domain</module>
+        <module>concursus-mapping</module>
+        <module>concursus-cassandra</module>
+        <module>concursus-spring</module>
+        <module>concursus-spring-cassandra</module>
+        <module>concursus-spring-boot-demo</module>
+        <module>concursus-redis</module>
+        <module>concursus-domain-json</module>
+        <module>concursus-spring-redis</module>
+        <module>concursus-game-demo</module>
+        <module>concursus-examples</module>
+        <module>concursus-kafka</module>
     </modules>
 
     <properties>
@@ -39,56 +39,56 @@
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-data</artifactId>
+                <artifactId>concursus-data</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-domain</artifactId>
+                <artifactId>concursus-domain</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-domain-json</artifactId>
+                <artifactId>concursus-domain-json</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-mapping</artifactId>
+                <artifactId>concursus-mapping</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-spring</artifactId>
+                <artifactId>concursus-spring</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-cassandra</artifactId>
+                <artifactId>concursus-cassandra</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-redis</artifactId>
+                <artifactId>concursus-redis</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-spring-cassandra</artifactId>
+                <artifactId>concursus-spring-cassandra</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
-                <artifactId>concourse-spring-redis</artifactId>
+                <artifactId>concursus-spring-redis</artifactId>
                 <version>0.2-SNAPSHOT</version>
             </dependency>
 
@@ -206,9 +206,9 @@
     </build>
 
     <scm>
-        <connection>scm:git:git://github.com/opencredo/concourse.git</connection>
-        <developerConnection>scm:git:git@github.com:opencredo/concourse.git</developerConnection>
-        <url>http://github.com/opencredo/concourse</url>
+        <connection>scm:git:git://github.com/opencredo/concursus.git</connection>
+        <developerConnection>scm:git:git@github.com:opencredo/concursus.git</developerConnection>
+        <url>http://github.com/opencredo/concursus</url>
     </scm>
 
 </project>

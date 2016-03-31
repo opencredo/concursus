@@ -1,9 +1,9 @@
-# concourse
+# concursus
 
-[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven/apache-maven.svg)](http://search.maven.org/#artifactdetails%7Ccom.opencredo%7Cconcourse%7C0.1%7Cpom)
-[![Build Status](https://travis-ci.org/opencredo/concourse.svg?branch=master)](https://travis-ci.org/opencredo/concourse)
+[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven/apache-maven.svg)](http://search.maven.org/#artifactdetails%7Ccom.opencredo%7Cconcursus%7C0.1%7Cpom)
+[![Build Status](https://travis-ci.org/opencredo/concursus.svg?branch=master)](https://travis-ci.org/opencredo/concursus)
 
-_Concourse_ is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.
+_concursus_ is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.
 
 Events are defined using methods on Java interfaces, like so:
 
