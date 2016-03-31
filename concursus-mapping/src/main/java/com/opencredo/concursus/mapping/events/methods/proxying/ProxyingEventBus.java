@@ -4,6 +4,7 @@ import com.opencredo.concursus.domain.events.channels.EventOutChannel;
 import com.opencredo.concursus.domain.events.channels.RoutingEventOutChannel;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
 import com.opencredo.concursus.domain.functional.Consumers;
+import com.opencredo.concursus.domain.state.StateBuilder;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateBuilder;
 
 import java.util.Map;
@@ -86,7 +87,7 @@ public interface ProxyingEventBus extends EventBus {
      * @param <S> The type of the state instance.
      */
     default <S> void updating(Class<? extends S> stateClass, S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
-        DispatchingStateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateClass, stateInstance);
+        StateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateClass, stateInstance);
         notifying(stateBuilder.toEventsOutChannel(), Consumers.transform(busConsumer, ProxyingEventBus::proxying));
     }
 
@@ -98,7 +99,7 @@ public interface ProxyingEventBus extends EventBus {
      * @return The constructed state, if present.
      */
     default <S> Optional<S> creating(Class<? extends S> stateClass, Consumer<ProxyingEventBus> busConsumer) {
-        DispatchingStateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateClass);
+        StateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateClass);
         notifying(stateBuilder.toEventsOutChannel(), Consumers.transform(busConsumer, ProxyingEventBus::proxying));
         return stateBuilder.get();
     }
@@ -128,7 +129,7 @@ public interface ProxyingEventBus extends EventBus {
      * @param <S> The type of the state instance.
      */
     default <S> void updating(UUID aggregateId, S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
-        DispatchingStateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateInstance);
+        StateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateInstance);
         notifying(events -> events.stream()
                 .filter(event -> event.getAggregateId().getId().equals(aggregateId))
                 .forEach(stateBuilder),
