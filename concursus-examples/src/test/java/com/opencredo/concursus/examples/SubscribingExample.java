@@ -15,6 +15,7 @@ import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.commands.methods.dispatching.CommandMethodDispatcher;
 import com.opencredo.concursus.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concursus.mapping.events.methods.dispatching.DispatchingSubscriber;
+import com.opencredo.concursus.mapping.events.methods.proxying.EventEmittingProxy;
 import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateRepository;
 import org.junit.Test;
@@ -58,6 +59,8 @@ public class SubscribingExample {
         DispatchingSubscriber dispatchingSubscriber = DispatchingSubscriber.subscribingTo(eventPublisher);
         dispatchingSubscriber.subscribe(Person.Events.class, personEventHandler);
         dispatchingSubscriber.subscribe(Address.Events.class, addressEventHandler);
+
+        Person.Events personEvents = EventEmittingProxy.proxying(eventPublisher, Person.Events.class);
 
         Person.Commands personCommands = commandProxyFactory.getProxy(Person.Commands.class);
         UUID personId = UUID.randomUUID();

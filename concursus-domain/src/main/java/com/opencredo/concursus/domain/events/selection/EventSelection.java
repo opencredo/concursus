@@ -2,7 +2,6 @@ package com.opencredo.concursus.domain.events.selection;
 
 import com.opencredo.concursus.domain.common.AggregateId;
 import com.opencredo.concursus.domain.events.Event;
-import com.opencredo.concursus.domain.events.EventType;
 import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concursus.domain.time.TimeRange;
 
@@ -29,7 +28,7 @@ public final class EventSelection {
     }
 
     public static Predicate<Event> matchedBy(EventTypeMatcher matcher) {
-        return event -> matcher.match(EventType.of(event)).isPresent();
+        return event -> matcher.match(event.getType()).isPresent();
     }
 
     public static List<Event> selectEvents(Map<AggregateId, ? extends Collection<Event>> events, Predicate<Event> filter, AggregateId aggregateId) {

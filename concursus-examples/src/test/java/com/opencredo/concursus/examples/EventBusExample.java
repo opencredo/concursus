@@ -3,7 +3,7 @@ package com.opencredo.concursus.examples;
 import com.opencredo.concursus.domain.events.Event;
 import com.opencredo.concursus.domain.events.channels.EventOutChannel;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
-import com.opencredo.concursus.domain.events.filtering.batch.EventBatchPostFilter;
+import com.opencredo.concursus.domain.events.filtering.batch.EventBatchFilter;
 import com.opencredo.concursus.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.events.methods.dispatching.DispatchingEventOutChannel;
@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,14 +27,8 @@ public class EventBusExample {
     @Test
     public void batchEventsViaEventBus() {
         // A filter that enables us to observe batches as they are completed.
-        List<List<Event>> observedBatches = new ArrayList<>();
-        List<Event> currentBatch = new ArrayList<>();
-        EventBatchPostFilter batchPostFilter = EventBatchPostFilter.of(
-                batch -> {
-                    observedBatches.add(new ArrayList<>(currentBatch));
-                    currentBatch.clear();
-                },
-                (batch, event) -> currentBatch.add(event));
+        List<Collection<Event>> observedBatches = new ArrayList<>();
+        EventBatchFilter batchFilter = batch -> batch.bufferingTo(observedBatches::add);
 
         // A mock handler, and an EventOutChannel that dispatches events to that handler.
         Person.Events handler = mock(Person.Events.class);
@@ -44,7 +39,7 @@ public class EventBusExample {
 
         // A ProxyingEventBus that proxies an EventBus which filters EventBatches with our filter, and processes
         // them with our processor.
-        ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(batchProcessor, batchPostFilter));
+        ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(batchProcessor, batchFilter));
 
         StreamTimestamp timestamp = StreamTimestamp.now();
         UUID personId = UUID.randomUUID();

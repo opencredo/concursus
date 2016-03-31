@@ -10,14 +10,17 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * The type of an event in the system.
+ */
 public final class EventType {
 
-    public static EventType of(Event event) {
-        checkNotNull(event, "event must not be null");
-
-        return of(event.getAggregateId().getType(), event.getEventName());
-    }
-
+    /**
+     * The {@link EventType} with the given aggregateType and eventName
+     * @param aggregateType The type of aggregate to which this event occurs.
+     * @param eventName The name of the event.
+     * @return The constructed {@link EventType}.
+     */
     public static EventType of(String aggregateType, VersionedName eventName) {
         checkNotNull(aggregateType, "aggregateType must not be null");
         checkNotNull(eventName, "eventName must not be null");
@@ -51,7 +54,14 @@ public final class EventType {
         return aggregateType + "/" + eventName.getFormatted();
     }
 
-
+    /**
+     * Create an {@link Event} of this type.
+     * @param aggregateId The aggregate id of the event.
+     * @param streamTimestamp The {@link StreamTimestamp} of the event.
+     * @param parameters The event parameters.
+     * @param characteristics The characteristics of the event.
+     * @return The constructed {@link Event}.
+     */
     public Event makeEvent(UUID aggregateId, StreamTimestamp streamTimestamp, Tuple parameters, int...characteristics) {
         return Event.of(
                 AggregateId.of(aggregateType, aggregateId),

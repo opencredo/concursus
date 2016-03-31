@@ -137,7 +137,7 @@ public class InMemoryEventStoreTest {
         });
 
         final EventTypeMatcher updateOnlyTypeMatcher = EventTypeMatcher.matchingAgainst(ImmutableMap.of(
-                EventType.of(update1), emptySchema
+                update1.getType(), emptySchema
         ));
 
         assertRetrieved(eventSource.getEvents(updateOnlyTypeMatcher, aggregateId), update2, update1);

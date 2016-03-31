@@ -24,7 +24,7 @@ public final class SubscribableEventPublisher implements EventPublisher, EventSu
 
     @Override
     public void accept(Event event) {
-        EventType eventType = EventType.of(event);
+        EventType eventType = event.getType();
         List<Consumer<Event>> eventSubscribers = subscribers.get(eventType);
         if (eventSubscribers != null) {
             eventSubscribers.forEach(subscriber -> subscriber.accept(event));

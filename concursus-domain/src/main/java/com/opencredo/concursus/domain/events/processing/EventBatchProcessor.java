@@ -4,14 +4,11 @@ import com.opencredo.concursus.domain.events.Event;
 import com.opencredo.concursus.domain.events.channels.EventsOutChannel;
 import com.opencredo.concursus.domain.events.logging.EventLog;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-
 /**
  * Processes the {@link Event}s collected in an {@link com.opencredo.concursus.domain.events.batching.EventBatch}
  * on batch completion.
  */
-public interface EventBatchProcessor extends Consumer<Collection<Event>> {
+public interface EventBatchProcessor extends EventsOutChannel {
 
     /**
      * Create an {@link EventBatchProcessor} that forwards the events to the supplied {@link EventsOutChannel}

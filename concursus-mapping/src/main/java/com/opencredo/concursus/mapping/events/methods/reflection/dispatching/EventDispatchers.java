@@ -55,7 +55,7 @@ public final class EventDispatchers {
         public void accept(T target, Event event) {
             checkNotNull(event, "event must not be null");
 
-            final EventDispatcher<T> dispatcher = eventDispatchers.get(EventType.of(event));
+            final EventDispatcher<T> dispatcher = eventDispatchers.get(event.getType());
             checkState(dispatcher != null,
                     "No dispatcher found for event " + event);
 
@@ -80,7 +80,7 @@ public final class EventDispatchers {
         public T apply(Event event) {
             checkNotNull(event, "event must not be null");
 
-            InitialEventDispatcher<T> dispatcher = eventDispatchers.get(EventType.of(event));
+            InitialEventDispatcher<T> dispatcher = eventDispatchers.get(event.getType());
             checkArgument(dispatcher != null,
                     "No dispatcher found for initial event %s", event);
 

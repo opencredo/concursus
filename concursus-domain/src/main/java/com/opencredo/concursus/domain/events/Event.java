@@ -80,6 +80,14 @@ public final class Event {
     }
 
     /**
+     * Get the {@link EventType} of this event.
+     * @return The {@link EventType} of this event.
+     */
+    public EventType getType() {
+        return EventType.of(aggregateId.getType(), eventName);
+    }
+
+    /**
      * Make a copy of this {@link Event} with the processing Id set to the supplied processing id.
      * @param processingId The processing {@link UUID} of the event. This must be a type 1 UUID, as it encodes the
      *                     event's processing timestamp.
