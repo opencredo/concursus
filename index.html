@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Concourse by opencredo</title>
+    <title>Concursus by opencredo</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/github-light.css">
@@ -13,116 +13,181 @@
     <![endif]-->
   </head>
   <body>
-<a href="https://github.com/opencredo/concourse"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/82b228a3648bf44fc1163ef44c62fcc60081495e/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png"></a>
     <div class="wrapper">
       <header>
-        <h1>Concourse</h1>
+        <h1>Concursus</h1>
         <p>An Event-Sourcing Framework for Java 8</p>
 
-        <p class="view"><a href="https://github.com/opencredo/concourse">View the Project on GitHub <small>opencredo/concourse</small></a></p>
-        <p class="view"><a href="apidocs/index.html">Browse API Documentation</a></p>
+        <p class="view"><a href="https://github.com/opencredo/concursus">View the Project on GitHub <small>opencredo/concursus</small></a></p>
+
 
         <ul>
-          <li><a href="https://github.com/opencredo/concourse/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/opencredo/concourse/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/opencredo/concourse">View On <strong>GitHub</strong></a></li>
+          <li><a href="https://github.com/opencredo/concursus/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/opencredo/concursus/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/opencredo/concursus">View On <strong>GitHub</strong></a></li>
         </ul>
-
       </header>
       <section>
         <h1>
-<a id="concourse" class="anchor" href="#concourse" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>concourse</h1>
+<a id="concursus" class="anchor" href="#concursus" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Concursus</h1>
 
-<p><a href="https://travis-ci.org/opencredo/concourse"><img src="https://travis-ci.org/opencredo/concourse.svg?branch=master" alt="Build Status"></a></p>
+<p><a href="http://search.maven.org/#artifactdetails%7Ccom.opencredo%7Cconcursus%7C0.2%7Cpom"><img src="https://img.shields.io/maven-central/v/com.opencredo/concourse.svg" alt="Maven Central"></a>
+<a href="https://travis-ci.org/opencredo/concursus"><img src="https://travis-ci.org/opencredo/concursus.svg?branch=master" alt="Build Status"></a></p>
 
-<p><em>Concourse</em> is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.</p>
+<p><em>Concursus</em> is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.</p>
 
-<p>Events are defined using methods on Java interfaces, like so:</p>
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<p>Create a project with dependencies on <code>concursus-mapping</code>, <code>concursus-domain-json</code> and <code>jackson-datatype-jsr310</code>:</p>
+
+<div class="highlight highlight-text-xml"><pre>&lt;<span class="pl-ent">dependency</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;com.opencredo&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;concursus-mapping&lt;/<span class="pl-ent">artifactId</span>&gt;
+&lt;/<span class="pl-ent">dependency</span>&gt;
+
+&lt;<span class="pl-ent">dependency</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;com.opencredo&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;concursus-domain-json&lt;/<span class="pl-ent">artifactId</span>&gt;
+&lt;/<span class="pl-ent">dependency</span>&gt;
+
+&lt;<span class="pl-ent">dependency</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;com.fasterxml.jackson.datatype&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;jackson-datatype-jsr310&lt;/<span class="pl-ent">artifactId</span>&gt;
+&lt;/<span class="pl-ent">dependency</span>&gt;</pre></div>
+
+<p>The first thing we might want to do is generate some events. To begin with, we need an interface class that defines the events we want to create:</p>
 
 <div class="highlight highlight-source-java"><pre>@HandlesEventsFor(<span class="pl-s"><span class="pl-pds">"</span>person<span class="pl-pds">"</span></span>)
-<span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">PersonEvents</span> {
-
+<span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">Events</span> {
+    <span class="pl-k">@Initial</span>
     <span class="pl-k">void</span> <span class="pl-en">created</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-smi">LocalDate</span> <span class="pl-v">dateOfBirth</span>);
     <span class="pl-k">void</span> <span class="pl-en">changedName</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">String</span> <span class="pl-v">newName</span>);
-    <span class="pl-k">void</span> <span class="pl-en">phoneNumberAdded</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">phoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">description</span>);
-
-    <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>);
-
-    <span class="pl-k">@Name</span>(<span class="pl-c1">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>phoneNumberChanged<span class="pl-pds">"</span></span>, <span class="pl-c1">version</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>2<span class="pl-pds">"</span></span>)
-    <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">newDescription</span>);
-
-    <span class="pl-k">void</span> <span class="pl-en">phoneNumberRemoved</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>);
+    <span class="pl-k">void</span> <span class="pl-en">movedToAddress</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>, <span class="pl-smi">UUID</span> <span class="pl-v">addressId</span>);
+    <span class="pl-k">@Terminal</span>
     <span class="pl-k">void</span> <span class="pl-en">deleted</span>(<span class="pl-smi">StreamTimestamp</span> <span class="pl-v">ts</span>, <span class="pl-smi">UUID</span> <span class="pl-v">personId</span>);
-
 }</pre></div>
 
-<p>We send events to an <code>EventBus</code> by getting a dispatcher for the desired interface:</p>
+<p>Each method in this interface defines an event which can occur to a person. We generate an event by calling one of these methods, which results in an event being sent to an <code>EventOutChannel</code>. Let's create a channel that simply prints the event to the console, and then create a proxy implementation of <code>PersonEvents</code> that sends events to this channel:</p>
 
-<div class="highlight highlight-source-java"><pre>eventBus<span class="pl-k">.</span>dispatch(<span class="pl-smi">PersonEvents</span><span class="pl-k">.</span>class, events <span class="pl-k">-</span><span class="pl-k">&gt;</span>
-    events<span class="pl-k">.</span>phoneNumberChanged(ts, personId, phoneNumberId, <span class="pl-s"><span class="pl-pds">"</span>0898505050<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>work phone<span class="pl-pds">"</span></span>));</pre></div>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// Create an EventOutChannel that simply prints events to the command line</span>
+<span class="pl-smi">EventOutChannel</span> outChannel <span class="pl-k">=</span> <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">::</span>println;
 
-<p>Events are recorded in the event log and then published to event handlers which can update query-optimised views or propagate integration events out to the wider system.</p>
+<span class="pl-c">// Create a proxy that sends events to the outChannel.</span>
+<span class="pl-smi">PersonEvents</span> proxy <span class="pl-k">=</span> <span class="pl-smi">EventEmittingProxy</span><span class="pl-k">.</span>proxying(outChannel, <span class="pl-smi">PersonEvents</span><span class="pl-k">.</span>class);
 
-<p>To retrieve the state of an entity, we replay its event history, typically to an object that builds up a picture of its current state:</p>
+<span class="pl-c">// Send an event via the proxy.</span>
+proxy<span class="pl-k">.</span>created(<span class="pl-smi">StreamTimestamp</span><span class="pl-k">.</span>now(), <span class="pl-c1">UUID</span><span class="pl-k">.</span>randomUUID(), <span class="pl-s"><span class="pl-pds">"</span>Arthur Putey<span class="pl-pds">"</span></span>, <span class="pl-smi">LocalDate</span><span class="pl-k">.</span>parse(<span class="pl-s"><span class="pl-pds">"</span>1968-05-28<span class="pl-pds">"</span></span>));</pre></div>
 
-<div class="highlight highlight-source-java"><pre>@HandlesEventsFor(<span class="pl-s"><span class="pl-pds">"</span>person<span class="pl-pds">"</span></span>)
-<span class="pl-k">public</span> <span class="pl-k">final</span> <span class="pl-k">class</span> <span class="pl-en">PersonState</span> {
+<p>This will output a String like the following:</p>
 
-    <span class="pl-k">@HandlesEvent</span>
-    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-smi">PersonState</span> <span class="pl-en">created</span>(<span class="pl-smi">UUID</span> <span class="pl-v">id</span>, <span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-smi">LocalDate</span> <span class="pl-v">dateOfBirth</span>) {
-        <span class="pl-k">return</span> <span class="pl-k">new</span> <span class="pl-smi">PersonState</span>(id, name, dateOfBirth);
-    }
+<pre><code>person:b2fb2f38-0473-4359-b62b-fad149caf2d5 created_0
+at 2016-03-31T10:31:17.981Z/
+with person/created_0{dateOfBirth=1968-05-28, name=Arthur Putey}
+</code></pre>
 
-    <span class="pl-k">private</span> <span class="pl-k">final</span> <span class="pl-c1">UUID</span> id;
-    <span class="pl-k">private</span> <span class="pl-smi">String</span> name;
-    <span class="pl-k">private</span> <span class="pl-k">final</span> <span class="pl-smi">LocalDate</span> dateOfBirth;
-    <span class="pl-k">private</span> <span class="pl-k">final</span> <span class="pl-k">Map&lt;<span class="pl-smi">UUID</span>, <span class="pl-k">String</span>[]&gt;</span> phoneNumbers <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-k">HashMap&lt;&gt;</span>();
-    <span class="pl-k">private</span> <span class="pl-k">boolean</span> isDeleted <span class="pl-k">=</span> <span class="pl-c1">false</span>;
+<p>This means that an event of type <code>created_0</code> occurred to the object <code>person:b2fb2f38-0473-4359-b62b-fad149caf2d5</code> at <code>2016-03-31T10:31:17.981Z</code>, and this event had two parameters associated with it, <code>name</code> and <code>dateOfBirth</code>.</p>
 
-    <span class="pl-k">private</span> <span class="pl-en">PersonState</span>(<span class="pl-smi">UUID</span> <span class="pl-v">id</span>, <span class="pl-smi">String</span> <span class="pl-v">name</span>, <span class="pl-smi">LocalDate</span> <span class="pl-v">dateOfBirth</span>) {
-        <span class="pl-v">this</span><span class="pl-k">.</span>id <span class="pl-k">=</span> id;
-        <span class="pl-v">this</span><span class="pl-k">.</span>name <span class="pl-k">=</span> name;
-        <span class="pl-v">this</span><span class="pl-k">.</span>dateOfBirth <span class="pl-k">=</span> dateOfBirth;
-    }
+<p>We can have the event encoded as JSON if we use an <code>EventOutChannel</code> that performs the encoding:</p>
 
-    <span class="pl-k">@HandlesEvent</span>
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">changedName</span>(<span class="pl-smi">String</span> <span class="pl-v">newName</span>) {
-        name <span class="pl-k">=</span> newName;
-    }
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// Create an EventOutChannel that formats events as JSON and sends them to a command line printer.</span>
+<span class="pl-k">EventInChannel&lt;<span class="pl-smi">String</span>&gt;</span> print <span class="pl-k">=</span> <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">::</span>println;
+<span class="pl-smi">ObjectMapper</span> objectMapper <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">ObjectMapper</span>()
+        .findAndRegisterModules()
+        .configure(<span class="pl-smi">SerializationFeature</span><span class="pl-c1"><span class="pl-k">.</span>INDENT_OUTPUT</span>, <span class="pl-c1">true</span>);
+<span class="pl-smi">EventOutChannel</span> outChannel <span class="pl-k">=</span> <span class="pl-smi">JsonEventOutChannel</span><span class="pl-k">.</span>using(objectMapper, print);
 
-    <span class="pl-k">@HandlesEvent</span>
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberAdded</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">phoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">description</span>) {
-        phoneNumbers<span class="pl-k">.</span>put(phoneNumberId, <span class="pl-k">new</span> <span class="pl-smi">String</span>[] { phoneNumber, description });
-    }
+<span class="pl-c">// Create a proxy that sends events to the outChannel.</span>
+<span class="pl-smi">PersonEvents</span> proxy <span class="pl-k">=</span> <span class="pl-smi">EventEmittingProxy</span><span class="pl-k">.</span>proxying(outChannel, <span class="pl-smi">PersonEvents</span><span class="pl-k">.</span>class);
 
-    <span class="pl-k">@HandlesEvent</span>
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>) {
-        phoneNumbers<span class="pl-k">.</span>computeIfAbsent(phoneNumberId, id <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-k">new</span> <span class="pl-smi">String</span>[] { <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> })[<span class="pl-c1">0</span>] <span class="pl-k">=</span> newPhoneNumber;
-    }
+<span class="pl-c">// Send an event via the proxy.</span>
+proxy<span class="pl-k">.</span>created(<span class="pl-smi">StreamTimestamp</span><span class="pl-k">.</span>now(), <span class="pl-c1">UUID</span><span class="pl-k">.</span>randomUUID(), <span class="pl-s"><span class="pl-pds">"</span>Arthur Putey<span class="pl-pds">"</span></span>, <span class="pl-smi">LocalDate</span><span class="pl-k">.</span>parse(<span class="pl-s"><span class="pl-pds">"</span>1968-05-28<span class="pl-pds">"</span></span>));</pre></div>
 
-    <span class="pl-k">@HandlesEvent</span>(<span class="pl-c1">name</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>phoneNumberChanged<span class="pl-pds">"</span></span>, <span class="pl-c1">version</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>2<span class="pl-pds">"</span></span>)
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberChanged</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>, <span class="pl-smi">String</span> <span class="pl-v">newPhoneNumber</span>, <span class="pl-smi">String</span> <span class="pl-v">newDescription</span>) {
-        <span class="pl-k">String</span>[] phoneNumberDetails <span class="pl-k">=</span> phoneNumbers<span class="pl-k">.</span>computeIfAbsent(phoneNumberId, id <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-k">new</span> <span class="pl-smi">String</span>[<span class="pl-c1">2</span>]);
-        phoneNumberDetails[<span class="pl-c1">0</span>] <span class="pl-k">=</span> newPhoneNumber;
-        phoneNumberDetails[<span class="pl-c1">1</span>] <span class="pl-k">=</span> newDescription;
-    }
+<p>This will output JSON like the following:</p>
 
-    <span class="pl-k">@HandlesEvent</span>
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">phoneNumberRemoved</span>(<span class="pl-smi">UUID</span> <span class="pl-v">phoneNumberId</span>) {
-        phoneNumbers<span class="pl-k">.</span>remove(phoneNumberId);
-    }
+<div class="highlight highlight-source-json"><pre>{
+  <span class="pl-s"><span class="pl-pds">"</span>aggregateType<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>person<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>aggregateId<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>b449861a-0e8f-4012-bfe9-98a2a4f620f9<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>created<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>version<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>0<span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>eventTimestamp<span class="pl-pds">"</span></span> : <span class="pl-c1">1459420919667</span>,
+  <span class="pl-s"><span class="pl-pds">"</span>streamId<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>processingId<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>,
+  <span class="pl-s"><span class="pl-pds">"</span>characteristics<span class="pl-pds">"</span></span> : <span class="pl-c1">1</span>,
+  <span class="pl-s"><span class="pl-pds">"</span>parameters<span class="pl-pds">"</span></span> : {
+    <span class="pl-s"><span class="pl-pds">"</span>dateOfBirth<span class="pl-pds">"</span></span> : [ <span class="pl-c1">1968</span>, <span class="pl-c1">5</span>, <span class="pl-c1">28</span> ],
+    <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span>Arthur Putey<span class="pl-pds">"</span></span>
+  }
+}</pre></div>
 
-    <span class="pl-k">@HandlesEvent</span>
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">deleted</span>() {
-        isDeleted <span class="pl-k">=</span> <span class="pl-c1">true</span>;
-    }
+<p>Instead of simply printing things to the console, let's start storing events. We can use an <code>InMemoryEventStore</code> to begin with:</p>
 
-    <span class="pl-c">// getters go here</span>
-}
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// Create an InMemoryEventStore, and a proxy that sends events to it.</span>
+<span class="pl-smi">InMemoryEventStore</span> eventStore <span class="pl-k">=</span> <span class="pl-smi">InMemoryEventStore</span><span class="pl-k">.</span>empty();
+<span class="pl-smi">PersonEvents</span> proxy <span class="pl-k">=</span> <span class="pl-smi">EventEmittingProxy</span><span class="pl-k">.</span>proxying(eventStore<span class="pl-k">.</span>toEventOutChannel(), <span class="pl-smi">PersonEvents</span><span class="pl-k">.</span>class);
 
-<span class="pl-k">Optional&lt;<span class="pl-smi">PersonState</span>&gt;</span> personState <span class="pl-k">=</span> <span class="pl-smi">StateBuilder</span><span class="pl-k">.</span>forStateClass(<span class="pl-smi">PersonState</span><span class="pl-k">.</span>class)
-    .buildState(eventSource, personId)
-    .filter(p <span class="pl-k">-</span><span class="pl-k">&gt;</span> <span class="pl-k">!</span>p<span class="pl-k">.</span>isDeleted());</pre></div>
+<span class="pl-c">// Send an event via the proxy.</span>
+<span class="pl-k">final</span> <span class="pl-smi">UUID</span> personId <span class="pl-k">=</span> <span class="pl-c1">UUID</span><span class="pl-k">.</span>randomUUID();
+proxy<span class="pl-k">.</span>created(<span class="pl-smi">StreamTimestamp</span><span class="pl-k">.</span>now(), personId, <span class="pl-s"><span class="pl-pds">"</span>Arthur Putey<span class="pl-pds">"</span></span>, <span class="pl-smi">LocalDate</span><span class="pl-k">.</span>parse(<span class="pl-s"><span class="pl-pds">"</span>1968-05-28<span class="pl-pds">"</span></span>));
+
+<span class="pl-c">// Create an EventTypeMatcher based on the Events interface, and use it to map events back out of the store</span>
+<span class="pl-smi">EventTypeMatcher</span> typeMatcher <span class="pl-k">=</span> <span class="pl-smi">EmitterInterfaceInfo</span><span class="pl-k">.</span>forInterface(<span class="pl-smi">PersonEvents</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>getEventTypeMatcher();
+<span class="pl-c">// Retrieve the stored events for the aggregate with id=person/personId, and print them to the console.</span>
+<span class="pl-smi">EventSource</span><span class="pl-k">.</span>retrievingWith(eventStore)
+        .getEvents(typeMatcher, <span class="pl-smi">AggregateId</span><span class="pl-k">.</span>of(<span class="pl-s"><span class="pl-pds">"</span>person<span class="pl-pds">"</span></span>, personId))
+        .forEach(<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">::</span>println);</pre></div>
+
+<p>Once we have stored events, we can replay them to event handlers, mapping them back into method calls on the <code>PersonEvents</code> interface:</p>
+
+<pre><code>// Create a mock handler for person events.
+PersonEvents handler = mock(PersonEvents.class);
+
+// Create an InMemoryEventStore, and a proxy that sends events to it.
+InMemoryEventStore eventStore = InMemoryEventStore.empty();
+PersonEvents proxy = EventEmittingProxy.proxying(eventStore.toEventOutChannel(), PersonEvents.class);
+
+// Send an event via the proxy.
+UUID personId = UUID.randomUUID();
+proxy.created(StreamTimestamp.now(), personId, "Arthur Putey", LocalDate.parse("1968-05-28"));
+
+// Replay the stored events for the person with id=person/personId to the handler instance.
+DispatchingEventSource.dispatching(EventSource.retrievingWith(eventStore), PersonEvents.class)
+        .replaying(personId)
+        .replayAll(handler);
+
+// Verify that the handler received the event.
+verify(handler).created(any(StreamTimestamp.class), any(UUID.class), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
+</code></pre>
+
+<p>Check out the <a href="https://github.com/opencredo/concursus/tree/master/concursus-examples/src/test/java/com/opencredo/concursus/examples">Examples</a> for more detailed examples, including command processing and state-building.</p>
+
+<h2>
+<a id="using-cassandra-and-redis" class="anchor" href="#using-cassandra-and-redis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Using Cassandra and Redis</h2>
+
+<p>Eventually you will want to store events more permanently. Cassandra and Redis event store implementations are provided in <code>concursus-cassandra</code> and <code>concursus-redis</code> respectively. You will need to create a suitable keyspace and tables in Cassandra before you can use it:</p>
+
+<div class="highlight highlight-source-sql"><pre>CREATE KEYSPACE IF NOT EXISTS concursus
+  WITH REPLICATION <span class="pl-k">=</span> { <span class="pl-s"><span class="pl-pds">'</span>class<span class="pl-pds">'</span></span> : <span class="pl-s"><span class="pl-pds">'</span>SimpleStrategy<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>replication_factor<span class="pl-pds">'</span></span> : <span class="pl-c1">2</span> };
+
+<span class="pl-k">CREATE</span> <span class="pl-k">TABLE</span> <span class="pl-en">IF</span> NOT EXISTS <span class="pl-c1">concursus</span>.<span class="pl-c1">Event</span> (
+   aggregateType <span class="pl-k">text</span>,
+   aggregateId uuid,
+   eventTimestamp <span class="pl-k">timestamp</span>,
+   streamId <span class="pl-k">text</span>,
+   processingId timeuuid,
+   name <span class="pl-k">text</span>,
+   version <span class="pl-k">text</span>,
+   parameters map<span class="pl-k">&lt;</span><span class="pl-k">text</span>, <span class="pl-k">text</span><span class="pl-k">&gt;</span>,
+   characteristics <span class="pl-k">int</span>,
+   <span class="pl-k">PRIMARY KEY</span>((aggregateType, aggregateId), eventTimestamp, streamId)
+) WITH CLUSTERING <span class="pl-k">ORDER BY</span> (eventTimestamp <span class="pl-k">DESC</span>);
+
+<span class="pl-k">CREATE</span> <span class="pl-k">TABLE</span> <span class="pl-en">IF</span> NOT EXISTS <span class="pl-c1">concursus</span>.<span class="pl-c1">Catalogue</span> (
+    aggregateType <span class="pl-k">text</span>,
+    bucket <span class="pl-k">int</span>,
+    aggregateId uuid,
+    <span class="pl-k">PRIMARY KEY</span> ((aggregateType, bucket), aggregateId)
+) WITH CLUSTERING <span class="pl-k">ORDER BY</span> (aggregateId <span class="pl-k">DESC</span>);</pre></div>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/opencredo">opencredo</a></p>
