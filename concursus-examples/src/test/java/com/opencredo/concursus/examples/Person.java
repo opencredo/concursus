@@ -1,9 +1,7 @@
 package com.opencredo.concursus.examples;
 
 import com.opencredo.concursus.domain.time.StreamTimestamp;
-import com.opencredo.concursus.mapping.annotations.HandlesCommandsFor;
-import com.opencredo.concursus.mapping.annotations.HandlesEvent;
-import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
+import com.opencredo.concursus.mapping.annotations.*;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -23,9 +21,11 @@ public final class Person {
 
     @HandlesEventsFor("person")
     public interface Events {
+        @Initial
         void created(StreamTimestamp ts, UUID personId, String name, LocalDate dateOfBirth);
         void changedName(StreamTimestamp ts, UUID personId, String newName);
         void movedToAddress(StreamTimestamp ts, UUID personId, UUID addressId);
+        @Terminal
         void deleted(StreamTimestamp ts, UUID personId);
     }
 
