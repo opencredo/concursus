@@ -9,9 +9,10 @@
 
     <artifactId>concursus-examples</artifactId>
     <dependencies>
+
         <dependency>
             <groupId>com.opencredo</groupId>
-            <artifactId>concursus-spring</artifactId>
+            <artifactId>concursus-mapping</artifactId>
         </dependency>
 
         <dependency>
