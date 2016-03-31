@@ -1,6 +1,6 @@
 # Concursus
 
-[![Maven Central](https://img.shields.io/maven-central/v/org.apache.maven/apache-maven.svg)](http://search.maven.org/#artifactdetails%7Ccom.opencredo%7Cconcursus%7C0.2%7Cpom)
+[![Maven Central](https://img.shields.io/maven-central/v/com.opencredo/concursus.svg)]()
 [![Build Status](https://travis-ci.org/opencredo/concursus.svg?branch=master)](https://travis-ci.org/opencredo/concursus)
 
 _Concursus_ is a Java 8 framework for building applications that use CQRS and event sourcing patterns, with a Cassandra event log implementation.
