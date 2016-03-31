@@ -1,6 +1,5 @@
 package com.opencredo.concourse.mapping.events.methods.proxying;
 
-import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.channels.EventOutChannel;
 import com.opencredo.concourse.domain.events.channels.RoutingEventOutChannel;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
@@ -10,6 +9,7 @@ import com.opencredo.concourse.mapping.events.methods.state.DispatchingStateBuil
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -109,13 +109,30 @@ public interface ProxyingEventBus extends EventBus {
      * @param stateObjectsById The state objects to send events to on batch completion.
      * @param busConsumer A {@link Consumer} that will use the subscribed bus.
      */
-    default void updating(Map<AggregateId, Object> stateObjectsById, Consumer<ProxyingEventBus> busConsumer) {
+    default void updating(Map<UUID, Object> stateObjectsById, Consumer<ProxyingEventBus> busConsumer) {
         EventOutChannel outChannel = RoutingEventOutChannel.routingWith(stateObjectsById.entrySet().stream()
                 .collect(Collectors.toMap(
                         Entry::getKey,
                         e -> DispatchingStateBuilder.dispatchingTo(e.getValue()))));
 
         notifying(outChannel.toEventsOutChannel(), Consumers.transform(busConsumer, ProxyingEventBus::proxying));
+    }
+
+    /**
+     * Create a copy of this event bus that additionally sends events intended for the supplied state object to
+     * that object on batch completion. Use this when you will generate additional events that should not be routed
+     * to the state object.
+     * @param aggregateId The state object's aggregate id. Events not for this aggregate will not be routed to the object.
+     * @param stateInstance The state instance to route events to.
+     * @param busConsumer A {@link Consumer} that will use the subscribed bus.
+     * @param <S> The type of the state instance.
+     */
+    default <S> void updating(UUID aggregateId, S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
+        DispatchingStateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateInstance);
+        notifying(events -> events.stream()
+                .filter(event -> event.getAggregateId().getId().equals(aggregateId))
+                .forEach(stateBuilder),
+                Consumers.transform(busConsumer, ProxyingEventBus::proxying));
     }
 
 }

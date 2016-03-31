@@ -2,7 +2,6 @@ package com.opencredo.concourse.cassandra.events;
 
 import com.datastax.driver.core.Cluster;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.filtering.log.EventLogPostFilter;
@@ -72,9 +71,7 @@ public class RoundTripTest {
     private final EventSource eventSource = EventSource.retrievingWith(cassandraEventRetriever);
     private final DispatchingEventSourceFactory eventSourceDispatching = DispatchingEventSourceFactory.dispatching(eventSource);
 
-    private final EventBus eventBus = () -> ProcessingEventBatch.processingWith(batchProcessor);
-
-    private final ProxyingEventBus proxyingEventBus = ProxyingEventBus.proxying(eventBus);
+    private final ProxyingEventBus proxyingEventBus = ProxyingEventBus.proxying(EventBus.processingWith(batchProcessor));
 
     @HandlesEventsFor("person")
     public interface PersonEvents {

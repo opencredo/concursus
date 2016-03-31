@@ -1,6 +1,8 @@
 package com.opencredo.concourse.domain.events.batching;
 
 import com.opencredo.concourse.domain.events.Event;
+import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
+import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -9,6 +11,10 @@ import java.util.function.Consumer;
  * A collection of {@link Event}s that are to be processed together.
  */
 public interface EventBatch extends Consumer<Event> {
+
+    static EventBatch processingWith(EventBatchProcessor processor) {
+        return ProcessingEventBatch.processingWith(processor);
+    }
 
     /**
      * Add the {@link Event} to the batch.
@@ -27,5 +33,14 @@ public interface EventBatch extends Consumer<Event> {
      * Complete the batch and submit it for processing.
      */
     void complete();
+
+    /**
+     * Buffer this event batch and replay buffered events to the supplied {@link EventsOutChannel} on completion.
+     * @param outChannel The {@link EventsOutChannel} to replay events to on completion.
+     * @return The buffered event batch.
+     */
+    default EventBatch bufferingTo(EventsOutChannel outChannel) {
+        return BufferingEventBatch.buffering(this, outChannel);
+    }
 
 }

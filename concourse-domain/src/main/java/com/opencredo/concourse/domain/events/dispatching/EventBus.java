@@ -2,10 +2,8 @@ package com.opencredo.concourse.domain.events.dispatching;
 
 import com.opencredo.concourse.domain.events.Event;
 import com.opencredo.concourse.domain.events.batching.EventBatch;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.channels.EventOutChannel;
 import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
-import com.opencredo.concourse.domain.events.filtering.batch.BufferingEventBatchFilter;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 
 import java.util.function.Consumer;
@@ -19,11 +17,11 @@ import java.util.function.UnaryOperator;
 public interface EventBus extends EventOutChannel {
 
     static EventBus processingWith(EventBatchProcessor processor) {
-        return () -> ProcessingEventBatch.processingWith(processor);
+        return () -> EventBatch.processingWith(processor);
     }
 
     static EventBus processingWith(EventBatchProcessor processor, UnaryOperator<EventBatch> batchFilter) {
-        return () -> batchFilter.apply(ProcessingEventBatch.processingWith(processor));
+        return () -> batchFilter.apply(EventBatch.processingWith(processor));
     }
 
     /**
@@ -62,8 +60,7 @@ public interface EventBus extends EventOutChannel {
      * @param busConsumer A {@link Consumer} that will use the subscribed bus.
      */
     default void notifying(EventsOutChannel outChannel, Consumer<EventBus> busConsumer) {
-        BufferingEventBatchFilter bufferingEventBatchFilter = BufferingEventBatchFilter.writingOnCompleteTo(outChannel);
-        EventBus subscribedBus = () -> bufferingEventBatchFilter.apply(startBatch());
+        EventBus subscribedBus = () -> startBatch().bufferingTo(outChannel);
         busConsumer.accept(subscribedBus);
     }
 }

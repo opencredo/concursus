@@ -11,14 +11,14 @@ import java.util.UUID;
 /**
  * An {@link EventBatch} that sends the batched {@link Event}s to an {@link EventBatchProcessor} on completion.
  */
-public final class ProcessingEventBatch implements EventBatch {
+final class ProcessingEventBatch implements EventBatch {
 
     /**
      * Create an {@link EventBatch} that sends the batched {@link Event}s to the supplied {@link EventBatchProcessor} on completion.
      * @param batchProcessor The {@link EventBatchProcessor} to process events with.
      * @return The constructed {@link EventBatch}.
      */
-    public static EventBatch processingWith(EventBatchProcessor batchProcessor) {
+    static EventBatch processingWith(EventBatchProcessor batchProcessor) {
         return new ProcessingEventBatch(batchProcessor);
     }
 

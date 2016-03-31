@@ -1,7 +1,6 @@
 package com.opencredo.concourse.mapping.events.methods;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concourse.domain.events.cataloguing.InMemoryAggregateCatalogue;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
@@ -43,7 +42,7 @@ public class ProxyingEventBusTest {
     private final EventLog eventLog = postFilter.apply(EventLog.loggingTo(batchedEvents::add));
     private final EventBatchProcessor batchProcessor = PublishingEventBatchProcessor.using(eventLog, eventPublisher);
 
-    private final EventBus bus = () -> ProcessingEventBatch.processingWith(batchProcessor);
+    private final EventBus bus = EventBus.processingWith(batchProcessor);
 
     private final ProxyingEventBus unit = ProxyingEventBus.proxying(bus);
 

@@ -1,7 +1,5 @@
 package com.opencredo.concourse.examples;
 
-import com.google.common.collect.ImmutableMap;
-import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.state.StateRepository;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.mapping.events.methods.proxying.ProxyingEventBus;
@@ -45,10 +43,8 @@ public final class PersonCommandProcessor implements Person.Commands {
     public CompletableFuture<Person> moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId) {
         Person person = personStateRepository.getState(personId).orElseThrow(IllegalArgumentException::new);
 
-        eventBus.updating(
-                ImmutableMap.of(AggregateId.of("person", personId), person),
-                bus ->
-                    bus.dispatch(Person.Events.class, Address.Events.class, (p, a) ->
+        eventBus.updating(personId, person, bus ->
+                bus.dispatch(Person.Events.class, Address.Events.class, (p, a) ->
                     {
                         p.movedToAddress(ts, personId, addressId);
                         person.getCurrentAddressId().ifPresent(previousAddressId ->

@@ -1,6 +1,6 @@
 package com.opencredo.concourse.spring.events;
 
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.batching.EventBatch;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
@@ -65,7 +65,7 @@ public class EventSystemBeans {
 
     @Bean
     public EventBus eventBus(EventBatchProcessor eventBatchProcessor, ComponentScanningEventBusFilter eventBusFilter, ComponentScanningEventBatchFilter eventBatchFilter) {
-        return eventBusFilter.apply(() -> eventBatchFilter.apply(ProcessingEventBatch.processingWith(eventBatchProcessor)));
+        return eventBusFilter.apply(() -> eventBatchFilter.apply(EventBatch.processingWith(eventBatchProcessor)));
     }
 
     @Bean

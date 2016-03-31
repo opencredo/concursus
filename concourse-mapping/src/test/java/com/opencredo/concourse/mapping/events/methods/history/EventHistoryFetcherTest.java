@@ -1,7 +1,7 @@
 package com.opencredo.concourse.mapping.events.methods.history;
 
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.storing.InMemoryEventStore;
@@ -25,7 +25,7 @@ public class EventHistoryFetcherTest {
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
     private final EventSource eventSource = EventSource.retrievingWith(eventStore);
 
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
 
     private final Instant timestampStart = Instant.now();
     private final AtomicInteger timestampOffset = new AtomicInteger(0);

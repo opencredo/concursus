@@ -1,6 +1,6 @@
 package com.opencredo.concourse.mapping.events.methods.dispatching;
 
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.processing.PublishingEventBatchProcessor;
@@ -35,7 +35,7 @@ public class DispatchingSubscriberTest {
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
     private final SubscribableEventPublisher publisher = new SubscribableEventPublisher();
     private final EventBatchProcessor batchProcessor = PublishingEventBatchProcessor.using(EventLog.loggingTo(eventStore), publisher);
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(batchProcessor));
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(batchProcessor));
     private final DispatchingSubscriber subscriber = DispatchingSubscriber.subscribingTo(publisher);
 
     private final Instant timestampStart = Instant.now();

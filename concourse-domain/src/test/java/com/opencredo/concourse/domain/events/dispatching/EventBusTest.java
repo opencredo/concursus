@@ -4,7 +4,6 @@ import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.logging.EventLog;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.processing.PublishingEventBatchProcessor;
@@ -33,7 +32,7 @@ public class EventBusTest {
     };
     private final EventBatchProcessor batchProcessor = PublishingEventBatchProcessor.using(eventLog, eventPublisher);
 
-    private final EventBus bus = () -> ProcessingEventBatch.processingWith(batchProcessor);
+    private final EventBus bus = EventBus.processingWith(batchProcessor);
 
     @Test
     public void dispatchesEventsSinglyToLogAndPublisher() {

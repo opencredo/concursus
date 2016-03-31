@@ -1,6 +1,6 @@
 package com.opencredo.concourse.mapping.events.methods.dispatching;
 
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
+import com.opencredo.concourse.domain.events.dispatching.EventBus;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
 import com.opencredo.concourse.domain.storing.InMemoryEventStore;
@@ -37,7 +37,7 @@ public class DispatchingEventSourceTest {
     private final EventSource eventSource = EventSource.retrievingWith(eventStore);
     private final DispatchingEventSource<PersonEvents> testEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(PersonEvents.class);
     private final DispatchingEventSource<CreatedEventReceiver> creadedEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(CreatedEventReceiver.class);
-    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(() -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
+    private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
     private final Function<Consumer<String>, PersonEvents> nameCollector = caller -> new PersonEvents() {
         @Override
         public void createdV1(StreamTimestamp timestamp, UUID aggregateId, String name) {

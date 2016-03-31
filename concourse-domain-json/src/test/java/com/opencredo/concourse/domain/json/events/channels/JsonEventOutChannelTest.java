@@ -3,7 +3,6 @@ package com.opencredo.concourse.domain.json.events.channels;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.events.Event;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.channels.EventsInChannel;
 import com.opencredo.concourse.domain.events.channels.EventsOutChannel;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
@@ -47,7 +46,7 @@ public class JsonEventOutChannelTest {
 
     private final EventsOutChannel jsonOut = JsonEventsOutChannel.using(objectMapper, loggingIn);
 
-    private final EventBus eventBus = () -> ProcessingEventBatch.processingWith(
+    private final EventBus eventBus = EventBus.processingWith(
             EventBatchProcessor.loggingWith(
                     EventLog.loggingTo(jsonOut)));
 

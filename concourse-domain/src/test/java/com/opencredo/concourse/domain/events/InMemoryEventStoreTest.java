@@ -5,12 +5,11 @@ import com.opencredo.concourse.data.tuples.Tuple;
 import com.opencredo.concourse.data.tuples.TupleSchema;
 import com.opencredo.concourse.domain.common.AggregateId;
 import com.opencredo.concourse.domain.common.VersionedName;
-import com.opencredo.concourse.domain.events.batching.ProcessingEventBatch;
 import com.opencredo.concourse.domain.events.dispatching.EventBus;
+import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concourse.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concourse.domain.events.sourcing.EventSource;
-import com.opencredo.concourse.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concourse.domain.storing.InMemoryEventStore;
 import com.opencredo.concourse.domain.time.StreamTimestamp;
 import com.opencredo.concourse.domain.time.TimeRange;
@@ -39,7 +38,7 @@ public class InMemoryEventStoreTest {
     private final InMemoryEventStore eventStore = InMemoryEventStore.empty();
     private final EventSource eventSource = EventSource.retrievingWith(eventStore);
 
-    private final EventBus bus = () -> ProcessingEventBatch.processingWith(EventBatchProcessor.forwardingTo(eventStore));
+    private final EventBus bus = EventBus.processingWith(EventBatchProcessor.forwardingTo(eventStore));
 
     @Test
     public void storesEventsInTimeDescendingOrder() {
