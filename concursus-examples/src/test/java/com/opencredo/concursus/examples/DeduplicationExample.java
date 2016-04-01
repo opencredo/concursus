@@ -30,15 +30,15 @@ public class DeduplicationExample {
     public static final class DeduplicatingFilter implements EventLogPreFilter {
 
         public static EventLogPreFilter expiringAfter(int duration, TimeUnit unit) {
-            return new DeduplicatingFilter(CacheBuilder.<EventIdentity, Event>newBuilder()
+            return new DeduplicatingFilter(CacheBuilder.<EventIdentity, Boolean>newBuilder()
                     .expireAfterWrite(duration, unit)
                     .build());
         }
 
-        private final Cache<EventIdentity, Event> observedTimestamps;
+        private final Cache<EventIdentity, Boolean> observedEvents;
 
-        public DeduplicatingFilter(Cache<EventIdentity, Event> observedTimestamps) {
-            this.observedTimestamps = observedTimestamps;
+        public DeduplicatingFilter(Cache<EventIdentity, Boolean> observedTimestamps) {
+            this.observedEvents = observedTimestamps;
         }
 
         @Override
@@ -50,7 +50,7 @@ public class DeduplicationExample {
         }
 
         private boolean isNewEvent(Event event) {
-            return observedTimestamps.asMap().putIfAbsent(event.getIdentity(), event) == null;
+            return observedEvents.asMap().putIfAbsent(event.getIdentity(), true) == null;
         }
     }
 
