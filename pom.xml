@@ -205,6 +205,36 @@
 
     </build>
 
+    <profiles>
+        <profile>
+            <id>javadoc</id>
+            <modules>
+            <module>concursus-data</module>
+            <module>concursus-domain</module>
+            <module>concursus-mapping</module>
+            <module>concursus-cassandra</module>
+            <module>concursus-redis</module>
+            <module>concursus-domain-json</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>concursus-data</module>
+                <module>concursus-domain</module>
+                <module>concursus-mapping</module>
+                <module>concursus-cassandra</module>
+                <module>concursus-redis</module>
+                <module>concursus-domain-json</module>
+                <module>concursus-spring</module>
+                <module>concursus-spring-cassandra</module>
+                <module>concursus-spring-boot-demo</module>
+                <module>concursus-spring-redis</module>
+            </modules>
+        </profile>
+    </profiles>
+
     <scm>
         <connection>scm:git:git://github.com/opencredo/concursus.git</connection>
         <developerConnection>scm:git:git@github.com:opencredo/concursus.git</developerConnection>
