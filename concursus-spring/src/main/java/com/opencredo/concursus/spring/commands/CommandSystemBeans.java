@@ -1,6 +1,7 @@
 package com.opencredo.concursus.spring.commands;
 
 import com.opencredo.concursus.domain.commands.dispatching.*;
+import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.mapping.commands.methods.dispatching.MethodDispatchingCommandProcessor;
 import com.opencredo.concursus.mapping.commands.methods.proxying.CommandProxyFactory;
 import org.springframework.context.annotation.Bean;
@@ -28,12 +29,13 @@ public class CommandSystemBeans {
 
     @Bean
     public CommandExecutor commandExecutor(CommandProcessor commandProcessor) {
-        return SynchronousCommandExecutor.processingWith(commandProcessor);
+        return ProcessingCommandExecutor.processingWith(commandProcessor);
     }
 
     @Bean
     public CommandBus commandBus(CommandLog commandLog, CommandExecutor commandExecutor) {
-        return LoggingCommandBus.using(commandLog, commandExecutor);
+        return CommandBus.executingWith(
+                LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
     }
 
     @Bean

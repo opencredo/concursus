@@ -1,7 +1,7 @@
 package com.opencredo.concursus.examples;
 
 import com.opencredo.concursus.domain.commands.dispatching.CommandBus;
-import com.opencredo.concursus.domain.commands.dispatching.LoggingCommandBus;
+import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.domain.commands.dispatching.Slf4jCommandLog;
 import com.opencredo.concursus.domain.commands.dispatching.ThreadpoolCommandExecutor;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
@@ -39,10 +39,11 @@ public class CommandProcessingExample {
             eventSource, Person.class);
     private final Person.Commands commandProcessor = new PersonCommandProcessor(eventBus, personRepository);
 
-    private final CommandBus commandBus = LoggingCommandBus.using(new Slf4jCommandLog(),
+    private final CommandBus commandBus = CommandBus.executingWith(
+            LoggingCommandExecutorFilter.using(new Slf4jCommandLog()).apply(
             ThreadpoolCommandExecutor.processingWith(
                     Executors.newCachedThreadPool(),
-                    CommandMethodDispatcher.toHandler(Person.Commands.class, commandProcessor)));
+                    CommandMethodDispatcher.toHandler(Person.Commands.class, commandProcessor))));
 
     private final CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 

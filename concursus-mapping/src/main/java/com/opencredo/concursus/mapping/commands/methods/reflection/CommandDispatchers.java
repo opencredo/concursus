@@ -59,7 +59,7 @@ public final class CommandDispatchers {
 
         @Override
         public CompletableFuture<?> apply(Object o, Command command) {
-            CommandDispatcher dispatcher = dispatcherMap.get(CommandType.of(command));
+            CommandDispatcher dispatcher = dispatcherMap.get(command.getCommandType());
 
             return dispatcher.apply(o, command);
         }

@@ -1,6 +1,7 @@
 package com.opencredo.concursus.mapping.commands.methods;
 
 import com.opencredo.concursus.domain.commands.dispatching.*;
+import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesCommandsFor;
 import com.opencredo.concursus.mapping.commands.methods.dispatching.MethodDispatchingCommandProcessor;
@@ -22,9 +23,9 @@ public class MethodInvokingCommandDispatcherTest {
     private final DispatchingCommandProcessor dispatchingCommandProcessor = DispatchingCommandProcessor.create();
     private final MethodDispatchingCommandProcessor dispatchingProcessor = MethodDispatchingCommandProcessor.dispatchingTo(dispatchingCommandProcessor);
 
-    private final CommandBus commandBus = LoggingCommandBus.using(
-            new Slf4jCommandLog(),
-            SynchronousCommandExecutor.processingWith(dispatchingCommandProcessor));
+    private final CommandBus commandBus = CommandBus.executingWith(
+        LoggingCommandExecutorFilter.using(new Slf4jCommandLog()).apply(
+            ProcessingCommandExecutor.processingWith(dispatchingCommandProcessor)));
 
     private final CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 

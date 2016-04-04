@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concursus.domain.commands.CommandTypeMatcher;
 import com.opencredo.concursus.domain.commands.channels.CommandInChannel;
 import com.opencredo.concursus.domain.commands.channels.CommandOutChannel;
-import com.opencredo.concursus.domain.commands.dispatching.*;
+import com.opencredo.concursus.domain.commands.dispatching.CommandBus;
+import com.opencredo.concursus.domain.commands.dispatching.ProcessingCommandExecutor;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesCommandsFor;
 import com.opencredo.concursus.mapping.commands.methods.dispatching.MethodDispatchingCommandProcessor;
@@ -32,12 +33,10 @@ public class JsonCommandOutChannelTest {
 
     private final TestCommands commandProcessor = (ts, id, name) -> CompletableFuture.completedFuture(id);
 
-    private final CommandBus commandBus = LoggingCommandBus.using(
-            new Slf4jCommandLog(),
-            SynchronousCommandExecutor.processingWith(
-                    MethodDispatchingCommandProcessor.dispatchingTo(
-                            DispatchingCommandProcessor.create())
-                            .subscribe(TestCommands.class, commandProcessor)));
+    private final CommandBus commandBus = CommandBus.executingWith(
+        ProcessingCommandExecutor.processingWith(
+                MethodDispatchingCommandProcessor.create()
+                        .subscribe(TestCommands.class, commandProcessor)));
 
     private final CommandOutChannel channelToBus = commandBus.toCommandOutChannel();
     private final CommandInChannel<String, String> jsonInChannel = JsonCommandInChannel.using(typeMatcher, objectMapper, channelToBus);

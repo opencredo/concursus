@@ -24,8 +24,17 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Representation of an {@link Event}'s data in JSON-serialisable form.
+ */
 public final class EventJson {
 
+    /**
+     * Serialise the supplied {@link Event} to a string using the supplied {@link ObjectMapper}.
+     * @param event The {@link Event} to serialise.
+     * @param objectMapper The {@link ObjectMapper} to use.
+     * @return The JSON-serialised {@link Event}, as a string.
+     */
     public static String toString(Event event, ObjectMapper objectMapper) {
         try {
             return objectMapper.writeValueAsString(of(event, objectMapper));
@@ -34,6 +43,15 @@ public final class EventJson {
         }
     }
 
+    /**
+     * Deserialised the supplied JSON event string to an {@link Event}, using the supplied {@link EventTypeMatcher} and
+     * {@link ObjectMapper}.
+     * @param eventString The JSON event string to deserialise.
+     * @param eventTypeMatcher The {@link EventTypeMatcher} to use to resolve {@link EventType}s to
+     * {@link com.opencredo.concursus.data.tuples.TupleSchema}s
+     * @param objectMapper The {@link ObjectMapper} to use to deserialise event parameters.
+     * @return The converted {@link Event}, iff the {@link EventTypeMatcher} matches its type.
+     */
     public static Optional<Event> fromString(String eventString, EventTypeMatcher eventTypeMatcher, ObjectMapper objectMapper) {
         try {
             EventJson eventJson = objectMapper.readValue(eventString, EventJson.class);
@@ -43,6 +61,13 @@ public final class EventJson {
         }
     }
 
+    /**
+     * Convert an {@link Event} to a serialisable {@link EventJson} object, using the supplied {@link ObjectMapper}
+     * to serialise the event's parameters to JSON nodes.
+     * @param event The {@link Event} to serialise.
+     * @param objectMapper The {@link ObjectMapper} to use to serialise the event's parameters to JSON nodes.
+     * @return The mapped {@link EventJson}.
+     */
     public static EventJson of(Event event, ObjectMapper objectMapper) {
         Function<Object, JsonNode> serialiser = objectMapper::valueToTree;
         return of(
@@ -58,6 +83,19 @@ public final class EventJson {
         );
     }
 
+    /**
+     * Create an {@link EventJson} object from its properties. Used by Jackson to deserialise event JSON.
+     * @param aggregateType
+     * @param aggregateId
+     * @param name
+     * @param version
+     * @param eventTimestamp
+     * @param streamId
+     * @param processingId
+     * @param characteristics
+     * @param parameters
+     * @return The constructed {@link EventJson} object.
+     */
     @JsonCreator
     public static EventJson of(String aggregateType, String aggregateId, String name, String version, long eventTimestamp, String streamId, String processingId, int characteristics, Map<String, JsonNode> parameters) {
         return new EventJson(aggregateType, aggregateId, name, version, eventTimestamp, streamId, processingId, characteristics, parameters);
@@ -102,6 +140,14 @@ public final class EventJson {
         this.parameters = parameters;
     }
 
+    /**
+     * Convert this {@link EventJson} to an {@link Event}, using the supplied {@link EventTypeMatcher} and
+     * {@link ObjectMapper}.
+     * @param typeMatcher The {@link EventTypeMatcher} to use to resolve {@link EventType}s to
+     * {@link com.opencredo.concursus.data.tuples.TupleSchema}s
+     * @param objectMapper The {@link ObjectMapper} to use to deserialise event parameters.
+     * @return The converted {@link Event}, iff the {@link EventTypeMatcher} matches its type.
+     */
     public Optional<Event> toEvent(EventTypeMatcher typeMatcher, ObjectMapper objectMapper) {
         EventType eventType = EventType.of(aggregateType, VersionedName.of(name, version));
 

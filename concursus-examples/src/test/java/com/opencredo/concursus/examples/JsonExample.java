@@ -38,7 +38,7 @@ public class JsonExample {
 
         // Create in and out channels that map event batches into JSON lists.
         ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-        JsonEventsOutChannel jsonOut = JsonEventsOutChannel.using(mapper, serialisedBatches::add);
+        JsonEventsOutChannel jsonOut = JsonEventsOutChannel.using(mapper, e -> serialisedBatches.add(e));
         JsonEventsInChannel jsonIn = JsonEventsInChannel.using(
                 mapper,
                 EmitterInterfaceInfo.forInterface(Person.Events.class).getEventTypeMatcher(),

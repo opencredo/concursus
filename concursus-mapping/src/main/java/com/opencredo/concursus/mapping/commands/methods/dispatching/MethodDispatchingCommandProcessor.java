@@ -12,6 +12,15 @@ import java.util.Optional;
 public final class MethodDispatchingCommandProcessor implements CommandProcessor {
 
     /**
+     * Create a {@link MethodDispatchingCommandProcessor} that creates and wraps a {@link DispatchingCommandProcessor}
+     * to dispatch commands to methods on subscribed command handlers.
+     * @return The constructed {@link MethodDispatchingCommandProcessor}.
+     */
+    public static MethodDispatchingCommandProcessor create() {
+        return dispatchingTo(DispatchingCommandProcessor.create());
+    }
+
+    /**
      * Create a {@link MethodDispatchingCommandProcessor} that wraps a {@link DispatchingCommandProcessor} to dispatch
      * commands to methods on subscribed command handlers.
      * @param dispatchingCommandProcessor The {@link DispatchingCommandProcessor} to wrap.

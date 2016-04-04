@@ -25,8 +25,17 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Representation of a {@link Command}'s data in JSON-serialisable form.
+ */
 public final class CommandJson {
 
+    /**
+     * Serialise the supplied {@link Command} to a JSON string.
+     * @param command The {@link Command} to serialise.
+     * @param objectMapper The {@link ObjectMapper} to use.
+     * @return The serialised command JSON.
+     */
     public static String toString(Command command, ObjectMapper objectMapper) {
         try {
             return objectMapper.writeValueAsString(of(command, objectMapper));
@@ -35,6 +44,13 @@ public final class CommandJson {
         }
     }
 
+    /**
+     * Deserialise the supplied command string into a {@link Command}.
+     * @param commandString The JSON command string to deserialise.
+     * @param commandTypeMatcher The {@link CommandTypeMatcher} to use to obtain parameter types for the {@link Command}.
+     * @param objectMapper The {@link ObjectMapper} to use.
+     * @return The deserialised {@link Command}, iff the {@link CommandType} was matched by the {@link CommandTypeMatcher}.
+     */
     public static Optional<Command> fromString(String commandString, CommandTypeMatcher commandTypeMatcher, ObjectMapper objectMapper) {
         try {
             CommandJson commandJson = objectMapper.readValue(commandString, CommandJson.class);
@@ -44,6 +60,12 @@ public final class CommandJson {
         }
     }
 
+    /**
+     * Convert the supplied {@link Command} into a {@link CommandJson} object suitable for JSON serialisation.
+     * @param command The {@link Command} to convert.
+     * @param objectMapper The {@link ObjectMapper} to use to convert the {@link Command}'s parameters into JSON nodes.
+     * @return The converted {@link CommandJson}.
+     */
     public static CommandJson of(Command command, ObjectMapper objectMapper) {
         Function<Object, JsonNode> serialiser = objectMapper::valueToTree;
         return of(
@@ -58,6 +80,18 @@ public final class CommandJson {
         );
     }
 
+    /**
+     * Create a new {@link CommandJson} object from its properties. Used by Jackson to deserialise command JSON.
+     * @param aggregateType
+     * @param aggregateId
+     * @param name
+     * @param version
+     * @param commandTimestamp
+     * @param streamId
+     * @param processingId
+     * @param parameters
+     * @return
+     */
     @JsonCreator
     public static CommandJson of(String aggregateType, String aggregateId, String name, String version, long commandTimestamp, String streamId, String processingId, Map<String, JsonNode> parameters) {
         return new CommandJson(aggregateType, aggregateId, name, version, commandTimestamp, streamId, processingId, parameters);
@@ -98,6 +132,14 @@ public final class CommandJson {
         this.parameters = parameters;
     }
 
+    /**
+     * Convert this {@link CommandJson} to an {@link Command}, using the supplied {@link CommandTypeMatcher} and
+     * {@link ObjectMapper}.
+     * @param typeMatcher The {@link CommandTypeMatcher} to use to resolve {@link CommandType}s to
+     * {@link com.opencredo.concursus.domain.commands.CommandTypeInfo}.
+     * @param objectMapper The {@link ObjectMapper} to use to deserialise event parameters.
+     * @return The converted {@link Command}, iff the {@link CommandTypeMatcher} matches its type.
+     */
     public Optional<Command> toCommand(CommandTypeMatcher typeMatcher, ObjectMapper objectMapper) {
         CommandType commandType = getCommandType();
 

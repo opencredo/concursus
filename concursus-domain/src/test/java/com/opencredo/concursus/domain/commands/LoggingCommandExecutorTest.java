@@ -4,7 +4,7 @@ import com.opencredo.concursus.data.tuples.TupleSchema;
 import com.opencredo.concursus.domain.commands.dispatching.CommandBus;
 import com.opencredo.concursus.domain.commands.dispatching.CommandExecutor;
 import com.opencredo.concursus.domain.commands.dispatching.CommandLog;
-import com.opencredo.concursus.domain.commands.dispatching.LoggingCommandBus;
+import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.domain.common.AggregateId;
 import com.opencredo.concursus.domain.common.VersionedName;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
@@ -24,7 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.fail;
 
-public class LoggingCommandBusTest {
+public class LoggingCommandExecutorTest {
 
     private final List<Command> loggedCommands = new ArrayList<>();
     private final List<CommandResult> loggedResults = new ArrayList<>();
@@ -37,7 +37,8 @@ public class LoggingCommandBusTest {
         CommandExecutor commandExecutor = (command, future) ->
                 future.complete(command.complete(completionTime, Optional.of("OK")));
 
-        CommandBus commandBus = LoggingCommandBus.using(commandLog, commandExecutor);
+        CommandBus commandBus = CommandBus.executingWith(
+                LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
 
         final Command command = Command.of(
                 AggregateId.of("test", UUID.randomUUID()),
@@ -58,7 +59,8 @@ public class LoggingCommandBusTest {
         CommandExecutor commandExecutor = (command, future) ->
                 future.complete(command.fail(Instant.now(), new IllegalStateException("Out of cheese")));
 
-        CommandBus commandBus = LoggingCommandBus.using(commandLog, commandExecutor);
+        CommandBus commandBus = CommandBus.executingWith(
+                LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
 
         final Command command = Command.of(
                 AggregateId.of("test", UUID.randomUUID()),
@@ -78,7 +80,8 @@ public class LoggingCommandBusTest {
     public void doesNotLogCommandExecutionFailure() throws ExecutionException, InterruptedException {
         CommandExecutor commandExecutor = (command, future) -> future.cancel(true);
 
-        CommandBus commandBus = LoggingCommandBus.using(commandLog, commandExecutor);
+        CommandBus commandBus = CommandBus.executingWith(
+                LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
 
         final Command command = Command.of(
                 AggregateId.of("test", UUID.randomUUID()),

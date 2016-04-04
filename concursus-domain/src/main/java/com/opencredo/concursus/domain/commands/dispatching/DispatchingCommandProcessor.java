@@ -9,8 +9,15 @@ import java.util.concurrent.ConcurrentMap;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * A {@link CommandProcessor} that dispatches commands to {@link CommandProcessor}s by {@link CommandType}.
+ */
 public final class DispatchingCommandProcessor implements CommandProcessor, CommandSubscribable {
 
+    /**
+     * Create a {@link DispatchingCommandProcessor} with no {@link CommandProcessor}s registered to handle commands.
+     * @return The constructed {@link DispatchingCommandProcessor}
+     */
     public static DispatchingCommandProcessor create() {
         return new DispatchingCommandProcessor(new ConcurrentHashMap<>());
     }
@@ -23,7 +30,7 @@ public final class DispatchingCommandProcessor implements CommandProcessor, Comm
 
     @Override
     public Optional<Object> process(Command command) throws Exception {
-        final CommandType commandType = CommandType.of(command);
+        final CommandType commandType = command.getCommandType();
         CommandProcessor processor = processorRegistry.get(commandType);
         checkNotNull(processor,
                 "No command processor registered for command type %s", commandType);

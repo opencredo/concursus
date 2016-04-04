@@ -10,15 +10,34 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * A {@link CommandExecutor} that partitions command execution based on a hash of each command's aggregate id.
+ */
 public final class PartitioningCommandExecutor implements CommandExecutor {
 
-    public static PartitioningCommandExecutor processingWith(CommandProcessor commandProcessor, int partitionCount) {
+    /**
+     * Create a partitioning {@link CommandExecutor} that dispatches each partition's commands to a single-threaded
+     * command executor, ensuring that no two commands for the same aggregateId are ever executed simultaneously
+     * (by the current process - use a HazelcastPartitioningCommandExecutor to support this guarantee across a cluster).
+     * @param commandProcessor The {@link CommandProcessor} to use to process commands.
+     * @param partitionCount The number of partitions to create.
+     * @return The constructed {@link CommandExecutor}
+     */
+    public static CommandExecutor processingWith(CommandProcessor commandProcessor, int partitionCount) {
         return partitioningBetween(IntStream.range(0, partitionCount)
                 .mapToObj(i -> ThreadpoolCommandExecutor.singleThreaded(commandProcessor))
                 .collect(Collectors.toList()));
     }
 
-    public static PartitioningCommandExecutor partitioningBetween(List<CommandExecutor> executors) {
+
+    /**
+     * Create a partitioning {@link CommandExecutor} that distributes {@link Command}s among the supplied list of
+     * {@link CommandExecutor}s by aggregateId, ensuring that commands for the same aggregate id are always executed
+     * by the same executor.
+     * @param executors  The {@link CommandExecutor}s to dispatch commands to.
+     * @return The constructed {@link CommandExecutor}
+     */
+    public static CommandExecutor partitioningBetween(List<CommandExecutor> executors) {
         return new PartitioningCommandExecutor(
                 pickPartition(executors.size()).andThen(executors::get));
     }
@@ -29,7 +48,7 @@ public final class PartitioningCommandExecutor implements CommandExecutor {
 
     private final Function<AggregateId, CommandExecutor> executorPicker;
 
-    public PartitioningCommandExecutor(Function<AggregateId, CommandExecutor> executorPicker) {
+    private PartitioningCommandExecutor(Function<AggregateId, CommandExecutor> executorPicker) {
         this.executorPicker = executorPicker;
     }
 

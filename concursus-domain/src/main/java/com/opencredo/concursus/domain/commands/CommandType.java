@@ -17,17 +17,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class CommandType {
 
     /**
-     * Get the {@link CommandType} of the supplied {@link Command}.
-     * @param command The {@link Command} to get the type of.
-     * @return The {@link Command}'s {@link CommandType}.
-     */
-    public static CommandType of(Command command) {
-        checkNotNull(command, "command must not be null");
-
-        return of(command.getAggregateId().getType(), command.getCommandName());
-    }
-
-    /**
      * Create a {@link CommandType} with the given aggregate type and command name.
      * @param aggregateType The aggregate type to which this type of command is addressed.
      * @param commandName The name of the command type.

@@ -56,6 +56,14 @@ public final class Command {
     }
 
     /**
+     * Get the {@link CommandType}.
+     * @return The {@link CommandType}.
+     */
+    public CommandType getCommandType() {
+        return CommandType.of(aggregateId.getType(), commandName);
+    }
+
+    /**
      * Return a copy of this {@link Command}, updated with a processing id which uniquely identifies the command and
      * indicates when it was processed.
      * @param processingId The processing id to add to the command.

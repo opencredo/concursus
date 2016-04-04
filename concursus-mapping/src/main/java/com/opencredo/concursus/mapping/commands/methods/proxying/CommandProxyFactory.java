@@ -14,6 +14,8 @@ public final class CommandProxyFactory {
      * @return The constructed {@link CommandProxyFactory}.
      */
     public static CommandProxyFactory proxying(CommandOutChannel commandOutChannel) {
+        Preconditions.checkNotNull(commandOutChannel, "commandOutChannel must not be null");
+
         return new CommandProxyFactory(commandOutChannel);
     }
 

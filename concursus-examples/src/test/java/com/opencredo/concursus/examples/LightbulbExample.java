@@ -15,6 +15,7 @@ import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateRepository;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class LightbulbExample {
     @HandlesEventsFor("lightbulb")
     public interface LightbulbEvents {
         @Initial
-        void created(StreamTimestamp timestamp, UUID id);
+        void created(StreamTimestamp timestamp, UUID id, int wattage);
         void screwedIn(StreamTimestamp timestamp, UUID id, String location);
         void switchedOn(StreamTimestamp timestamp, UUID id);
         void switchedOff(StreamTimestamp timestamp, UUID id);
@@ -41,16 +42,18 @@ public class LightbulbExample {
     public static final class LightbulbState {
 
         @HandlesEvent
-        public static LightbulbState created(UUID id) {
-            return new LightbulbState(id);
+        public static LightbulbState created(UUID id, int wattage) {
+            return new LightbulbState(id, wattage);
         }
 
         private final UUID id;
+        private final int wattage;
         private Optional<String> screwedInLocation = Optional.empty();
         private boolean switchedOn = false;
 
-        public LightbulbState(UUID id) {
+        public LightbulbState(UUID id, int wattage) {
             this.id = id;
+            this.wattage = wattage;
         }
 
         @HandlesEvent
@@ -75,6 +78,10 @@ public class LightbulbExample {
 
         public UUID getId() {
             return id;
+        }
+
+        public int getWattage() {
+            return wattage;
         }
 
         public boolean isSwitchedOn() {
@@ -130,7 +137,7 @@ public class LightbulbExample {
     private void recordEventHistory(UUID lightbulbId, Instant start) {
         eventBus.dispatch(LightbulbEvents.class, lightbulb -> {
             // The lightbulb is created.
-            lightbulb.created(StreamTimestamp.of(start), lightbulbId);
+            lightbulb.created(StreamTimestamp.of(start), lightbulbId, 60);
 
             // The lightbulb is screwed in, in the kitchen, and switched on and off a few times.
             lightbulb.screwedIn(StreamTimestamp.of(start.plus(1, MINUTES)), lightbulbId, "kitchen");
@@ -146,5 +153,41 @@ public class LightbulbExample {
             // The lightbulb is switched on again.
             lightbulb.switchedOn(StreamTimestamp.of(start.plus(1, DAYS).plus(15, MINUTES)), lightbulbId);
         });
+    }
+
+    public static final class PowerUsageCalculator implements LightbulbEvents {
+
+        private long wattage = 0;
+        private long millisecondsUsage = 0;
+        private Optional<Instant> lastSwitchedOn;
+
+        @Override
+        public void created(StreamTimestamp timestamp, UUID id, int wattage) {
+            this.wattage = wattage;
+        }
+
+        @Override
+        public void screwedIn(StreamTimestamp timestamp, UUID id, String location) {
+
+        }
+
+        @Override
+        public void switchedOn(StreamTimestamp timestamp, UUID id) {
+            lastSwitchedOn = Optional.of(timestamp.getTimestamp());
+        }
+
+        @Override
+        public void switchedOff(StreamTimestamp timestamp, UUID id) {
+            lastSwitchedOn.ifPresent(switchedOnTime -> millisecondsUsage += Duration.between(timestamp.getTimestamp(), switchedOnTime).toMillis());
+        }
+
+        @Override
+        public void unscrewed(StreamTimestamp timestamp, UUID id) {
+
+        }
+
+        public double getKilowattHours() {
+            return (double) millisecondsUsage * ((double) wattage / 1000) / Duration.ofHours(1).toMillis();
+        }
     }
 }
