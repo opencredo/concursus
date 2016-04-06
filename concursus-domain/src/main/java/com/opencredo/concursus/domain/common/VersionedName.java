@@ -1,5 +1,6 @@
 package com.opencredo.concursus.domain.common;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -7,7 +8,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * A name/version combination.
  */
-public final class VersionedName {
+public final class VersionedName implements Serializable {
 
     /**
      * Create a {@link VersionedName} with the supplied name and version "0".

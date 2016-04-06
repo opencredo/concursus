@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * A {@link CommandProcessor} that dispatches commands to methods on subscribed command handlers.
  */
-public final class MethodDispatchingCommandProcessor implements CommandProcessor {
+public final class MethodDispatchingCommandProcessor implements CommandProcessor, CommandHandlerSubscribable {
 
     /**
      * Create a {@link MethodDispatchingCommandProcessor} that creates and wraps a {@link DispatchingCommandProcessor}
@@ -36,13 +36,7 @@ public final class MethodDispatchingCommandProcessor implements CommandProcessor
         this.dispatchingCommandProcessor = dispatchingCommandProcessor;
     }
 
-    /**
-     * Subscribe a command handler to the wrapped {@link DispatchingCommandProcessor}.
-     * @param handlerClass The command-issuing interface to dispatch commands for.
-     * @param commandHandler The command handler that implements the interface.
-     * @param <H> The type of the command-issuing interface.
-     * @return This object, for method chaining.
-     */
+    @Override
     public <H> MethodDispatchingCommandProcessor subscribe(Class<? extends H> handlerClass, H commandHandler) {
         CommandMethodDispatcher.toHandler(handlerClass, commandHandler).subscribeTo(dispatchingCommandProcessor);
         return this;
