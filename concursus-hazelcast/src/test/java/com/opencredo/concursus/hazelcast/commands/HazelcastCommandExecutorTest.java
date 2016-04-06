@@ -23,6 +23,7 @@ public class HazelcastCommandExecutorTest {
     public interface TestCommands {
         CompletableFuture<String> uppercase(StreamTimestamp ts, UUID id, String input);
     }
+
     private final CommandExecutor executor = getCommandExecutor();
 
     private final CommandBus commandBus = CommandBus.executingWith(executor);
