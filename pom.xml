@@ -6,9 +6,6 @@
     <artifactId>concursus</artifactId>
     <packaging>pom</packaging>
     <version>0.4-SNAPSHOT</version>
-    <modules>
-        <module>concursus-hazelcast</module>
-    </modules>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -245,6 +242,7 @@
                 <module>concursus-cassandra</module>
                 <module>concursus-redis</module>
                 <module>concursus-domain-json</module>
+                <module>concursus-hazelcast</module>
                 <module>concursus-spring</module>
                 <module>concursus-spring-cassandra</module>
                 <module>concursus-spring-redis</module>
