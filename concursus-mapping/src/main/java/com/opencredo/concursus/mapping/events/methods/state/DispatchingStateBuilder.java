@@ -1,7 +1,7 @@
 package com.opencredo.concursus.mapping.events.methods.state;
 
 import com.opencredo.concursus.domain.events.Event;
-import com.opencredo.concursus.domain.state.StateBuilder;
+import com.opencredo.concursus.domain.events.state.StateBuilder;
 import com.opencredo.concursus.mapping.events.methods.reflection.StateClassInfo;
 import com.opencredo.concursus.mapping.events.methods.reflection.dispatching.EventDispatcher;
 import com.opencredo.concursus.mapping.events.methods.reflection.dispatching.InitialEventDispatcher;

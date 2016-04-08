@@ -4,7 +4,7 @@ import com.opencredo.concursus.domain.events.channels.EventOutChannel;
 import com.opencredo.concursus.domain.events.channels.RoutingEventOutChannel;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
 import com.opencredo.concursus.domain.functional.Consumers;
-import com.opencredo.concursus.domain.state.StateBuilder;
+import com.opencredo.concursus.domain.events.state.StateBuilder;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateBuilder;
 
 import java.util.Map;

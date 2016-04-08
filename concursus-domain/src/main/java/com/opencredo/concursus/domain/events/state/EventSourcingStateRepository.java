@@ -1,4 +1,4 @@
-package com.opencredo.concursus.domain.state;
+package com.opencredo.concursus.domain.events.state;
 
 import com.opencredo.concursus.domain.events.Event;
 import com.opencredo.concursus.domain.events.binding.EventTypeBinding;

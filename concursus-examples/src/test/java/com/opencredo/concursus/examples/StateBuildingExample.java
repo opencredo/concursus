@@ -1,6 +1,6 @@
 package com.opencredo.concursus.examples;
 
-import com.opencredo.concursus.domain.state.StateBuilder;
+import com.opencredo.concursus.domain.events.state.StateBuilder;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.events.methods.proxying.EventEmittingProxy;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateBuilder;

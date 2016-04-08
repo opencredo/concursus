@@ -1,24 +1,32 @@
 package com.opencredo.concursus.examples;
 
+import com.opencredo.concursus.domain.events.Event;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
 import com.opencredo.concursus.domain.events.logging.EventLog;
 import com.opencredo.concursus.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
-import com.opencredo.concursus.domain.state.StateRepository;
-import com.opencredo.concursus.domain.storing.EventStore;
-import com.opencredo.concursus.domain.storing.InMemoryEventStore;
+import com.opencredo.concursus.domain.events.state.StateRepository;
+import com.opencredo.concursus.domain.events.storage.EventStore;
+import com.opencredo.concursus.domain.events.storage.InMemoryEventStore;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesEvent;
 import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concursus.mapping.annotations.Initial;
+import com.opencredo.concursus.mapping.annotations.Terminal;
+import com.opencredo.concursus.mapping.events.methods.dispatching.DispatchingEventOutChannel;
+import com.opencredo.concursus.mapping.events.methods.proxying.EventEmittingProxy;
 import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateRepository;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static java.time.temporal.ChronoUnit.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,6 +44,8 @@ public class LightbulbExample {
         void switchedOn(StreamTimestamp timestamp, UUID id);
         void switchedOff(StreamTimestamp timestamp, UUID id);
         void unscrewed(StreamTimestamp timestamp, UUID id);
+        @Terminal
+        void blown(StreamTimestamp timestamp, UUID id);
     }
 
     @HandlesEventsFor("lightbulb")
@@ -155,6 +165,29 @@ public class LightbulbExample {
         });
     }
 
+    @Test
+    public void emitEventsToConsole() {
+        List<Event> collectedEvents = new ArrayList<>();
+        LightbulbEvents events = EventEmittingProxy.proxying(
+                collectedEvents::add,
+                LightbulbEvents.class);
+
+        UUID lightbulbId = UUID.randomUUID();
+        StreamTimestamp start = StreamTimestamp.now();
+        events.created(start, lightbulbId, 60);
+        events.screwedIn(start.plus(1, MINUTES), lightbulbId, "hallway");
+        events.switchedOn(start.plus(2, MINUTES), lightbulbId);
+
+        LightbulbEvents handler = Mockito.mock(LightbulbEvents.class);
+        Consumer<Event> eventConsumer = DispatchingEventOutChannel.toHandler(LightbulbEvents.class, handler);
+        collectedEvents.forEach(eventConsumer);
+    }
+
+    public void replayToHandler(List<Event> collectedEvents, LightbulbEvents handler) {
+        Consumer<Event> eventConsumer = DispatchingEventOutChannel.toHandler(LightbulbEvents.class, handler);
+        collectedEvents.forEach(eventConsumer);
+    }
+
     public static final class PowerUsageCalculator implements LightbulbEvents {
 
         private long wattage = 0;
@@ -183,6 +216,11 @@ public class LightbulbExample {
 
         @Override
         public void unscrewed(StreamTimestamp timestamp, UUID id) {
+
+        }
+
+        @Override
+        public void blown(StreamTimestamp timestamp, UUID id) {
 
         }
 

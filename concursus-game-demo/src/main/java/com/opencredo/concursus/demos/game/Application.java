@@ -3,7 +3,7 @@ package com.opencredo.concursus.demos.game;
 import com.opencredo.concursus.demos.game.states.GameState;
 import com.opencredo.concursus.demos.game.states.PlayerState;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
-import com.opencredo.concursus.domain.state.StateRepository;
+import com.opencredo.concursus.domain.events.state.StateRepository;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateRepository;
 import com.opencredo.concursus.spring.commands.CommandSystemBeans;
 import com.opencredo.concursus.spring.events.EventSystemBeans;

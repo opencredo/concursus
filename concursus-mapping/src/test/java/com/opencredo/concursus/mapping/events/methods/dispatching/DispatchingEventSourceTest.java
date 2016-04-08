@@ -3,7 +3,7 @@ package com.opencredo.concursus.mapping.events.methods.dispatching;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
 import com.opencredo.concursus.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
-import com.opencredo.concursus.domain.storing.InMemoryEventStore;
+import com.opencredo.concursus.domain.events.storage.InMemoryEventStore;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concursus.mapping.annotations.Name;

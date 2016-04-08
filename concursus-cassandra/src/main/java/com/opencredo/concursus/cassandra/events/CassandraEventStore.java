@@ -2,8 +2,8 @@ package com.opencredo.concursus.cassandra.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concursus.domain.events.Event;
-import com.opencredo.concursus.domain.storing.ComposedEventStore;
-import com.opencredo.concursus.domain.storing.EventStore;
+import com.opencredo.concursus.domain.events.storage.ComposedEventStore;
+import com.opencredo.concursus.domain.events.storage.EventStore;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import java.lang.reflect.Type;

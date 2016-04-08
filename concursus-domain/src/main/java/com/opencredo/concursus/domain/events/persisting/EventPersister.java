@@ -1,4 +1,4 @@
-package com.opencredo.concursus.domain.persisting;
+package com.opencredo.concursus.domain.events.persisting;
 
 import com.opencredo.concursus.domain.events.Event;
 import com.opencredo.concursus.domain.events.channels.EventsOutChannel;

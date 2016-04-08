@@ -8,7 +8,7 @@ import com.opencredo.concursus.demos.game.engine.Engine;
 import com.opencredo.concursus.demos.game.engine.EngineRegistry;
 import com.opencredo.concursus.demos.game.states.GameState;
 import com.opencredo.concursus.demos.game.states.PlayerState;
-import com.opencredo.concursus.domain.state.StateRepository;
+import com.opencredo.concursus.domain.events.state.StateRepository;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.commands.methods.proxying.CommandProxyFactory;
 import com.opencredo.concursus.spring.events.EventSystemBeans;

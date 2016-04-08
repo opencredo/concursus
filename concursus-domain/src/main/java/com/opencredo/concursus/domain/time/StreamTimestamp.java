@@ -133,4 +133,12 @@ public final class StreamTimestamp implements Comparable<StreamTimestamp> {
     public String toString() {
         return timestamp + "/" + streamId;
     }
+
+    public boolean isBefore(StreamTimestamp timestamp) {
+        return compareTo(timestamp) < 0;
+    }
+
+    public boolean isAfter(StreamTimestamp timestamp) {
+        return compareTo(timestamp) > 0;
+    }
 }

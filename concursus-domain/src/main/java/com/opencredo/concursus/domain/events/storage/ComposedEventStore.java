@@ -1,10 +1,10 @@
-package com.opencredo.concursus.domain.storing;
+package com.opencredo.concursus.domain.events.storage;
 
 import com.opencredo.concursus.domain.common.AggregateId;
 import com.opencredo.concursus.domain.events.Event;
 import com.opencredo.concursus.domain.events.sourcing.EventRetriever;
 import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
-import com.opencredo.concursus.domain.persisting.EventPersister;
+import com.opencredo.concursus.domain.events.persisting.EventPersister;
 import com.opencredo.concursus.domain.time.TimeRange;
 
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package com.opencredo.concursus.domain.storing;
+package com.opencredo.concursus.domain.events.storage;
 
 import com.opencredo.concursus.domain.common.AggregateId;
 import com.opencredo.concursus.domain.events.Event;
