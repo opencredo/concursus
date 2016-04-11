@@ -6,19 +6,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-final class Index<K, V> {
+final class InMemoryIndex<K, V> {
 
-    public static <K, V> Index<K, V> create() {
+    public static <K, V> InMemoryIndex<K, V> create() {
         return create(new ConcurrentHashMap<>());
     }
 
-    public static <K, V> Index<K, V> create(Map<K, Set<V>> indexData) {
-        return new Index<>(indexData);
+    public static <K, V> InMemoryIndex<K, V> create(Map<K, Set<V>> indexData) {
+        return new InMemoryIndex<>(indexData);
     }
 
     private final Map<K, Set<V>> indexData;
 
-    private Index(Map<K, Set<V>> indexData) {
+    private InMemoryIndex(Map<K, Set<V>> indexData) {
         this.indexData = indexData;
     }
 

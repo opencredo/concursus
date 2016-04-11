@@ -16,14 +16,14 @@ public final class InMemoryEventIndex implements EventIndexer, EventIndex {
      * @return The constructed {@link InMemoryEventIndex}.
      */
     public static InMemoryEventIndex create() {
-        return new InMemoryEventIndex(TimestampedTable.create());
+        return new InMemoryEventIndex(InMemoryTimestampedTable.create());
     }
 
-    private InMemoryEventIndex(TimestampedTable<AggregateIdParameterName, ParameterNameAndValue, StreamTimestamp> valueTable) {
+    private InMemoryEventIndex(InMemoryTimestampedTable<AggregateIdParameterName, ParameterNameAndValue, StreamTimestamp> valueTable) {
         this.valueTable = valueTable;
     }
 
-    private final TimestampedTable<AggregateIdParameterName, ParameterNameAndValue, StreamTimestamp> valueTable;
+    private final InMemoryTimestampedTable<AggregateIdParameterName, ParameterNameAndValue, StreamTimestamp> valueTable;
 
     @Override
     public Set<AggregateId> findAggregates(String parameterName, Object parameterValue) {
