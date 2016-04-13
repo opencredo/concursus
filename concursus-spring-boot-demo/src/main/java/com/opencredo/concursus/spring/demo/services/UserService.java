@@ -3,7 +3,7 @@ package com.opencredo.concursus.spring.demo.services;
 import com.opencredo.concursus.domain.events.cataloguing.AggregateCatalogue;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
 import com.opencredo.concursus.domain.events.views.EventView;
-import com.opencredo.concursus.domain.state.StateRepository;
+import com.opencredo.concursus.domain.events.state.StateRepository;
 import com.opencredo.concursus.mapping.events.methods.history.MappingEventHistoryFetcher;
 import com.opencredo.concursus.spring.demo.events.UserEvents;
 import com.opencredo.concursus.spring.demo.repositories.GroupState;

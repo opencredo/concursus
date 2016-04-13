@@ -10,7 +10,7 @@ import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concursus.domain.events.processing.EventBatchProcessor;
 import com.opencredo.concursus.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
-import com.opencredo.concursus.domain.storing.InMemoryEventStore;
+import com.opencredo.concursus.domain.events.storage.InMemoryEventStore;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.domain.time.TimeRange;
 import org.junit.Test;

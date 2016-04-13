@@ -5,7 +5,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencredo.concursus.domain.events.Event;
-import com.opencredo.concursus.domain.persisting.EventPersister;
+import com.opencredo.concursus.domain.events.persisting.EventPersister;
 import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import java.sql.Date;

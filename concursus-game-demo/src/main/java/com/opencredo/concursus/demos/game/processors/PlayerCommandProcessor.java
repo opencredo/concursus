@@ -10,7 +10,7 @@ import com.opencredo.concursus.demos.game.events.PlayerEvents;
 import com.opencredo.concursus.demos.game.exceptions.IllegalGameStateException;
 import com.opencredo.concursus.demos.game.exceptions.NoSuchGameException;
 import com.opencredo.concursus.demos.game.states.GameState;
-import com.opencredo.concursus.domain.state.StateRepository;
+import com.opencredo.concursus.domain.events.state.StateRepository;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concursus.spring.commands.processing.CommandHandler;

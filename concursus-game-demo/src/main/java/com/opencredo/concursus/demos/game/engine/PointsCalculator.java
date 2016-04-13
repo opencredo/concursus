@@ -1,7 +1,7 @@
 package com.opencredo.concursus.demos.game.engine;
 
 import com.opencredo.concursus.demos.game.states.PlayerState;
-import com.opencredo.concursus.domain.state.StateRepository;
+import com.opencredo.concursus.domain.events.state.StateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

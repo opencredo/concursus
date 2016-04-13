@@ -1,7 +1,7 @@
 package com.opencredo.concursus.spring.demo.services;
 
 import com.opencredo.concursus.domain.events.cataloguing.AggregateCatalogue;
-import com.opencredo.concursus.domain.state.StateRepository;
+import com.opencredo.concursus.domain.events.state.StateRepository;
 import com.opencredo.concursus.spring.demo.repositories.GroupState;
 import com.opencredo.concursus.spring.demo.repositories.UserState;
 import com.opencredo.concursus.spring.demo.views.GroupView;
