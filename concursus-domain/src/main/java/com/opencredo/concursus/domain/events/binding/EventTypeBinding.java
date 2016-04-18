@@ -11,7 +11,8 @@ import java.util.Collection;
 import java.util.UUID;
 
 /**
- * Captures the aggregate type and {@link EventTypeMatcher} for an interface, and uses these to simplify making calls to an {@link EventSource}
+ * Captures the aggregate type and {@link EventTypeMatcher} for an interface, and uses these to simplify making calls
+ * to an {@link EventSource}
  */
 public final class EventTypeBinding {
 

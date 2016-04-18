@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Utility class that creates an {@link com.opencredo.concursus.domain.events.channels.EventsOutChannel}
+ * Utility class that creates an {@link com.opencredo.concursus.domain.events.persisting.EventPersister}
  * and an {@link com.opencredo.concursus.domain.events.sourcing.EventRetriever} for Cassandra,
  * and uses them to build an {@link EventStore}.
  */

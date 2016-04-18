@@ -27,7 +27,8 @@ public interface CommandBus extends Function<Command, CompletableFuture<CommandR
     }
 
     /**
-     * Get a {@link CommandOutChannel} that sends commands to this {@link CommandBus}.
+     * Get a {@link CommandOutChannel} that sends commands to this {@link CommandBus}, lifting {@link CommandResult}s
+     * to {@link CompletableFuture}s.
      * @return The constructed {@link CommandOutChannel}.
      */
     default CommandOutChannel toCommandOutChannel() {

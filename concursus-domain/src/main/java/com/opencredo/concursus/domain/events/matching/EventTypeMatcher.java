@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Provides parameter type information, in the form of a {@link TupleSchema}, for each {@link EventType} that it knows about.
+ * Provides parameter type information, in the form of a {@link TupleSchema}, for each {@link EventType} that it knows
+ * about.
  */
 @FunctionalInterface
 public interface EventTypeMatcher {

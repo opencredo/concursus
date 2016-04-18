@@ -11,13 +11,17 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
+/**
+ * Utility class for generating TimeUUIDs,
+ */
 public final class TimeUUID {
 
     private static final long START_EPOCH = makeEpoch();
+
     private static final long CLOCK_SEQ_AND_NODE = makeClockSeqAndNode();
-    private static final long MIN_CLOCK_SEQ_AND_NODE = -9187201950435737472L;
-    private static final long MAX_CLOCK_SEQ_AND_NODE = 9187201950435737471L;
     private static final AtomicLong lastTimestamp = new AtomicLong(0L);
 
     private TimeUUID() {
@@ -25,85 +29,79 @@ public final class TimeUUID {
 
     private static long makeEpoch() {
         Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT-0"));
-        c.set(1, 1582);
-        c.set(2, 9);
-        c.set(5, 15);
-        c.set(11, 0);
-        c.set(12, 0);
-        c.set(13, 0);
-        c.set(14, 0);
+        c.set(Calendar.YEAR, 1582);
+        c.set(Calendar.MONTH, 9);
+        c.set(Calendar.DAY_OF_MONTH, 15);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
         return c.getTimeInMillis();
     }
 
     private static long makeNode() {
+        byte[] digestBytes = addSystemProperties(hashLocalAddresses()).digest();
+
+        return LongStream.range(0, 6)
+                .map(i -> digestBytes[(int) i] << (i * 8))
+                .reduce(0x0000010000000000L, (acc, i) -> acc | i);
+    }
+
+    private static MessageDigest addSystemProperties(MessageDigest digest) {
+        return addToDigest(digest,
+                Stream.of("java.vendor", "java.vendor.url", "java.version", "os.arch", "os.name", "os.version")
+                .map(System.getProperties()::getProperty));
+    }
+
+    private static MessageDigest hashLocalAddresses() {
         try {
-            MessageDigest e = MessageDigest.getInstance("MD5");
-            Iterator props = getAllLocalAddresses().iterator();
-
-            while(props.hasNext()) {
-                String hash = (String)props.next();
-                update(e, hash);
-            }
-
-            Properties var7 = System.getProperties();
-            update(e, var7.getProperty("java.vendor"));
-            update(e, var7.getProperty("java.vendor.url"));
-            update(e, var7.getProperty("java.version"));
-            update(e, var7.getProperty("os.arch"));
-            update(e, var7.getProperty("os.name"));
-            update(e, var7.getProperty("os.version"));
-            byte[] var8 = e.digest();
-            long node = 0L;
-
-            for(int i = 0; i < 6; ++i) {
-                node |= (255L & (long)var8[i]) << i * 8;
-            }
-
-            return node | 1099511627776L;
-        } catch (NoSuchAlgorithmException var6) {
-            throw new RuntimeException(var6);
+            return addToDigest(MessageDigest.getInstance("MD5"),
+                    getAllLocalAddresses().stream());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static void update(MessageDigest digest, String value) {
-        if(value != null) {
-            digest.update(value.getBytes(Charsets.UTF_8));
-        }
-
+    private static MessageDigest addToDigest(MessageDigest digest, Stream<String> values) {
+        values.filter(propertyValue -> propertyValue != null)
+                .map(propertyValue -> propertyValue.getBytes(Charsets.UTF_8))
+                .forEach(digest::update);
+        return digest;
     }
 
     private static long makeClockSeqAndNode() {
         long clock = (new Random(System.currentTimeMillis())).nextLong();
-        long node = makeNode();
-        long lsb = 0L;
-        lsb |= (clock & 16383L) << 48;
-        lsb |= -9223372036854775808L;
-        lsb |= node;
-        return lsb;
+        return makeNode() | ((clock & 0x3FFFL) << 48) | 0x8000000000000000L;
     }
 
+    /**
+     * Create a time-based (type 1) UUID
+     * @return The created UUID.
+     */
     public static UUID timeBased() {
         return new UUID(makeMSB(getCurrentTimestamp()), CLOCK_SEQ_AND_NODE);
     }
 
-    public static UUID startOf(long timestamp) {
-        return new UUID(makeMSB(fromUnixTimestamp(timestamp)), MIN_CLOCK_SEQ_AND_NODE);
-    }
-
-    public static UUID endOf(long timestamp) {
-        long uuidTstamp = fromUnixTimestamp(timestamp + 1L) - 1L;
-        return new UUID(makeMSB(uuidTstamp), MAX_CLOCK_SEQ_AND_NODE);
-    }
-
+    /**
+     * Get the unix timestamp encoded in a time-based (type 1) UUID.
+     * @param uuid The UUID to retrieve the unix timestamp from.
+     * @return The unix timestamp.
+     */
     public static long unixTimestamp(UUID uuid) {
         if(uuid.version() != 1) {
-            throw new IllegalArgumentException(String.format("Can only retrieve the unix timestamp for version 1 uuid (provided version %d)", new Object[]{Integer.valueOf(uuid.version())}));
+            throw new IllegalArgumentException(String.format(
+                    "Can only retrieve the unix timestamp for version 1 uuid (provided version %d)",
+                    uuid.version()));
         } else {
-            long timestamp = uuid.timestamp();
-            return timestamp / 10000L + START_EPOCH;
+            return uuid.timestamp() / 10000L + START_EPOCH;
         }
     }
 
+    /**
+     * Get the {@link Instant} encoded in a time-based (type 1) UUID.
+     * @param uuid The UUID to retrieve the {@link Instant} from.
+     * @return The {@link Instant}.
+     */
     public static Instant getInstant(UUID uuid) {
         return Instant.ofEpochMilli(unixTimestamp(uuid));
     }
@@ -123,7 +121,7 @@ public final class TimeUUID {
                 }
 
                 long candidate = last + 1L;
-                if(millisOf(candidate) == lastMillis && lastTimestamp.compareAndSet(last, candidate)) {
+                if (millisOf(candidate) == lastMillis && lastTimestamp.compareAndSet(last, candidate)) {
                     return candidate;
                 }
             }
@@ -139,42 +137,53 @@ public final class TimeUUID {
     }
 
     static long makeMSB(long timestamp) {
-        long msb = 0L;
-        msb |= (4294967295L & timestamp) << 32;
-        msb |= (281470681743360L & timestamp) >>> 16;
-        msb |= (1152640029630136320L & timestamp) >>> 48;
-        msb |= 4096L;
-        return msb;
+        return 0x1000L
+                | ((0xFFFFFFFFL & timestamp) << 32)          // move bottom 32-bit word to top
+                | ((0xFFFF00000000L & timestamp) >>> 16)     // move bytes 5 and 6 to bytes 3 and 4
+                | ((0x0FFF000000000000L & timestamp) >>> 48); // move bytes 7 and 8 to bytes 1 and 2, dropping top nybble
     }
 
     private static Set<String> getAllLocalAddresses() {
-        HashSet allIps = new HashSet();
+        Set<String> allIps = getLocalHostAddresses();
+
+        getNetworkInterfaces().ifPresent(networkInterfaces ->
+            addNetworkInterfaces(allIps, networkInterfaces)
+        );
+
+        return allIps;
+    }
+
+    private static void addNetworkInterfaces(Set<String> allIps, Enumeration<NetworkInterface> networkInterfaces) {
+        while(networkInterfaces.hasMoreElements()) {
+            Enumeration<InetAddress> inetAddresses = networkInterfaces.nextElement().getInetAddresses();
+
+            while(inetAddresses.hasMoreElements()) {
+                allIps.add((inetAddresses.nextElement()).toString());
+            }
+        }
+    }
+
+    private static Optional<Enumeration<NetworkInterface>> getNetworkInterfaces() {
+        try {
+            return Optional.ofNullable(NetworkInterface.getNetworkInterfaces());
+        } catch (SocketException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static Set<String> getLocalHostAddresses() {
+        Set<String> allIps = new HashSet<>();
 
         try {
             InetAddress en = InetAddress.getLocalHost();
+
             allIps.add(en.toString());
             allIps.add(en.getCanonicalHostName());
-            InetAddress[] enumIpAddr = InetAddress.getAllByName(en.getCanonicalHostName());
-            if(enumIpAddr != null) {
-                for(int i = 0; i < enumIpAddr.length; ++i) {
-                    allIps.add(enumIpAddr[i].toString());
-                }
-            }
-        } catch (UnknownHostException var5) {
-        }
 
-        try {
-            Enumeration var6 = NetworkInterface.getNetworkInterfaces();
-            if(var6 != null) {
-                while(var6.hasMoreElements()) {
-                    Enumeration var7 = ((NetworkInterface)var6.nextElement()).getInetAddresses();
-
-                    while(var7.hasMoreElements()) {
-                        allIps.add(((InetAddress)var7.nextElement()).toString());
-                    }
-                }
-            }
-        } catch (SocketException var4) {
+            Stream.of(InetAddress.getAllByName(en.getCanonicalHostName()))
+                    .map(InetAddress::toString)
+                    .forEach(allIps::add);
+        } catch (UnknownHostException e) {
         }
 
         return allIps;

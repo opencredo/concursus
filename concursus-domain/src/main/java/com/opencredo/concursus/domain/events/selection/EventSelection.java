@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Utility class providing methods for selecting events matching various criteria.
+ * Utility class providing methods for selecting {@link Event}s matching various criteria.
  */
 public final class EventSelection {
 

@@ -5,6 +5,9 @@ import com.opencredo.concursus.domain.time.StreamTimestamp;
 
 import java.util.Objects;
 
+/**
+ * The identity of an {@link Event}, consisting of its {@link AggregateId} and {@link StreamTimestamp}.
+ */
 public final class EventIdentity {
 
     static EventIdentity of(AggregateId aggregateId, StreamTimestamp streamTimestamp) {
@@ -19,10 +22,18 @@ public final class EventIdentity {
         this.streamTimestamp = streamTimestamp;
     }
 
+    /**
+     * Get the {@link AggregateId} of the {@link Event} whose identity this object represents.
+     * @return The {@link AggregateId} of the {@link Event} whose identity this object represents.
+     */
     public AggregateId getAggregateId() {
         return aggregateId;
     }
 
+    /**
+     * Get the {@link StreamTimestamp} of the {@link Event} whose identity this object represents.
+     * @return The {@link StreamTimestamp} of the {@link Event} whose identity this object represents.
+     */
     public StreamTimestamp getStreamTimestamp() {
         return streamTimestamp;
     }
