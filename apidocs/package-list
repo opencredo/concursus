@@ -1,5 +1,6 @@
 com.opencredo.concursus.cassandra.events
 com.opencredo.concursus.data.tuples
+com.opencredo.concursus.domain
 com.opencredo.concursus.domain.commands
 com.opencredo.concursus.domain.commands.channels
 com.opencredo.concursus.domain.commands.dispatching
