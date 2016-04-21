@@ -186,11 +186,12 @@ data class KEventType<T: Any>(
 interface Transitions<S, E : Any> {
 
     fun update(previousState: S?, event: KEvent<E>): S? =
-            if (previousState == null) initial(event.data) else next(previousState, event.data)
+            if (previousState == null) initial(event.timestamp, event.data)
+            else next(previousState, event.timestamp, event.data)
 
-    fun initial(data: E): S?
+    fun initial(timestamp: StreamTimestamp, data: E): S?
 
-    fun next(previousState: S, data: E): S
+    fun next(previousState: S, timestamp: StreamTimestamp, data: E): S
 
     fun runAll(events: List<KEvent<E>>, initialState: S? = null): S? {
         var workingState: S? = initialState
