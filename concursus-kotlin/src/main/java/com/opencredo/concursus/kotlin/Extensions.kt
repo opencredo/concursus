@@ -16,8 +16,8 @@ import kotlin.reflect.KClass
 
 fun <E : Any> Event.toKEvent(eventSuperclass: KClass<E>): KEvent<E> = KEventTypeSet.forClass(eventSuperclass).fromEvent(this)
 
-fun <E : Any> EventBus.dispatch(factory: KEventFactory<E>, writerConsumer: (KEventWriter<E>) -> Unit): Unit =
-        this.dispatch { batch -> writerConsumer(factory.writingTo { batch.accept( it ) }) }
+fun <E : Any> EventBus.dispatch(factory: KEventFactory<E>, block: KEventWriter<E>.() -> Unit): Unit =
+        this.dispatch { batch -> factory.writingTo { batch.accept( it ) }.apply(block) }
 
 fun <E : Any> EventSource.getEvents(
         eventClass: KClass<E>,
