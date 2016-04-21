@@ -8,8 +8,11 @@ import com.opencredo.concursus.domain.common.AggregateId
 import com.opencredo.concursus.domain.common.VersionedName
 import com.opencredo.concursus.domain.events.Event
 import com.opencredo.concursus.domain.events.EventType
+import com.opencredo.concursus.domain.events.dispatching.EventBus
 import com.opencredo.concursus.domain.events.matching.EventTypeMatcher
+import com.opencredo.concursus.domain.events.sourcing.EventSource
 import com.opencredo.concursus.domain.time.StreamTimestamp
+import com.opencredo.concursus.domain.time.TimeRange
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.*
@@ -24,9 +27,34 @@ data class KEvent<E : Any>(val timestamp: StreamTimestamp, val aggregateId : UUI
                     .toEvent(timestamp, aggregateId, data)
 }
 
+final class KEventWriter<E: Any>(val factory: KEventFactory<E>, val receiver: (Event) -> Unit) {
+    fun write(timestamp: StreamTimestamp, aggregateId: UUID, data: E): KEventWriter<E> {
+        receiver(factory.create(timestamp, aggregateId, data))
+        return this
+    }
+}
+
 open class KEventFactory<E : Any> {
     fun create(timestamp: StreamTimestamp, aggregateId : UUID, data: E) : Event =
             KEvent(timestamp, aggregateId, data).toEvent()
+
+    fun writingTo(receiver: (Event) -> Unit): KEventWriter<E> = KEventWriter(this, receiver)
+}
+
+fun <E : Any> Event.toKEvent(eventSuperclass: KClass<E>): KEvent<E> = KEventTypeSet.forClass(eventSuperclass).fromEvent(this)
+
+fun <E : Any> EventBus.dispatch(factory: KEventFactory<E>, writerConsumer: (KEventWriter<E>) -> Unit): Unit =
+    this.dispatch { batch -> writerConsumer(factory.writingTo { batch.accept( it ) }) }
+
+fun <E : Any> EventSource.getEvents(
+        eventClass: KClass<E>,
+        aggregateId: UUID,
+        timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> {
+    val eventTypeSet = KEventTypeSet.forClass(eventClass)
+    return this.getEvents(
+            eventTypeSet.eventTypeMatcher,
+            AggregateId.of(eventTypeSet.aggregateType, aggregateId))
+        .map { eventTypeSet.fromEvent(it) }
 }
 
 final class KEventTypeSet<E : Any>(
