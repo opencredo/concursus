@@ -39,12 +39,12 @@ fun main(args: Array<String>) {
     eventSource.getEvents(LightbulbEvent::class, lightbulbId).forEach { kevent ->
         val data = kevent.data
         when(data) {
-            is LightbulbEvent.Created -> println("Lightbulb created with wattage " + data.wattage)
-            is LightbulbEvent.ScrewedIn -> println("Lightbulb screwed in @ " + data.location)
-            is LightbulbEvent.Unscrewed -> println("Lightbulb unscrewed")
-            is LightbulbEvent.SwitchedOn -> println("Lightbulb switched on")
-            is LightbulbEvent.SwitchedOff -> println("Lightbulb switched off")
-            is LightbulbEvent.Blown -> println("Lightbulb blown")
+            is Created -> println("Lightbulb created with wattage " + data.wattage)
+            is ScrewedIn -> println("Lightbulb screwed in @ " + data.location)
+            is Unscrewed -> println("Lightbulb unscrewed")
+            is SwitchedOn -> println("Lightbulb switched on")
+            is SwitchedOff -> println("Lightbulb switched off")
+            is Blown -> println("Lightbulb blown")
         }
     }
 }
