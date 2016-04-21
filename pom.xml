@@ -6,6 +6,9 @@
     <artifactId>concursus</artifactId>
     <packaging>pom</packaging>
     <version>0.5-SNAPSHOT</version>
+    <modules>
+        <module>concursus-kotlin</module>
+    </modules>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>

@@ -2,7 +2,7 @@
  * Event channels are how {@link com.opencredo.concursus.domain.events.Event}s enter and leave the system.
  * <p>
  *     They provide an integration point for adapters to message queues, ESBs etc: to integrate a 3rd-party transport for
- *     events, create a suitable {@link com.opencredo.concursus.domain.events.channels.EventInChannel} (or
+ *     events, create suitable {@link com.opencredo.concursus.domain.events.channels.EventInChannel} (or
  *     {@link com.opencredo.concursus.domain.events.channels.EventsInChannel}) and
  *     {@link com.opencredo.concursus.domain.events.channels.EventOutChannel} (or
  *     {@link com.opencredo.concursus.domain.events.channels.EventsOutChannel}) implementations for it.
