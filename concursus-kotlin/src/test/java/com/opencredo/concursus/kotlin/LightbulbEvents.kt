@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 
     events.forEach { println(it.toString()) }
 
-    val kevents: List<KEvent<LightbulbEvent>> = events.map{ KEventTypeSet.forClass(LightbulbEvent::class).fromEvent(it) }
+    val kevents = events.map{ KEventTypeSet.forClass(LightbulbEvent::class).fromEvent(it) }
 
     kevents.forEach { kevent ->
         val data = kevent.data
