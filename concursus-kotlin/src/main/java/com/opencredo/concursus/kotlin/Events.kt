@@ -7,12 +7,10 @@ import com.opencredo.concursus.data.tuples.TupleSlot
 import com.opencredo.concursus.domain.common.AggregateId
 import com.opencredo.concursus.domain.common.VersionedName
 import com.opencredo.concursus.domain.events.Event
+import com.opencredo.concursus.domain.events.EventCharacteristics
 import com.opencredo.concursus.domain.events.EventType
-import com.opencredo.concursus.domain.events.dispatching.EventBus
 import com.opencredo.concursus.domain.events.matching.EventTypeMatcher
-import com.opencredo.concursus.domain.events.sourcing.EventSource
 import com.opencredo.concursus.domain.time.StreamTimestamp
-import com.opencredo.concursus.domain.time.TimeRange
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.*
@@ -20,6 +18,9 @@ import kotlin.reflect.jvm.javaType
 
 annotation class HandlesEventsFor(val value: String)
 annotation class Name(val value: String, val version: String = "0")
+annotation class Initial
+annotation class Terminal
+annotation class Order(val value: Int)
 
 data class KEvent<E : Any>(val timestamp: StreamTimestamp, val aggregateId : UUID, val data: E) {
     fun toEvent() : Event =
@@ -39,22 +40,6 @@ open class KEventFactory<E : Any> {
             KEvent(timestamp, aggregateId, data).toEvent()
 
     fun writingTo(receiver: (Event) -> Unit): KEventWriter<E> = KEventWriter(this, receiver)
-}
-
-fun <E : Any> Event.toKEvent(eventSuperclass: KClass<E>): KEvent<E> = KEventTypeSet.forClass(eventSuperclass).fromEvent(this)
-
-fun <E : Any> EventBus.dispatch(factory: KEventFactory<E>, writerConsumer: (KEventWriter<E>) -> Unit): Unit =
-    this.dispatch { batch -> writerConsumer(factory.writingTo { batch.accept( it ) }) }
-
-fun <E : Any> EventSource.getEvents(
-        eventClass: KClass<E>,
-        aggregateId: UUID,
-        timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> {
-    val eventTypeSet = KEventTypeSet.forClass(eventClass)
-    return this.getEvents(
-            eventTypeSet.eventTypeMatcher,
-            AggregateId.of(eventTypeSet.aggregateType, aggregateId))
-        .map { eventTypeSet.fromEvent(it) }
 }
 
 final class KEventTypeSet<E : Any>(
@@ -101,16 +86,25 @@ final class KEventTypeSet<E : Any>(
             eventTypeByName[event.eventName]!!.fromEvent(event)
 
     val eventTypeMatcher = EventTypeMatcher.matchingAgainst(eventTypeMap)
+
+    val causalOrder = Comparator.comparing<Event, Int> { eventTypeByName[it.eventName]!!.order }
 }
 
 data class KEventType<T: Any>(
         val dataClass: KClass<T>,
+        val order: Int,
         val aggregateType: String,
         val eventName: VersionedName,
         val schema: TupleSchema,
         val makeTuple: (T) -> Tuple,
         val makeInstance: (Tuple) -> T) {
+
     companion object Factory {
+
+        var initial = Int.MIN_VALUE
+        var terminal = Int.MAX_VALUE
+        var preterminal = terminal - 1
+
         fun <E : Any, T : E> forDataClass(dataClass: KClass<T>, aggregateType: String): KEventType<T> {
             val eventName = getEventName(dataClass)
             val parameters = getParameters(dataClass)
@@ -118,8 +112,15 @@ data class KEventType<T: Any>(
             val keysByProperty = getKeysByProperty(dataClass, schema)
             val makeTuple = getDataToTupleConverter(schema, keysByProperty)
             val makeInstance = getTupleToDataConverter(dataClass, parameters, keysByProperty)
+            val order = getOrder(dataClass.java)
 
-            return KEventType(dataClass, aggregateType, eventName, schema, makeTuple, makeInstance)
+            return KEventType(dataClass, order, aggregateType, eventName, schema, makeTuple, makeInstance)
+        }
+
+        private fun <T : Any> getOrder(dataClass: Class<T>): Int {
+            if (dataClass.isAnnotationPresent(Initial::class.java)) return initial
+            if (dataClass.isAnnotationPresent(Terminal::class.java)) return terminal
+            return dataClass.getAnnotation(Order::class.java)?.value ?: preterminal
         }
 
         private fun <T : Any> getDataToTupleConverter(
@@ -167,9 +168,34 @@ data class KEventType<T: Any>(
         }
     }
 
+    private fun characteristics(): Int {
+        if (order == initial) return EventCharacteristics.IS_INITIAL
+        if (order == terminal) return EventCharacteristics.IS_TERMINAL
+        return 0
+    }
+
     fun toEvent(timestamp: StreamTimestamp, aggregateId: UUID, data: T): Event =
-            Event.of(AggregateId.of(aggregateType, aggregateId), timestamp, eventName, makeTuple(data))
+            Event.of(AggregateId.of(aggregateType, aggregateId), timestamp, eventName, makeTuple(data),
+                    characteristics())
 
     fun fromEvent(event: Event): KEvent<T> =
             KEvent(event.eventTimestamp, event.aggregateId.id, makeInstance(event.parameters))
+}
+
+
+interface Transitions<S, E : Any> {
+
+    fun update(previousState: S?, event: KEvent<E>): S? =
+            if (previousState == null) initial(event.timestamp, event.data)
+            else next(previousState, event.timestamp, event.data)
+
+    fun initial(timestamp: StreamTimestamp, data: E): S?
+
+    fun next(previousState: S, timestamp: StreamTimestamp, data: E): S
+
+    fun runAll(events: List<KEvent<E>>, initialState: S? = null): S? {
+        var workingState: S? = initialState
+        events.forEach { workingState = update(workingState, it) }
+        return workingState
+    }
 }
