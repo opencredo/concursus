@@ -18,9 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @CommandHandler
 public final class PlayerCommandProcessor implements PlayerCommands {
@@ -39,25 +36,23 @@ public final class PlayerCommandProcessor implements PlayerCommands {
     }
 
     @Override
-    public CompletableFuture<UUID> create(StreamTimestamp ts, UUID playerId, String playerName) {
+    public UUID create(StreamTimestamp ts, UUID playerId, String playerName) {
         eventBus.dispatch(PlayerEvents.class, player -> player.created(ts, playerId, playerName));
-        return completedFuture(playerId);
+        return playerId;
     }
 
     @Override
-    public CompletableFuture<UUID> delete(StreamTimestamp ts, UUID playerId) {
+    public void delete(StreamTimestamp ts, UUID playerId) {
         eventBus.dispatch(PlayerEvents.class, player -> player.deleted(ts, playerId));
-        return completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> changeName(StreamTimestamp ts, UUID playerId, String newPlayerName) {
+    public void changeName(StreamTimestamp ts, UUID playerId, String newPlayerName) {
         eventBus.dispatch(PlayerEvents.class, player -> player.changedName(ts, playerId, newPlayerName));
-        return completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<UUID> startGame(StreamTimestamp ts, UUID playerId, String rulesetVersion) {
+    public UUID startGame(StreamTimestamp ts, UUID playerId, String rulesetVersion) {
         UUID gameId = UUID.randomUUID();
 
         eventBus.dispatch(PlayerEvents.class, GameEvents.class, (player, game) -> {
@@ -65,11 +60,11 @@ public final class PlayerCommandProcessor implements PlayerCommands {
             game.gameCreated(ts, gameId, playerId, rulesetVersion);
         });
 
-        return completedFuture(gameId);
+        return gameId;
     }
 
     @Override
-    public CompletableFuture<Void> joinGame(StreamTimestamp ts, UUID playerId, UUID gameId) {
+    public void joinGame(StreamTimestamp ts, UUID playerId, UUID gameId) {
         GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isAwaitingSecondPlayer()) {
@@ -83,12 +78,10 @@ public final class PlayerCommandProcessor implements PlayerCommands {
             game.playerTwoJoined(ts, gameId, playerId);
             game.gameStarted(ts.subStream("dealer"), gameId, deal.getPlayerOneCards(), deal.getPlayerTwoCards(), deal.getFirstPlayerIndex());
         });
-
-        return completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> playTurn(StreamTimestamp ts, UUID playerId, UUID gameId, Card card, Optional<BoardSlot> toSlot) {
+    public void playTurn(StreamTimestamp ts, UUID playerId, UUID gameId, Card card, Optional<BoardSlot> toSlot) {
         GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isPlayersTurn(playerId)) {
@@ -115,8 +108,6 @@ public final class PlayerCommandProcessor implements PlayerCommands {
                 recordVictory(ts, gameId, gameState.getTurnState(), player, game);
             }
         });
-
-        return completedFuture(null);
     }
 
     private void recordVictory(StreamTimestamp ts, UUID gameId, TurnState turnState, PlayerEvents player, GameEvents game) {
@@ -146,7 +137,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
     }
 
     @Override
-    public CompletableFuture<Void> surrender(StreamTimestamp ts, UUID playerId, UUID gameId) {
+    public void surrender(StreamTimestamp ts, UUID playerId, UUID gameId) {
         GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isPlayersTurn(playerId)) {
@@ -156,7 +147,5 @@ public final class PlayerCommandProcessor implements PlayerCommands {
         eventBus.dispatch(PlayerEvents.class, GameEvents.class, (player, game) -> {
             recordSurrender(ts, gameId, gameState.getTurnState(), player, game);
         });
-
-        return completedFuture(null);
     }
 }

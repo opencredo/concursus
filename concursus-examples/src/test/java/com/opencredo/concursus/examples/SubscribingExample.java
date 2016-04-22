@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import static org.mockito.Matchers.any;
@@ -50,7 +49,7 @@ public class SubscribingExample {
     private final CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
     @Test
-    public void eventsAreDispatchedToSubscribersByType() throws ExecutionException, InterruptedException {
+    public void eventsAreDispatchedToSubscribersByType() {
         Person.Events personEventHandler = mock(Person.Events.class);
         Address.Events addressEventHandler = mock(Address.Events.class);
 
@@ -65,9 +64,9 @@ public class SubscribingExample {
         UUID address1Id = UUID.randomUUID();
         UUID address2Id = UUID.randomUUID();
 
-        personCommands.create(StreamTimestamp.now(), personId, "Arthur Daley", LocalDate.parse("1968-05-28")).get();
-        personCommands.moveToAddress(StreamTimestamp.now(), personId, address1Id).get();
-        personCommands.moveToAddress(StreamTimestamp.now(), personId, address2Id).get();
+        personCommands.create(StreamTimestamp.now(), personId, "Arthur Daley", LocalDate.parse("1968-05-28"));
+        personCommands.moveToAddress(StreamTimestamp.now(), personId, address1Id);
+        personCommands.moveToAddress(StreamTimestamp.now(), personId, address2Id);
 
         verify(personEventHandler).created(any(StreamTimestamp.class), eq(personId), eq("Arthur Daley"), any(LocalDate.class));
         verify(personEventHandler).movedToAddress(any(StreamTimestamp.class), eq(personId), eq(address1Id));

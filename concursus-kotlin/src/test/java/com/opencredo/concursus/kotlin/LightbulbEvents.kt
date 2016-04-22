@@ -75,13 +75,13 @@ fun main(args: Array<String>) {
     val lightbulbId = UUID.randomUUID()
     var start = StreamTimestamp.now()
 
-    eventBus.dispatch(LightbulbEvent.Factory, {
+    eventBus.dispatch(LightbulbEvent.Factory) {
         write(start.plus(1, MILLIS), lightbulbId, Created(wattage = 100))
         write(start,                 lightbulbId, ScrewedIn(location = "hallway"))
         write(start.plus(2, MILLIS), lightbulbId, SwitchedOn())
         write(start.plus(1, HOURS),  lightbulbId, SwitchedOff())
         write(start.plus(3, HOURS),  lightbulbId, SwitchedOn())
-    })
+    }
 
     val cached = eventSource.preload(LightbulbEvent::class, arrayListOf(lightbulbId))
 

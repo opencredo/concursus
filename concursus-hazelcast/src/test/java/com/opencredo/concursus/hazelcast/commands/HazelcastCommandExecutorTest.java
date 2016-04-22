@@ -8,12 +8,11 @@ import com.opencredo.concursus.domain.commands.dispatching.CommandBus;
 import com.opencredo.concursus.domain.commands.dispatching.CommandExecutor;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesCommandsFor;
+import com.opencredo.concursus.mapping.commands.methods.proxying.CommandExecutionException;
 import com.opencredo.concursus.mapping.commands.methods.proxying.CommandIssuingProxy;
 import org.junit.Test;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,7 +20,7 @@ public class HazelcastCommandExecutorTest {
 
     @HandlesCommandsFor("test")
     public interface TestCommands {
-        CompletableFuture<String> uppercase(StreamTimestamp ts, UUID id, String input);
+        String uppercase(StreamTimestamp ts, UUID id, String input);
     }
 
     private final CommandExecutor executor = getCommandExecutor();
@@ -34,8 +33,7 @@ public class HazelcastCommandExecutorTest {
         ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
         HazelcastCommandExecutorConfiguration config = HazelcastCommandExecutorConfiguration.using(objectMapper);
-        config.subscribe(TestCommands.class, (ts, id, input) ->
-                CompletableFuture.completedFuture(input.toUpperCase()));
+        config.subscribe(TestCommands.class, (ts, id, input) -> input.toUpperCase());
 
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(
                 config.addCommandExecutorConfiguration(new Config()));
@@ -44,23 +42,23 @@ public class HazelcastCommandExecutorTest {
     }
 
     @Test
-    public void dispatchCommand() throws ExecutionException, InterruptedException {
+    public void dispatchCommand() {
         for (int i = 0; i < 100; i++) {
-            assertEquals("FOO", commandIssuingProxy.uppercase(StreamTimestamp.now(), UUID.randomUUID(), "foo").get());
+            assertEquals("FOO", commandIssuingProxy.uppercase(StreamTimestamp.now(), UUID.randomUUID(), "foo"));
         }
     }
 
     @HandlesCommandsFor("test")
     public interface UnhandledCommands {
-        CompletableFuture<String> unhandled(StreamTimestamp ts, UUID id);
+        String unhandled(StreamTimestamp ts, UUID id);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void commandFailsIfNotHandled() throws Throwable {
         try {
             CommandIssuingProxy.proxying(commandBus.toCommandOutChannel(), UnhandledCommands.class)
-                    .unhandled(StreamTimestamp.now(), UUID.randomUUID()).get();
-        } catch (ExecutionException e) {
+                    .unhandled(StreamTimestamp.now(), UUID.randomUUID());
+        } catch (CommandExecutionException e) {
             throw e.getCause().getCause();
         }
     }

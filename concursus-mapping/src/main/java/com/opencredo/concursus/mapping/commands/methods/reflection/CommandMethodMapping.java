@@ -14,7 +14,6 @@ import com.opencredo.concursus.mapping.annotations.Name;
 import com.opencredo.concursus.mapping.reflection.ParameterArgs;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.UUID;
 import java.util.function.IntFunction;
@@ -34,14 +33,12 @@ public final class CommandMethodMapping {
         TupleSchema schema = parameterArgs.getTupleSchema(CommandType.of(aggregateType, commandName).toString());
         TupleKey[] tupleKeys = parameterArgs.getTupleKeys(schema);
 
-        Type returnType = ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
-
         return new CommandMethodMapping(
                 aggregateType,
                 commandName,
                 schema,
                 tupleKeys,
-                returnType);
+                method.getGenericReturnType());
     }
 
     private static VersionedName getCommandName(Method method) {

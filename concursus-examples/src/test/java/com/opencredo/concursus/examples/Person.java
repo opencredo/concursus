@@ -6,17 +6,16 @@ import com.opencredo.concursus.mapping.annotations.*;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @HandlesEventsFor("person")
 public final class Person {
 
     @HandlesCommandsFor("person")
     public interface Commands {
-        CompletableFuture<Person> create(StreamTimestamp ts, UUID personId, String name, LocalDate dob);
-        CompletableFuture<Person> changeName(StreamTimestamp ts, UUID personId, String newName);
-        CompletableFuture<Person> moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId);
-        CompletableFuture<Void> delete(StreamTimestamp ts, UUID personId);
+        Person create(StreamTimestamp ts, UUID personId, String name, LocalDate dob);
+        Person changeName(StreamTimestamp ts, UUID personId, String newName);
+        Person moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId);
+        void delete(StreamTimestamp ts, UUID personId);
     }
 
     @HandlesEventsFor("person")

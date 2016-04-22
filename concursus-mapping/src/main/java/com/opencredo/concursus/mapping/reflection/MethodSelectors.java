@@ -7,7 +7,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public final class MethodSelectors {
@@ -26,7 +25,6 @@ public final class MethodSelectors {
     }
 
     private static final Predicate<Method> returnsVoid = returnsType(void.class);
-    private static final Predicate<Method> returnsCompletableFuture = returnsType(CompletableFuture.class);
 
     private static final Predicate<Method> isStatic = method -> Modifier.isStatic(method.getModifiers());
 
@@ -63,6 +61,6 @@ public final class MethodSelectors {
     public static final Predicate<Method> isUpdateMethod = handlesEvent.and(isInstance).and(returnsVoid);
 
     public static final Predicate<Method> isCommandIssuingMethod =
-            returnsCompletableFuture.and(isInstance).and(hasTimestampAndUUIDParameters);
+            isInstance.and(hasTimestampAndUUIDParameters);
 
 }

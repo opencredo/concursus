@@ -15,8 +15,6 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,13 +23,13 @@ public class JsonCommandOutChannelTest {
 
     @HandlesCommandsFor("test")
     public interface TestCommands {
-        CompletableFuture<UUID> create(StreamTimestamp ts, UUID aggregateId, String name);
+        UUID create(StreamTimestamp ts, UUID aggregateId, String name);
     }
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     private final CommandTypeMatcher typeMatcher = CommandInterfaceInfo.forInterface(TestCommands.class).getCommandTypeMatcher();
 
-    private final TestCommands commandProcessor = (ts, id, name) -> CompletableFuture.completedFuture(id);
+    private final TestCommands commandProcessor = (ts, id, name) -> id;
 
     private final CommandBus commandBus = CommandBus.executingWith(
         ProcessingCommandExecutor.processingWith(
@@ -53,11 +51,11 @@ public class JsonCommandOutChannelTest {
     private final TestCommands proxy = proxyFactory.getProxy(TestCommands.class);
 
     @Test
-    public void dispatchViaJsonChannel() throws ExecutionException, InterruptedException {
+    public void dispatchViaJsonChannel() {
         UUID aggregateId = UUID.randomUUID();
 
         assertThat(
-                proxy.create(StreamTimestamp.of("test", Instant.now()), aggregateId, "Arthur Putey").get(),
+                proxy.create(StreamTimestamp.of("test", Instant.now()), aggregateId, "Arthur Putey"),
                 equalTo(aggregateId));
     }
 }
