@@ -1,16 +1,19 @@
 package com.opencredo.concursus.mapping.commands.methods;
 
-import com.opencredo.concursus.domain.commands.dispatching.*;
+import com.opencredo.concursus.domain.commands.dispatching.CommandBus;
+import com.opencredo.concursus.domain.commands.dispatching.DispatchingCommandProcessor;
+import com.opencredo.concursus.domain.commands.dispatching.ProcessingCommandExecutor;
+import com.opencredo.concursus.domain.commands.dispatching.Slf4jCommandLog;
 import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesCommandsFor;
 import com.opencredo.concursus.mapping.commands.methods.dispatching.MethodDispatchingCommandProcessor;
+import com.opencredo.concursus.mapping.commands.methods.proxying.CommandExecutionException;
 import com.opencredo.concursus.mapping.commands.methods.proxying.CommandProxyFactory;
 import org.junit.Test;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,38 +34,35 @@ public class MethodInvokingCommandDispatcherTest {
 
     @HandlesCommandsFor("person")
     public interface PersonCommands {
-        CompletableFuture<String> create(StreamTimestamp timestamp, UUID personId, String name);
+        String create(StreamTimestamp timestamp, UUID personId, String name);
     }
 
     @Test
     public void proxiesCommandMethods() throws ExecutionException, InterruptedException {
-        dispatchingProcessor.subscribe(PersonCommands.class, (ts, personId, name) -> CompletableFuture.completedFuture("OK"));
+        dispatchingProcessor.subscribe(PersonCommands.class, (ts, personId, name) -> "OK");
 
         assertThat(commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),
                 UUID.randomUUID(),
-                "Arthur Putey").get(), equalTo("OK"));
+                "Arthur Putey"), equalTo("OK"));
     }
 
     @Test
     public void passesCompletableFutureFailureBackToClient() throws InterruptedException {
         dispatchingProcessor.subscribe(PersonCommands.class, (ts, personId, name) -> {
-            CompletableFuture<String> future = new CompletableFuture<>();
-            future.completeExceptionally(new IllegalStateException("Out of cheese"));
-            return future;
+            throw new IllegalStateException("Out of cheese");
         });
 
         CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
-        CompletableFuture<String> result = commandProxyFactory.getProxy(PersonCommands.class).create(
-                StreamTimestamp.of("test", Instant.now()),
-                UUID.randomUUID(),
-                "Arthur Putey");
 
         try {
-            result.get();
+            commandProxyFactory.getProxy(PersonCommands.class).create(
+                    StreamTimestamp.of("test", Instant.now()),
+                    UUID.randomUUID(),
+                    "Arthur Putey");
             fail("Expected exception");
-        } catch (ExecutionException e) {
+        } catch (CommandExecutionException e) {
             assertThat(e.getCause(), instanceOf(IllegalStateException.class));
             assertThat(e.getCause().getMessage(), equalTo("Out of cheese"));
         }
@@ -76,15 +76,13 @@ public class MethodInvokingCommandDispatcherTest {
 
         CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
-        CompletableFuture<String> result = commandProxyFactory.getProxy(PersonCommands.class).create(
-                StreamTimestamp.of("test", Instant.now()),
-                UUID.randomUUID(),
-                "Arthur Putey");
-
         try {
-            result.get();
+            String result = commandProxyFactory.getProxy(PersonCommands.class).create(
+                    StreamTimestamp.of("test", Instant.now()),
+                    UUID.randomUUID(),
+                    "Arthur Putey");
             fail("Expected exception");
-        } catch (ExecutionException e) {
+        } catch (CommandExecutionException e) {
             assertThat(e.getCause(), instanceOf(IllegalStateException.class));
             assertThat(e.getCause().getMessage(), equalTo("Out of cheese"));
         }

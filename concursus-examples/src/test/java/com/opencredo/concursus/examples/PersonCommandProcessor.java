@@ -20,27 +20,27 @@ public final class PersonCommandProcessor implements Person.Commands {
     }
 
     @Override
-    public CompletableFuture<Person> create(StreamTimestamp ts, UUID personId, String name, LocalDate dob) {
+    public Person create(StreamTimestamp ts, UUID personId, String name, LocalDate dob) {
         Optional<Person> person = eventBus.creating(Person.class, bus -> {
             bus.dispatch(Person.Events.class, e -> e.created(ts, personId, name, dob));
         });
 
-        return person.map(CompletableFuture::completedFuture).orElseThrow(IllegalStateException::new);
+        return person.orElseThrow(IllegalStateException::new);
     }
 
     @Override
-    public CompletableFuture<Person> changeName(StreamTimestamp ts, UUID personId, String newName) {
+    public Person changeName(StreamTimestamp ts, UUID personId, String newName) {
         Person person = personStateRepository.getState(personId).orElseThrow(IllegalArgumentException::new);
 
         eventBus.updating(person, bus -> {
             bus.dispatch(Person.Events.class, e -> e.changedName(ts, personId, newName));
         });
 
-        return CompletableFuture.completedFuture(person);
+        return person;
     }
 
     @Override
-    public CompletableFuture<Person> moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId) {
+    public Person moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId) {
         Person person = personStateRepository.getState(personId).orElseThrow(IllegalArgumentException::new);
 
         eventBus.updating(personId, person, bus ->
@@ -53,13 +53,11 @@ public final class PersonCommandProcessor implements Person.Commands {
                     })
         );
 
-        return CompletableFuture.completedFuture(person);
+        return person;
     }
 
     @Override
-    public CompletableFuture<Void> delete(StreamTimestamp ts, UUID personId) {
+    public void delete(StreamTimestamp ts, UUID personId) {
         eventBus.dispatch(Person.Events.class, e -> e.deleted(ts, personId));
-
-        return CompletableFuture.completedFuture(null);
     }
 }

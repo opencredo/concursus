@@ -1,9 +1,9 @@
 package com.opencredo.concursus.examples;
 
 import com.opencredo.concursus.domain.commands.dispatching.CommandBus;
-import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.domain.commands.dispatching.Slf4jCommandLog;
 import com.opencredo.concursus.domain.commands.dispatching.ThreadpoolCommandExecutor;
+import com.opencredo.concursus.domain.commands.filters.LoggingCommandExecutorFilter;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
 import com.opencredo.concursus.domain.events.logging.EventLog;
 import com.opencredo.concursus.domain.events.processing.EventBatchProcessor;
@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,17 +47,17 @@ public class CommandProcessingExample {
     private final CommandProxyFactory commandProxyFactory = CommandProxyFactory.proxying(commandBus.toCommandOutChannel());
 
     @Test
-    public void issueCommands() throws ExecutionException, InterruptedException {
+    public void issueCommands() {
         Person.Commands personCommands = commandProxyFactory.getProxy(Person.Commands.class);
 
-        Person createdPerson = personCommands.create(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28")).get();
+        Person createdPerson = personCommands.create(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
 
         assertThat(createdPerson.getName(), equalTo("Arthur Putey"));
 
-        Person updatedPerson = personCommands.changeName(StreamTimestamp.now(), createdPerson.getId(), "Arthur Mumby").get();
+        Person updatedPerson = personCommands.changeName(StreamTimestamp.now(), createdPerson.getId(), "Arthur Mumby");
         assertThat(updatedPerson.getName(), equalTo("Arthur Mumby"));
 
-        Person movedPerson = personCommands.moveToAddress(StreamTimestamp.now(), createdPerson.getId(), UUID.randomUUID()).get();
+        Person movedPerson = personCommands.moveToAddress(StreamTimestamp.now(), createdPerson.getId(), UUID.randomUUID());
 
         assertThat(movedPerson.getCurrentAddressId(), not(equalTo(updatedPerson.getCurrentAddressId())));
     }

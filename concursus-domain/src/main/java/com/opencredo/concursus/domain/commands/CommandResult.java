@@ -24,7 +24,7 @@ public final class CommandResult {
         checkNotNull(resultType, "resultType must not be null");
         checkNotNull(resultValue, "resultValue must not be null");
 
-        if (resultType.equals(Void.class)) {
+        if (resultType.equals(void.class)) {
             checkArgument(!resultValue.isPresent(),
                     "resultValue must be empty if result type is void");
         } else {

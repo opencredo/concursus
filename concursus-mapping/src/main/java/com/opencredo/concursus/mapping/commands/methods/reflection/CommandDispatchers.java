@@ -40,7 +40,7 @@ public final class CommandDispatchers {
         @Override
         public CompletableFuture<?> apply(Object target, Command command) {
             try {
-                return CompletableFuture.class.cast(method.invoke(target, commandMethodMapping.mapCommand(command)));
+                return CompletableFuture.completedFuture(method.invoke(target, commandMethodMapping.mapCommand(command)));
             } catch (InvocationTargetException e) {
                 return CompletableFutures.failing(e.getCause());
             } catch (IllegalAccessException e) {

@@ -65,20 +65,20 @@ public class PlayerCommandsTest {
     }
 
     @Test
-    public void playAGame() throws ExecutionException, InterruptedException {
-        UUID playerOneId = cmd.create(now(), UUID.randomUUID(), "Player 1").get();
-        UUID playerTwoId = cmd.create(now(), UUID.randomUUID(), "Player 2").get();
+    public void playAGame() {
+        UUID playerOneId = cmd.create(now(), UUID.randomUUID(), "Player 1");
+        UUID playerTwoId = cmd.create(now(), UUID.randomUUID(), "Player 2");
 
-        UUID gameId = cmd.startGame(now(), playerOneId, "0.0.1").get();
+        UUID gameId = cmd.startGame(now(), playerOneId, "0.0.1");
 
-        cmd.joinGame(now(), playerTwoId, gameId).get();
+        cmd.joinGame(now(), playerTwoId, gameId);
 
         gameContinuesAfter(Card.ANGEL_SUMMONER, Card.CHAOS_BADGER);
         victoryAfter(Card.NECROTIC_TOXICITY);
 
-        cmd.playTurn(now(), playerOneId, gameId, Card.ANGEL_SUMMONER, Optional.of(BoardSlot.of(3, BoardRow.PLAYER))).get();
-        cmd.playTurn(now(), playerTwoId, gameId, Card.CHAOS_BADGER, Optional.of(BoardSlot.of(2, BoardRow.PLAYER))).get();
-        cmd.playTurn(now(), playerOneId, gameId, Card.NECROTIC_TOXICITY, Optional.empty()).get();
+        cmd.playTurn(now(), playerOneId, gameId, Card.ANGEL_SUMMONER, Optional.of(BoardSlot.of(3, BoardRow.PLAYER)));
+        cmd.playTurn(now(), playerTwoId, gameId, Card.CHAOS_BADGER, Optional.of(BoardSlot.of(2, BoardRow.PLAYER)));
+        cmd.playTurn(now(), playerOneId, gameId, Card.NECROTIC_TOXICITY, Optional.empty());
 
         PlayerState playerOneState = playerStateRepository.getState(playerOneId).get();
         PlayerState playerTwoState = playerStateRepository.getState(playerTwoId).get();
