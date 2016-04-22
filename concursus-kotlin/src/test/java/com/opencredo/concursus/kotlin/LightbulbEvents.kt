@@ -1,5 +1,6 @@
 package com.opencredo.concursus.kotlin
 
+import com.opencredo.concursus.domain.common.AggregateId
 import com.opencredo.concursus.domain.events.dispatching.EventBus
 import com.opencredo.concursus.domain.events.processing.EventBatchProcessor
 import com.opencredo.concursus.domain.events.sourcing.EventSource
@@ -13,7 +14,6 @@ import java.time.temporal.ChronoUnit.HOURS
 import java.time.temporal.ChronoUnit.MILLIS
 import java.util.*
 
-@HandlesEventsFor("lightbulb")
 sealed class LightbulbEvent {
 
     companion object Factory : KEventFactory<LightbulbEvent>()
@@ -83,18 +83,23 @@ fun main(args: Array<String>) {
         write(start.plus(3, HOURS),  lightbulbId, SwitchedOn())
     }
 
+    eventSource.replaying(
+            KEventTypeSet.forClass(LightbulbEvent::class).eventTypeMatcher, AggregateId.of("lightbulb", lightbulbId))
+            .replayAll { println(it) }
+
     val cached = eventSource.preload(LightbulbEvent::class, arrayListOf(lightbulbId))
 
     val messages = cached.replaying(lightbulbId)
             .inAscendingCausalOrder()
             .collectAll { kevent ->
-        val data = kevent.data
-        val msg = when(data) {
-            is Created -> "Lightbulb created with wattage " + data.wattage
-            is ScrewedIn -> "Lightbulb screwed in @ " + data.location
-            is Unscrewed -> "Lightbulb unscrewed"
-            is SwitchedOn -> "Lightbulb switched on"
-            is SwitchedOff -> "Lightbulb switched off"
+        val msg = kevent.data.let {
+            when (it) {
+                is Created -> "Lightbulb created with wattage " + it.wattage
+                is ScrewedIn -> "Lightbulb screwed in @ " + it.location
+                is Unscrewed -> "Lightbulb unscrewed"
+                is SwitchedOn -> "Lightbulb switched on"
+                is SwitchedOff -> "Lightbulb switched off"
+            }
         }
         msg + " at " + kevent.timestamp.timestamp
     }

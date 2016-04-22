@@ -69,8 +69,9 @@ final class KEventTypeSet<E : Any>(
             return KEventTypeSet(aggregateType, eventTypeByName, eventTypeByDataClass, schemasByEventType)
         }
 
-        private fun <E : Any> getAggregateType(eventSuperclass: KClass<E>) = (eventSuperclass.java.getAnnotation(HandlesEventsFor::class.java)?.value
-                ?: eventSuperclass.java.simpleName)
+        private fun <E : Any> getAggregateType(eventSuperclass: KClass<E>) =
+                (eventSuperclass.java.getAnnotation(HandlesEventsFor::class.java)?.value
+                ?: eventSuperclass.java.simpleName.decapitalize().replace("Event", ""))
 
         private fun <E : Any> getEventTypes(
                 aggregateType: String,
@@ -163,7 +164,7 @@ data class KEventType<T: Any>(
         private fun getEventName(nestedClass: KClass<*>): VersionedName {
             val eventNameAnnotation = nestedClass.java.getAnnotation(Name::class.java)
             return VersionedName.of(
-                    eventNameAnnotation?.value ?: nestedClass.simpleName!!.toLowerCase(),
+                    eventNameAnnotation?.value ?: nestedClass.simpleName!!.decapitalize(),
                     eventNameAnnotation?.version ?: "0")
         }
     }
