@@ -11,8 +11,6 @@ import com.opencredo.concursus.spring.demo.events.UserEvents;
 import com.opencredo.concursus.spring.demo.repositories.GroupState;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.concurrent.CompletableFuture;
-
 @CommandHandler
 public class GroupCommandsProcessor implements GroupCommands {
 

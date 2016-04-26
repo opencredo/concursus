@@ -6,7 +6,6 @@ import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public final class PersonCommandProcessor implements Person.Commands {
 
