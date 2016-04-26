@@ -3,14 +3,13 @@ package com.opencredo.concursus.mapping.events.methods.proxying;
 import com.opencredo.concursus.domain.events.channels.EventOutChannel;
 import com.opencredo.concursus.domain.events.channels.RoutingEventOutChannel;
 import com.opencredo.concursus.domain.events.dispatching.EventBus;
-import com.opencredo.concursus.domain.functional.Consumers;
 import com.opencredo.concursus.domain.events.state.StateBuilder;
+import com.opencredo.concursus.domain.functional.Consumers;
 import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateBuilder;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -110,7 +109,7 @@ public interface ProxyingEventBus extends EventBus {
      * @param stateObjectsById The state objects to send events to on batch completion.
      * @param busConsumer A {@link Consumer} that will use the subscribed bus.
      */
-    default void updating(Map<UUID, Object> stateObjectsById, Consumer<ProxyingEventBus> busConsumer) {
+    default void updating(Map<String, Object> stateObjectsById, Consumer<ProxyingEventBus> busConsumer) {
         EventOutChannel outChannel = RoutingEventOutChannel.routingWith(stateObjectsById.entrySet().stream()
                 .collect(Collectors.toMap(
                         Entry::getKey,
@@ -128,7 +127,7 @@ public interface ProxyingEventBus extends EventBus {
      * @param busConsumer A {@link Consumer} that will use the subscribed bus.
      * @param <S> The type of the state instance.
      */
-    default <S> void updating(UUID aggregateId, S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
+    default <S> void updating(String aggregateId, S stateInstance, Consumer<ProxyingEventBus> busConsumer) {
         StateBuilder<S> stateBuilder = DispatchingStateBuilder.dispatchingTo(stateInstance);
         notifying(events -> events.stream()
                 .filter(event -> event.getAggregateId().getId().equals(aggregateId))

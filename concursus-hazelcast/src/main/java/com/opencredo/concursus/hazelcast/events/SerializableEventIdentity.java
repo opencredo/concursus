@@ -5,7 +5,6 @@ import com.opencredo.concursus.domain.events.Event;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 
 final class SerializableEventIdentity implements Serializable {
 
@@ -18,11 +17,11 @@ final class SerializableEventIdentity implements Serializable {
     }
 
     private final String aggregateType;
-    private final UUID aggregateId;
+    private final String aggregateId;
     private final Instant eventTimestamp;
     private final String streamId;
 
-    private SerializableEventIdentity(String aggregateType, UUID aggregateId, Instant eventTimestamp, String streamId) {
+    private SerializableEventIdentity(String aggregateType, String aggregateId, Instant eventTimestamp, String streamId) {
         this.aggregateType = aggregateType;
         this.aggregateId = aggregateId;
         this.eventTimestamp = eventTimestamp;

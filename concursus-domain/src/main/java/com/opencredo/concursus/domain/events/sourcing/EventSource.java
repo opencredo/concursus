@@ -7,7 +7,6 @@ import com.opencredo.concursus.domain.time.TimeRange;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * A source of {@link Event}s, which can be retrieved, replayed or pre-loaded.
@@ -24,7 +23,7 @@ public interface EventSource {
     }
 
     List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange);
-    CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange);
+    CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange);
 
     default List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId) {
         return getEvents(matcher, aggregateId, TimeRange.unbounded());
@@ -38,7 +37,7 @@ public interface EventSource {
         return replaying(matcher, aggregateId, TimeRange.unbounded());
     }
 
-    default CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds) {
+    default CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds) {
         return preload(matcher, aggregateType, aggregateIds, TimeRange.unbounded());
     }
 

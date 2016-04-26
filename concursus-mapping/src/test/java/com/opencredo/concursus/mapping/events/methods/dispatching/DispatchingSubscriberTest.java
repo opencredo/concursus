@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.Matchers.any;
@@ -28,7 +27,7 @@ public class DispatchingSubscriberTest {
     public interface CreatedEventReceiver {
 
         @Name(value = "created", version = "2")
-        void created(StreamTimestamp timestamp, UUID aggregateId, String name, int age);
+        void created(StreamTimestamp timestamp, String aggregateId, String name, int age);
 
     }
 
@@ -52,8 +51,8 @@ public class DispatchingSubscriberTest {
 
     @Test
     public void eventsArePublishedToSubscribedHandlers() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);

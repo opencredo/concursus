@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -41,7 +40,7 @@ public class LoggingCommandExecutorTest {
                 LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
 
         final Command command = Command.of(
-                AggregateId.of("test", UUID.randomUUID()),
+                AggregateId.of("test", "id1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("create", "0"),
                 emptySchema.makeWith(),
@@ -63,7 +62,7 @@ public class LoggingCommandExecutorTest {
                 LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
 
         final Command command = Command.of(
-                AggregateId.of("test", UUID.randomUUID()),
+                AggregateId.of("test", "id1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("create", "0"),
                 emptySchema.makeWith(),
@@ -84,7 +83,7 @@ public class LoggingCommandExecutorTest {
                 LoggingCommandExecutorFilter.using(commandLog).apply(commandExecutor));
 
         final Command command = Command.of(
-                AggregateId.of("test", UUID.randomUUID()),
+                AggregateId.of("test", "id1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("create", "0"),
                 emptySchema.makeWith(),

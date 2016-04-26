@@ -1,14 +1,13 @@
 package com.opencredo.concursus.domain.events.binding;
 
 import com.opencredo.concursus.domain.common.AggregateId;
+import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concursus.domain.events.sourcing.CachedEventSource;
 import com.opencredo.concursus.domain.events.sourcing.EventReplayer;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
-import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concursus.domain.time.TimeRange;
 
 import java.util.Collection;
-import java.util.UUID;
 
 /**
  * Captures the aggregate type and {@link EventTypeMatcher} for an interface, and uses these to simplify making calls
@@ -34,7 +33,7 @@ public final class EventTypeBinding {
         this.eventTypeMatcher = eventTypeMatcher;
     }
 
-    private AggregateId addTypeTo(UUID aggregateId) {
+    private AggregateId addTypeTo(String aggregateId) {
         return AggregateId.of(aggregateType, aggregateId);
     }
 
@@ -45,7 +44,7 @@ public final class EventTypeBinding {
      * @param timeRange The time range to query within
      * @return The cached event source
      */
-    public CachedEventSource preload(EventSource eventSource, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public CachedEventSource preload(EventSource eventSource, Collection<String> aggregateIds, TimeRange timeRange) {
         return eventSource.preload(eventTypeMatcher, aggregateType, aggregateIds, timeRange);
     }
 
@@ -56,7 +55,7 @@ public final class EventTypeBinding {
      * @param timeRange The time range to query within
      * @return The replayer for the aggregate's event history
      */
-    public EventReplayer replaying(EventSource eventSource, UUID aggregateId, TimeRange timeRange) {
+    public EventReplayer replaying(EventSource eventSource, String aggregateId, TimeRange timeRange) {
         return eventSource.replaying(eventTypeMatcher, addTypeTo(aggregateId), timeRange);
     }
 
@@ -67,7 +66,7 @@ public final class EventTypeBinding {
      * @param timeRange The time range to query within
      * @return The replayer for the aggregate's event history
      */
-    public EventReplayer replaying(CachedEventSource eventSource, UUID aggregateId, TimeRange timeRange) {
+    public EventReplayer replaying(CachedEventSource eventSource, String aggregateId, TimeRange timeRange) {
         return eventSource.replaying(addTypeTo(aggregateId), timeRange);
     }
 }

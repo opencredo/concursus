@@ -26,13 +26,13 @@ public class GroupService {
         this.aggregateCatalogue = aggregateCatalogue;
     }
 
-    public Optional<GroupView> getGroup(UUID groupId) {
+    public Optional<GroupView> getGroup(String groupId) {
         return groupStateRepository.getState(groupId)
                 .filter(s -> !s.isDeleted())
                 .map(group -> new GroupView(group.getId(), group.getName(), getUserNames(group.getUsers())));
     }
 
-    private Map<UUID, String> getUserNames(Collection<UUID> userIds) {
+    private Map<String, String> getUserNames(Collection<String> userIds) {
         return userStateRepository.getStates(userIds).entrySet().stream()
                 .filter(e -> !e.getValue().isDeleted())
                 .collect(Collectors.toMap(
@@ -42,7 +42,7 @@ public class GroupService {
     }
 
     public Map<String, String> getGroups() {
-        List<UUID> groups = aggregateCatalogue.getUuids("group");
+        List<String> groups = aggregateCatalogue.getAggregateIds("group");
         return groupStateRepository.getStates(groups).entrySet().stream()
                 .filter(e -> !e.getValue().isDeleted())
                 .collect(

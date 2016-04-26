@@ -7,7 +7,6 @@ import com.opencredo.concursus.domain.time.TimeRange;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,7 +25,7 @@ final class CachingEventSource implements EventSource {
     }
 
     @Override
-    public CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public CachedEventSource preload(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange) {
         checkNotNull(matcher, "matcher must not be null");
         checkNotNull(aggregateType, "aggregateType must not be null");
         checkNotNull(aggregateIds, "aggregateIds must not be null");

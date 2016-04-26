@@ -34,7 +34,7 @@ public class MethodInvokingCommandDispatcherTest {
 
     @HandlesCommandsFor("person")
     public interface PersonCommands {
-        String create(StreamTimestamp timestamp, UUID personId, String name);
+        String create(StreamTimestamp timestamp, String personId, String name);
     }
 
     @Test
@@ -43,7 +43,7 @@ public class MethodInvokingCommandDispatcherTest {
 
         assertThat(commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),
-                UUID.randomUUID(),
+                UUID.randomUUID().toString(),
                 "Arthur Putey"), equalTo("OK"));
     }
 
@@ -59,7 +59,7 @@ public class MethodInvokingCommandDispatcherTest {
         try {
             commandProxyFactory.getProxy(PersonCommands.class).create(
                     StreamTimestamp.of("test", Instant.now()),
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "Arthur Putey");
             fail("Expected exception");
         } catch (CommandExecutionException e) {
@@ -79,7 +79,7 @@ public class MethodInvokingCommandDispatcherTest {
         try {
             String result = commandProxyFactory.getProxy(PersonCommands.class).create(
                     StreamTimestamp.of("test", Instant.now()),
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "Arthur Putey");
             fail("Expected exception");
         } catch (CommandExecutionException e) {

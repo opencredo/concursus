@@ -12,36 +12,35 @@ import com.opencredo.concursus.mapping.annotations.Terminal;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @HandlesEventsFor("game")
 public interface GameEvents {
 
     @Initial
-    void gameCreated(StreamTimestamp ts, UUID gameId, UUID playerOneId, String rulesetVersion);
+    void gameCreated(StreamTimestamp ts, String gameId, String playerOneId, String rulesetVersion);
 
     @Ordered(0)
-    void playerTwoJoined(StreamTimestamp ts, UUID gameId, UUID playerTwoId);
+    void playerTwoJoined(StreamTimestamp ts, String gameId, String playerTwoId);
 
     @Ordered(1)
-    void gameStarted(StreamTimestamp ts, UUID gameId, List<Card> playerOneDeck, List<Card> playerTwoDeck, PlayerIndex firstPlayer);
+    void gameStarted(StreamTimestamp ts, String gameId, List<Card> playerOneDeck, List<Card> playerTwoDeck, PlayerIndex firstPlayer);
 
     @Ordered(2)
-    void playerOneTurn(StreamTimestamp ts, UUID gameId, Card card, Optional<BoardSlot> toSlot, TurnLog turnLog);
+    void playerOneTurn(StreamTimestamp ts, String gameId, Card card, Optional<BoardSlot> toSlot, TurnLog turnLog);
 
     @Ordered(2)
-    void playerTwoTurn(StreamTimestamp ts, UUID gameId, Card card, Optional<BoardSlot> toSlot, TurnLog turnLog);
+    void playerTwoTurn(StreamTimestamp ts, String gameId, Card card, Optional<BoardSlot> toSlot, TurnLog turnLog);
 
     @Terminal
-    void playerOneVictory(StreamTimestamp ts, UUID gameId);
+    void playerOneVictory(StreamTimestamp ts, String gameId);
 
     @Terminal
-    void playerTwoVictory(StreamTimestamp ts, UUID gameId);
+    void playerTwoVictory(StreamTimestamp ts, String gameId);
 
     @Terminal
-    void playerOneSurrender(StreamTimestamp ts, UUID gameId);
+    void playerOneSurrender(StreamTimestamp ts, String gameId);
 
     @Terminal
-    void playerTwoSurrender(StreamTimestamp ts, UUID gameId);
+    void playerTwoSurrender(StreamTimestamp ts, String gameId);
 
 }

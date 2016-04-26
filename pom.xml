@@ -239,10 +239,10 @@
             <modules>
                 <module>concursus-data</module>
                 <module>concursus-domain</module>
+                <module>concursus-domain-json</module>
                 <module>concursus-mapping</module>
                 <module>concursus-cassandra</module>
                 <module>concursus-redis</module>
-                <module>concursus-domain-json</module>
                 <module>concursus-hazelcast</module>
                 <module>concursus-spring</module>
                 <module>concursus-spring-cassandra</module>

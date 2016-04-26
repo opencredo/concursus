@@ -12,7 +12,6 @@ import com.opencredo.concursus.mapping.events.methods.ordering.CausalOrdering;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
@@ -77,10 +76,10 @@ public final class EventMethodMapping {
         checkNotNull(args, "args must not be null");
         checkArgument(args.length == tupleKeys.length + 2,
                 "Expected %s args, received %s", tupleKeys.length +2, args.length);
-        checkArgument(args[1] instanceof UUID, "second argument %s is not a UUID", args[1]);
+        checkArgument(args[1] instanceof String, "second argument %s is not a String", args[1]);
         checkArgument(args[0] instanceof StreamTimestamp, "first argument %s is not a StreamTimestamp", args[0]);
 
-        return eventType.makeEvent((UUID) args[1], (StreamTimestamp) args[0], makeTupleFromArgs(args), characteristics);
+        return eventType.makeEvent((String) args[1], (StreamTimestamp) args[0], makeTupleFromArgs(args), characteristics);
     }
 
     private Tuple makeTupleFromArgs(Object[] args) {

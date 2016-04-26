@@ -1,28 +1,26 @@
 package com.opencredo.concursus.demos.game.domain;
 
-import java.util.UUID;
-
 public final class TurnState {
 
-    public static TurnState of(UUID playerOneId, UUID playerTwoId, PlayerIndex currentPlayer) {
+    public static TurnState of(String playerOneId, String playerTwoId, PlayerIndex currentPlayer) {
         return new TurnState(playerOneId, playerTwoId, currentPlayer);
     }
 
-    private final UUID playerOneId;
-    private final UUID playerTwoId;
+    private final String playerOneId;
+    private final String playerTwoId;
     private PlayerIndex currentPlayer;
 
-    private TurnState(UUID playerOneId, UUID playerTwoId, PlayerIndex currentPlayer) {
+    private TurnState(String playerOneId, String playerTwoId, PlayerIndex currentPlayer) {
         this.playerOneId = playerOneId;
         this.playerTwoId = playerTwoId;
         this.currentPlayer = currentPlayer;
     }
 
-    public boolean isCurrentPlayer(UUID playerId) {
+    public boolean isCurrentPlayer(String playerId) {
         return getCurrentPlayerId().equals(playerId);
     }
 
-    public UUID getCurrentPlayerId() {
+    public String getCurrentPlayerId() {
         return currentPlayer.equals(PlayerIndex.PLAYER_1)
                 ? playerOneId
                 : playerTwoId;
@@ -34,11 +32,11 @@ public final class TurnState {
                 : PlayerIndex.PLAYER_1;
     }
 
-    public UUID getPlayerOneId() {
+    public String getPlayerOneId() {
         return playerOneId;
     }
 
-    public UUID getPlayerTwoId() {
+    public String getPlayerTwoId() {
         return playerTwoId;
     }
 
@@ -46,7 +44,7 @@ public final class TurnState {
         return currentPlayer;
     }
 
-    public UUID getOpponentId() {
+    public String getOpponentId() {
         return currentPlayer.equals(PlayerIndex.PLAYER_1)
                 ? playerTwoId
                 : playerOneId;

@@ -5,21 +5,19 @@ import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concursus.mapping.annotations.Initial;
 import com.opencredo.concursus.mapping.annotations.Terminal;
 
-import java.util.UUID;
-
 @HandlesEventsFor("player")
 public interface PlayerEvents {
 
     @Initial
-    void created(StreamTimestamp ts, UUID playerId, String playerName);
-    void changedName(StreamTimestamp ts, UUID playerId, String newPlayerName);
+    void created(StreamTimestamp ts, String playerId, String playerName);
+    void changedName(StreamTimestamp ts, String playerId, String newPlayerName);
 
-    void startedGame(StreamTimestamp ts, UUID playerId, UUID gameId);
-    void joinedGame(StreamTimestamp ts, UUID playerId, UUID gameId);
+    void startedGame(StreamTimestamp ts, String playerId, String gameId);
+    void joinedGame(StreamTimestamp ts, String playerId, String gameId);
 
-    void wonGame(StreamTimestamp ts, UUID playerId, UUID gameId, int ratingIncrease);
-    void lostGame(StreamTimestamp ts, UUID playerId, UUID gameId, int ratingDecrease);
+    void wonGame(StreamTimestamp ts, String playerId, String gameId, int ratingIncrease);
+    void lostGame(StreamTimestamp ts, String playerId, String gameId, int ratingDecrease);
 
     @Terminal
-    void deleted(StreamTimestamp ts, UUID playerId);
+    void deleted(StreamTimestamp ts, String playerId);
 }

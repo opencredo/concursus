@@ -5,48 +5,47 @@ import com.opencredo.concursus.mapping.annotations.*;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 @HandlesEventsFor("person")
 public final class Person {
 
     @HandlesCommandsFor("person")
     public interface Commands {
-        Person create(StreamTimestamp ts, UUID personId, String name, LocalDate dob);
-        Person changeName(StreamTimestamp ts, UUID personId, String newName);
-        Person moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId);
-        void delete(StreamTimestamp ts, UUID personId);
+        Person create(StreamTimestamp ts, String personId, String name, LocalDate dob);
+        Person changeName(StreamTimestamp ts, String personId, String newName);
+        Person moveToAddress(StreamTimestamp ts, String personId, String addressId);
+        void delete(StreamTimestamp ts, String personId);
     }
 
     @HandlesEventsFor("person")
     public interface Events {
         @Initial
-        void created(StreamTimestamp ts, UUID personId, String name, LocalDate dateOfBirth);
-        void changedName(StreamTimestamp ts, UUID personId, String newName);
-        void movedToAddress(StreamTimestamp ts, UUID personId, UUID addressId);
+        void created(StreamTimestamp ts, String personId, String name, LocalDate dateOfBirth);
+        void changedName(StreamTimestamp ts, String personId, String newName);
+        void movedToAddress(StreamTimestamp ts, String personId, String addressId);
         @Terminal
-        void deleted(StreamTimestamp ts, UUID personId);
+        void deleted(StreamTimestamp ts, String personId);
     }
 
     @HandlesEvent
-    public static Person created(UUID id, String name, LocalDate dateOfBirth) {
+    public static Person created(String id, String name, LocalDate dateOfBirth) {
         return new Person(id, name, dateOfBirth, Optional.empty());
     }
 
-    private final UUID id;
+    private final String id;
     private String name;
     private final LocalDate dateOfBirth;
-    private Optional<UUID> currentAddressId;
+    private Optional<String> currentAddressId;
     private boolean deleted = false;
 
-    private Person(UUID id, String name, LocalDate dateOfBirth, Optional<UUID> currentAddressId) {
+    private Person(String id, String name, LocalDate dateOfBirth, Optional<String> currentAddressId) {
         this.id = id;
         this.name = name;
         this.dateOfBirth = dateOfBirth;
         this.currentAddressId = currentAddressId;
     }
 
-    public Optional<UUID> getCurrentAddressId() {
+    public Optional<String> getCurrentAddressId() {
         return currentAddressId;
     }
 
@@ -56,7 +55,7 @@ public final class Person {
     }
 
     @HandlesEvent
-    public void movedToAddress(UUID addressId) {
+    public void movedToAddress(String addressId) {
         currentAddressId = Optional.of(addressId);
     }
 
@@ -65,7 +64,7 @@ public final class Person {
         deleted = true;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 

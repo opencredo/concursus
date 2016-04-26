@@ -3,7 +3,7 @@ CREATE KEYSPACE IF NOT EXISTS concursus
 
 CREATE TABLE IF NOT EXISTS concursus.Event (
    aggregateType text,
-   aggregateId uuid,
+   aggregateId text,
    eventTimestamp timestamp,
    streamId text,
    processingId timeuuid,
@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS concursus.Event (
 CREATE TABLE IF NOT EXISTS concursus.Catalogue (
     aggregateType text,
     bucket int,
-    aggregateId uuid,
+    aggregateId text,
     PRIMARY KEY ((aggregateType, bucket), aggregateId)
 ) WITH CLUSTERING ORDER BY (aggregateId DESC);

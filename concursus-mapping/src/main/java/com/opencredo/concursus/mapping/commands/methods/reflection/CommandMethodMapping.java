@@ -15,7 +15,6 @@ import com.opencredo.concursus.mapping.reflection.ParameterArgs;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.UUID;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
@@ -67,9 +66,11 @@ public final class CommandMethodMapping {
         checkNotNull(args, "args must not be null");
         checkArgument(args.length == tupleKeys.length + 2,
                 "Expected %s args, received %s", tupleKeys.length +2, args.length);
+        checkArgument(args[0] instanceof StreamTimestamp, "first argument %s is not a StreamTimestamp", args[0]);
+        checkArgument(args[1] instanceof String, "second argument %s is not a String", args[0]);
 
         return Command.of(
-                AggregateId.of(aggregateType, (UUID) args[1]),
+                AggregateId.of(aggregateType, (String) args[1]),
                 (StreamTimestamp) args[0],
                 commandName,
                 makeTupleFromArgs(args),

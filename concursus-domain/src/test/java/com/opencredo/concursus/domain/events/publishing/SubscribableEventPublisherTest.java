@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -30,21 +29,21 @@ public class SubscribableEventPublisherTest {
         unit.subscribe(EventType.of("user", VersionedName.of("updated")), updatedEvents::add);
 
         unit.accept(Event.of(
-                AggregateId.of("user", UUID.randomUUID()),
+                AggregateId.of("user", "user1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("created"),
                 TupleSchema.of("test").makeWith()
         ));
 
         unit.accept(Event.of(
-                AggregateId.of("group", UUID.randomUUID()),
+                AggregateId.of("group", "group1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("created"),
                 TupleSchema.of("test").makeWith()
         ));
 
         unit.accept(Event.of(
-                AggregateId.of("user", UUID.randomUUID()),
+                AggregateId.of("user", "user1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("updated"),
                 TupleSchema.of("test").makeWith()

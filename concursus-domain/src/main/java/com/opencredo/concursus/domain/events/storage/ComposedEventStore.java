@@ -2,15 +2,14 @@ package com.opencredo.concursus.domain.events.storage;
 
 import com.opencredo.concursus.domain.common.AggregateId;
 import com.opencredo.concursus.domain.events.Event;
-import com.opencredo.concursus.domain.events.sourcing.EventRetriever;
 import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
 import com.opencredo.concursus.domain.events.persisting.EventPersister;
+import com.opencredo.concursus.domain.events.sourcing.EventRetriever;
 import com.opencredo.concursus.domain.time.TimeRange;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * An {@link EventStore} composed of an {@link EventPersister} and an {@link EventRetriever}.
@@ -41,7 +40,7 @@ public final class ComposedEventStore implements EventStore {
     }
 
     @Override
-    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange) {
         return eventRetriever.getEvents(matcher, aggregateType, aggregateIds, timeRange);
     }
 

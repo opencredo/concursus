@@ -5,7 +5,6 @@ import com.opencredo.concursus.spring.events.publishing.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @EventHandler
 public class PersonEventHandler implements PersonEvents {
@@ -17,17 +16,17 @@ public class PersonEventHandler implements PersonEvents {
     }
 
     @Override
-    public void created(StreamTimestamp timestamp, UUID personId, String name, int age) {
+    public void created(StreamTimestamp timestamp, String personId, String name, int age) {
         publishedEvents.add(name + " was created with age " + age);
     }
 
     @Override
-    public void updatedAge(StreamTimestamp timestamp, UUID personId, int newAge) {
+    public void updatedAge(StreamTimestamp timestamp, String personId, int newAge) {
         publishedEvents.add("age was changed to " + newAge);
     }
 
     @Override
-    public void updatedName(StreamTimestamp timestamp, UUID personId, String newName) {
+    public void updatedName(StreamTimestamp timestamp, String personId, String newName) {
         publishedEvents.add("name was changed to " + newName);
     }
 }

@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +41,7 @@ public class EventBusExample {
         ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(batchProcessor, batchFilter));
 
         StreamTimestamp timestamp = StreamTimestamp.now();
-        UUID personId = UUID.randomUUID();
+        String personId = "id1";
 
         // Send three events, in a single batch, to the EventBus.
         eventBus.dispatch(Person.Events.class, e -> {

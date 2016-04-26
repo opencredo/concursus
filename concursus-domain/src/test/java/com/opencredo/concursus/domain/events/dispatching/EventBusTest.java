@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -37,14 +36,14 @@ public class EventBusTest {
     @Test
     public void dispatchesEventsSinglyToLogAndPublisher() {
         Event event1 = Event.of(
-                AggregateId.of("widget", UUID.randomUUID()),
+                AggregateId.of("widget", "id1"),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
                 TupleSchema.of("test").makeWith()
         );
 
         Event event2 = Event.of(
-                AggregateId.of("widget", UUID.randomUUID()),
+                AggregateId.of("widget", "id2"),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
                 TupleSchema.of("test").makeWith()
@@ -61,14 +60,14 @@ public class EventBusTest {
     @Test
     public void dispatchesEventsInBatchToLogAndPublisher() {
         Event event1 = Event.of(
-                AggregateId.of("widget", UUID.randomUUID()),
+                AggregateId.of("widget", "id1"),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
                 TupleSchema.of("test").makeWith()
         );
 
         Event event2 = Event.of(
-                AggregateId.of("widget", UUID.randomUUID()),
+                AggregateId.of("widget", "id2"),
                 StreamTimestamp.of("testStream", Instant.now()),
                 VersionedName.of("created", "0"),
                 TupleSchema.of("test").makeWith()

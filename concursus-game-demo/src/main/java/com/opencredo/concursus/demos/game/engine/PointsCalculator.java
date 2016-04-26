@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 public final class PointsCalculator {
@@ -20,8 +19,8 @@ public final class PointsCalculator {
         this.scoringAlgorithm = scoringAlgorithm;
     }
 
-    public int calculatePoints(UUID winnerId, UUID loserId) {
-        Map<UUID, PlayerState> playerStates = playerStateRepository.getStates(winnerId, loserId);
+    public int calculatePoints(String winnerId, String loserId) {
+        Map<String, PlayerState> playerStates = playerStateRepository.getStates(winnerId, loserId);
         int winnerScore = playerStates.get(winnerId).getRating();
         int loserScore = playerStates.get(loserId).getRating();
 

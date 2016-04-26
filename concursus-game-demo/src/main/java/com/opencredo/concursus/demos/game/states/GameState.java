@@ -9,27 +9,26 @@ import com.opencredo.concursus.mapping.annotations.Ordered;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @HandlesEventsFor("game")
 public class GameState {
 
     @HandlesEvent
-    public static GameState gameCreated(UUID gameId, UUID playerOneId, String rulesetVersion) {
+    public static GameState gameCreated(String gameId, String playerOneId, String rulesetVersion) {
         return new GameState(gameId, rulesetVersion, playerOneId);
     }
 
-    private final UUID gameId;
+    private final String gameId;
     private final String rulesetVersion;
-    private final UUID initiatingPlayerId;
-    private Optional<UUID> joiningPlayerId;
+    private final String initiatingPlayerId;
+    private Optional<String> joiningPlayerId;
     private Optional<TurnState> turnState = Optional.empty();
     private BoardState boardState = BoardState.empty();
 
     private List<Card> playerOneCards = Collections.emptyList();
     private List<Card> playerTwoCards = Collections.emptyList();
 
-    public GameState(UUID gameId, String rulesetVersion, UUID initiatingPlayerId) {
+    public GameState(String gameId, String rulesetVersion, String initiatingPlayerId) {
         this.gameId = gameId;
         this.rulesetVersion = rulesetVersion;
         this.initiatingPlayerId = initiatingPlayerId;
@@ -43,21 +42,21 @@ public class GameState {
         return rulesetVersion;
     }
 
-    public boolean isPlayersTurn(UUID playerId) {
+    public boolean isPlayersTurn(String playerId) {
         return turnState.map(turnState -> turnState.isCurrentPlayer(playerId)).orElse(false);
     }
 
-    public UUID getPlayerOneId() {
+    public String getPlayerOneId() {
         return turnState.map(TurnState::getPlayerOneId).orElseThrow(() -> new IllegalGameStateException("Game not started"));
     }
 
-    public UUID getPlayerTwoId() {
+    public String getPlayerTwoId() {
         return turnState.map(TurnState::getPlayerTwoId).orElseThrow(() -> new IllegalGameStateException("Game not started"));
     }
 
     @Ordered(0)
     @HandlesEvent
-    public void playerTwoJoined(UUID playerTwoId) {
+    public void playerTwoJoined(String playerTwoId) {
         joiningPlayerId = Optional.of(playerTwoId);
     }
 

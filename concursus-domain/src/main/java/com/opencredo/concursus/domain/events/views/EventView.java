@@ -38,7 +38,7 @@ public final class EventView {
     }
 
     private final String aggregateType;
-    private final UUID aggregateId;
+    private final String aggregateId;
     private final String eventTimestamp;
     private final String eventStreamId;
     private final String processingTimestamp;
@@ -47,7 +47,7 @@ public final class EventView {
     private final String eventVersion;
     private final Map<String, Object> parameters;
 
-    private EventView(String aggregateType, UUID aggregateId, String eventTimestamp, String eventStreamId, String processingTimestamp, UUID processingId, String eventName, String eventVersion, Map<String, Object> parameters) {
+    private EventView(String aggregateType, String aggregateId, String eventTimestamp, String eventStreamId, String processingTimestamp, UUID processingId, String eventName, String eventVersion, Map<String, Object> parameters) {
         this.aggregateType = aggregateType;
         this.aggregateId = aggregateId;
         this.eventTimestamp = eventTimestamp;
@@ -63,7 +63,7 @@ public final class EventView {
         return aggregateType;
     }
 
-    public UUID getAggregateId() {
+    public String getAggregateId() {
         return aggregateId;
     }
 

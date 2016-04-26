@@ -5,18 +5,16 @@ import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
 import com.opencredo.concursus.mapping.annotations.Initial;
 import com.opencredo.concursus.mapping.annotations.Terminal;
 
-import java.util.UUID;
-
 @HandlesEventsFor("group")
 public interface GroupEvents {
 
     @Initial
-    void created(StreamTimestamp ts, UUID groupId, String groupName);
-    void changedName(StreamTimestamp ts, UUID groupId, String newName);
+    void created(StreamTimestamp ts, String groupId, String groupName);
+    void changedName(StreamTimestamp ts, String groupId, String newName);
 
-    void userAdded(StreamTimestamp ts, UUID groupId, UUID userId);
-    void userRemoved(StreamTimestamp ts, UUID groupId, UUID userId);
+    void userAdded(StreamTimestamp ts, String groupId, String userId);
+    void userRemoved(StreamTimestamp ts, String groupId, String userId);
 
     @Terminal
-    void deleted(StreamTimestamp ts, UUID groupId);
+    void deleted(StreamTimestamp ts, String groupId);
 }

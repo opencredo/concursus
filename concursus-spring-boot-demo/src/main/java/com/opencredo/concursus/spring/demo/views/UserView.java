@@ -3,20 +3,19 @@ package com.opencredo.concursus.spring.demo.views;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
-import java.util.UUID;
 
 public final class UserView {
 
     @JsonProperty
-    private final UUID id;
+    private final String id;
 
     @JsonProperty
     private final String name;
 
     @JsonProperty
-    private final Map<UUID, String> groups;
+    private final Map<String, String> groups;
 
-    public UserView(UUID id, String name, Map<UUID, String> groups) {
+    public UserView(String id, String name, Map<String, String> groups) {
         this.id = id;
         this.name = name;
         this.groups = groups;

@@ -51,22 +51,22 @@ public class ProxyingEventBusTest {
 
         @Initial
         @Name("created")
-        void createdV1(StreamTimestamp timestamp, UUID aggregateId, String name);
+        void createdV1(StreamTimestamp timestamp, String aggregateId, String name);
 
         @Initial
         @Name(value="created", version="2")
-        void createdV2(StreamTimestamp timestamp, UUID aggregateId, String name, int age);
+        void createdV2(StreamTimestamp timestamp, String aggregateId, String name, int age);
 
-        void nameUpdated(StreamTimestamp timestamp, UUID aggregateId, @Name("updatedName") String newName);
+        void nameUpdated(StreamTimestamp timestamp, String aggregateId, @Name("updatedName") String newName);
 
         @Terminal
-        void deleted(StreamTimestamp ts, UUID aggregateId);
+        void deleted(StreamTimestamp ts, String aggregateId);
     }
 
     @Test
     public void proxiesMethodCallsToEventBus() {
         Instant eventTime = Instant.now();
-        UUID aggregateId = UUID.randomUUID();
+        String aggregateId = UUID.randomUUID().toString();
 
         unit.dispatch(TestEvents.class, e -> {
             e.createdV2(StreamTimestamp.of("test", eventTime), aggregateId, "Arthur Putey", 41);
@@ -76,7 +76,7 @@ public class ProxyingEventBusTest {
         assertThat(batchedEvents, hasSize(1));
         assertThat(batchedEvents.get(0), hasSize(2));
         assertThat(publishedEvents, hasSize(2));
-        assertThat(aggregateCatalogue.getUuids("test"), contains(aggregateId));
+        assertThat(aggregateCatalogue.getAggregateIds("test"), contains(aggregateId));
     }
 
 }

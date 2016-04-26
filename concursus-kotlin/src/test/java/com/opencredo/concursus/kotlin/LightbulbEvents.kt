@@ -12,7 +12,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit.HOURS
 import java.time.temporal.ChronoUnit.MILLIS
-import java.util.*
 
 sealed class LightbulbEvent {
 
@@ -72,7 +71,7 @@ fun main(args: Array<String>) {
     val eventBus = EventBus.processingWith(EventBatchProcessor.forwardingTo(eventStore))
     val eventSource = EventSource.retrievingWith(eventStore)
 
-    val lightbulbId = UUID.randomUUID()
+    val lightbulbId = "id1"
     var start = StreamTimestamp.now()
 
     eventBus.dispatch(LightbulbEvent.Factory) {
@@ -91,17 +90,16 @@ fun main(args: Array<String>) {
 
     val messages = cached.replaying(lightbulbId)
             .inAscendingCausalOrder()
-            .collectAll { kevent ->
-        val msg = kevent.data.let {
-            when (it) {
-                is Created -> "Lightbulb created with wattage " + it.wattage
-                is ScrewedIn -> "Lightbulb screwed in @ " + it.location
-                is Unscrewed -> "Lightbulb unscrewed"
-                is SwitchedOn -> "Lightbulb switched on"
-                is SwitchedOff -> "Lightbulb switched off"
-            }
-        }
-        msg + " at " + kevent.timestamp.timestamp
+            .collectAll { event ->
+                event.data.let {
+                    when (it) {
+                        is Created -> "Lightbulb created with wattage " + it.wattage
+                        is ScrewedIn -> "Lightbulb screwed in @ " + it.location
+                        is Unscrewed -> "Lightbulb unscrewed"
+                        is SwitchedOn -> "Lightbulb switched on"
+                        is SwitchedOff -> "Lightbulb switched off"
+                    }
+                } + " at " + event.timestamp.timestamp
     }
 
     messages.forEach { println(it) }

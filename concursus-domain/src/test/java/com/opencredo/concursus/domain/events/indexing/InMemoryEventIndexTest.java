@@ -10,7 +10,6 @@ import com.opencredo.concursus.domain.time.StreamTimestamp;
 import org.junit.Test;
 
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -29,8 +28,8 @@ public class InMemoryEventIndexTest {
 
     private final InMemoryEventIndex index = InMemoryEventIndex.create();
 
-    private final AggregateId id1 = AggregateId.of("person", UUID.randomUUID());
-    private final AggregateId id2 = AggregateId.of("person", UUID.randomUUID());
+    private final AggregateId id1 = AggregateId.of("person", "id1");
+    private final AggregateId id2 = AggregateId.of("person", "id2");
     @Test
     public void indexesAggregateIdsByPropertyValues() {
         index.accept(Event.of(

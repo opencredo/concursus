@@ -12,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.mockito.Mockito.*;
@@ -34,7 +33,7 @@ public class IdempotentEventFilterTest {
 
     @HandlesEventsFor("test")
     public interface TestEvents {
-        void testEvent(StreamTimestamp ts, UUID id, String value);
+        void testEvent(StreamTimestamp ts, String id, String value);
     }
 
     @Test
@@ -48,7 +47,7 @@ public class IdempotentEventFilterTest {
         TestEvents proxy = EventEmittingProxy.proxying(filteredChannel, TestEvents.class);
 
         final StreamTimestamp timestamp = StreamTimestamp.now();
-        final UUID aggregateId = UUID.randomUUID();
+        final String aggregateId = "id1";
 
         proxy.testEvent(timestamp, aggregateId, "foo");
         proxy.testEvent(timestamp, aggregateId, "bar");
@@ -68,12 +67,12 @@ public class IdempotentEventFilterTest {
         TestEvents proxy = EventEmittingProxy.proxying(filteredChannel, TestEvents.class);
 
         final StreamTimestamp timestamp = StreamTimestamp.now();
-        final UUID aggregateId = UUID.randomUUID();
+        final String aggregateId = "id";
 
         proxy.testEvent(timestamp, aggregateId, "foo");
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(1500);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

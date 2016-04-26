@@ -34,18 +34,18 @@ public class UserService {
         this.aggregateCatalogue = aggregateCatalogue;
     }
 
-    public List<EventView> getHistory(UUID userId) {
+    public List<EventView> getHistory(String userId) {
         return MappingEventHistoryFetcher.mapping(UserEvents.class).getHistory(eventSource, userId)
                 .stream().map(EventView::of).collect(toList());
     }
 
-    public boolean checkPassword(UUID userId, String passwordHash) {
+    public boolean checkPassword(String userId, String passwordHash) {
         return userStateRepository.getState(userId)
                 .filter(s -> !s.isDeleted())
                 .map(userState -> userState.getPasswordHash().equals(passwordHash)).orElse(false);
     }
 
-    public Optional<UserView> getUser(UUID userId) {
+    public Optional<UserView> getUser(String userId) {
         return userStateRepository.getState(userId)
                 .filter(s -> !s.isDeleted())
                 .map(user ->
@@ -55,7 +55,7 @@ public class UserService {
                         getGroupNames(user.getGroupIds())));
     }
 
-    private Map<UUID, String> getGroupNames(Collection<UUID> groupIds) {
+    private Map<String, String> getGroupNames(Collection<String> groupIds) {
         return groupStateRepository.getStates(groupIds).entrySet().stream()
                 .filter(e -> !e.getValue().isDeleted())
                 .collect(Collectors.toMap(
@@ -65,7 +65,7 @@ public class UserService {
     }
 
     public Map<String, String> getUsers() {
-        List<UUID> users = aggregateCatalogue.getUuids("user");
+        List<String> users = aggregateCatalogue.getAggregateIds("user");
         return userStateRepository.getStates(users).entrySet().stream()
                 .filter(e -> !e.getValue().isDeleted())
                 .collect(

@@ -3,17 +3,16 @@ package com.opencredo.concursus.domain.events.channels;
 import com.opencredo.concursus.domain.events.Event;
 
 import java.util.Map;
-import java.util.UUID;
 
 public final class RoutingEventOutChannel implements EventOutChannel {
 
-    public static RoutingEventOutChannel routingWith(Map<UUID, EventOutChannel> channelsById) {
+    public static RoutingEventOutChannel routingWith(Map<String, EventOutChannel> channelsById) {
         return new RoutingEventOutChannel(channelsById);
     }
 
-    private final Map<UUID, EventOutChannel> channelsById;
+    private final Map<String, EventOutChannel> channelsById;
 
-    private RoutingEventOutChannel(Map<UUID, EventOutChannel> channelsById) {
+    private RoutingEventOutChannel(Map<String, EventOutChannel> channelsById) {
         this.channelsById = channelsById;
     }
 

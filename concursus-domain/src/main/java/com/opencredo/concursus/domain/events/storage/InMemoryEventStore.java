@@ -55,7 +55,7 @@ public final class InMemoryEventStore implements EventStore {
     }
 
     @Override
-    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange) {
         return selectEvents(events, matchedBy(matcher).and(inRange(timeRange)), aggregateType, aggregateIds);
     }
 }

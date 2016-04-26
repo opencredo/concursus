@@ -19,14 +19,14 @@ import static org.hamcrest.Matchers.equalTo;
 public class ParameterArgsTest {
 
     public interface TestInterface {
-        void methodWithArgsToSkip(StreamTimestamp ts, UUID aggregateId, String a, Integer b, Optional<Long> c);
+        void methodWithArgsToSkip(StreamTimestamp ts, String aggregateId, String a, Integer b, Optional<Long> c);
         void methodWithArgsInNonAlphabeticalOrder(String b, Integer a, Optional<Long> c);
         void methodWithArgsInAlphabeticalOrder(Integer a, String b, Optional<Long> c);
     }
 
     @Test
     public void skipsUnwantedArgs() throws NoSuchMethodException {
-        Method methodWithArgsToSkip = TestInterface.class.getMethod("methodWithArgsToSkip", StreamTimestamp.class, UUID.class, String.class, Integer.class, Optional.class);
+        Method methodWithArgsToSkip = TestInterface.class.getMethod("methodWithArgsToSkip", StreamTimestamp.class, String.class, String.class, Integer.class, Optional.class);
         ParameterArgs parameterArgs = ParameterArgs.forMethod(methodWithArgsToSkip, 2);
         TupleSchema schema = parameterArgs.getTupleSchema("schema");
 

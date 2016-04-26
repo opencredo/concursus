@@ -65,17 +65,17 @@ public class RoundTripTest {
     @HandlesEventsFor("person")
     public interface PersonEvents {
         @Initial
-        void created(StreamTimestamp timestamp, UUID personId, String name, int age);
-        void updatedAge(StreamTimestamp timestamp, UUID personId, int newAge);
-        void updatedName(StreamTimestamp timestamp, UUID personId, String newName);
+        void created(StreamTimestamp timestamp, String personId, String name, int age);
+        void updatedAge(StreamTimestamp timestamp, String personId, int newAge);
+        void updatedName(StreamTimestamp timestamp, String personId, String newName);
         @Terminal
-        void deleted(StreamTimestamp timestamp, UUID personId);
+        void deleted(StreamTimestamp timestamp, String personId);
     }
 
     @Test
     public void writeAndReadBatch() throws InterruptedException {
-        UUID personId1 = UUID.randomUUID();
-        UUID personId2 = UUID.randomUUID();
+        String personId1 = "id1";
+        String personId2 = "id2";
         Instant start = Instant.now();
 
         proxyingEventBus.dispatch(PersonEvents.class, batch -> {
@@ -128,28 +128,28 @@ public class RoundTripTest {
                 "name was changed to Arthur Danto"
         ));
 
-        assertThat(aggregateCatalogue.getUuids("person"), hasItems(personId2));
+        assertThat(aggregateCatalogue.getAggregateIds("person"), hasItems(personId2));
     }
 
     private Function<Consumer<String>, PersonEvents> eventSummariser() {
         return caller -> new PersonEvents() {
             @Override
-            public void created(StreamTimestamp timestamp, UUID personId, String name, int age) {
+            public void created(StreamTimestamp timestamp, String personId, String name, int age) {
                 caller.accept(name + " was created with age " + age);
             }
 
             @Override
-            public void updatedAge(StreamTimestamp timestamp, UUID personId, int newAge) {
+            public void updatedAge(StreamTimestamp timestamp, String personId, int newAge) {
                 caller.accept("age was changed to " + newAge);
             }
 
             @Override
-            public void updatedName(StreamTimestamp timestamp, UUID personId, String newName) {
+            public void updatedName(StreamTimestamp timestamp, String personId, String newName) {
                 caller.accept("name was changed to " + newName);
             }
 
             @Override
-            public void deleted(StreamTimestamp timestamp, UUID personId) {
+            public void deleted(StreamTimestamp timestamp, String personId) {
                 caller.accept("person was deleted");
             }
         };
@@ -160,7 +160,7 @@ public class RoundTripTest {
     public void writeAThousandEvents() {
         PersonEvents dispatcher = proxyingEventBus.getDispatcherFor(PersonEvents.class);
         for (int i = 0; i < 1000; i++) {
-            dispatcher.created(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID(), "Arthur Mumby", 41);
+            dispatcher.created(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID().toString(), "Arthur Mumby", 41);
         }
     }
 }

@@ -15,15 +15,12 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 public class JsonExample {
 
@@ -51,21 +48,21 @@ public class JsonExample {
 
         // Send two batches of events.
         eventBus.dispatch(Person.Events.class, e -> {
-            e.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
-            e.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Mumby", LocalDate.parse("1954-02-17"));
+            e.created(StreamTimestamp.now(), "id1", "Arthur Putey", LocalDate.parse("1968-05-28"));
+            e.created(StreamTimestamp.now(), "id2", "Arthur Mumby", LocalDate.parse("1954-02-17"));
         });
 
         eventBus.dispatch(Person.Events.class, e -> {
-            e.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Daley", LocalDate.parse("1962-08-12"));
+            e.created(StreamTimestamp.now(), "id3", "Arthur Daley", LocalDate.parse("1962-08-12"));
         });
 
         // Send each serialised batch to the JSON in channel.
         serialisedBatches.forEach(jsonIn);
 
         // Verify that the batches are deserialised and events dispatched to the handlers.
-        verify(handler).created(any(StreamTimestamp.class), any(UUID.class), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
-        verify(handler).created(any(StreamTimestamp.class), any(UUID.class), eq("Arthur Mumby"), eq(LocalDate.parse("1954-02-17")));
-        verify(handler).created(any(StreamTimestamp.class), any(UUID.class), eq("Arthur Daley"), eq(LocalDate.parse("1962-08-12")));
+        verify(handler).created(any(StreamTimestamp.class), eq("id1"), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
+        verify(handler).created(any(StreamTimestamp.class), eq("id2"), eq("Arthur Mumby"), eq(LocalDate.parse("1954-02-17")));
+        verify(handler).created(any(StreamTimestamp.class), eq("id2"), eq("Arthur Daley"), eq(LocalDate.parse("1962-08-12")));
         verifyNoMoreInteractions(handler);
 
         // Verify that two batches were recorded.

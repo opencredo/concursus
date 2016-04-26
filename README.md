@@ -34,11 +34,11 @@ The first thing we might want to do is generate some events. To begin with, we n
 @HandlesEventsFor("person")
 public interface Events {
     @Initial
-    void created(StreamTimestamp ts, UUID personId, String name, LocalDate dateOfBirth);
-    void changedName(StreamTimestamp ts, UUID personId, String newName);
-    void movedToAddress(StreamTimestamp ts, UUID personId, UUID addressId);
+    void created(StreamTimestamp ts, String personId, String name, LocalDate dateOfBirth);
+    void changedName(StreamTimestamp ts, String personId, String newName);
+    void movedToAddress(StreamTimestamp ts, String personId, String addressId);
     @Terminal
-    void deleted(StreamTimestamp ts, UUID personId);
+    void deleted(StreamTimestamp ts, String personId);
 }
 ```
 
@@ -52,13 +52,13 @@ EventOutChannel outChannel = System.out::println;
 PersonEvents proxy = EventEmittingProxy.proxying(outChannel, PersonEvents.class);
 
 // Send an event via the proxy.
-proxy.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
+proxy.created(StreamTimestamp.now(), "id1", "Arthur Putey", LocalDate.parse("1968-05-28"));
 ```
 
 This will output a String like the following:
 
 ```
-person:b2fb2f38-0473-4359-b62b-fad149caf2d5 created_0
+person:id1 created_0
 at 2016-03-31T10:31:17.981Z/
 with person/created_0{dateOfBirth=1968-05-28, name=Arthur Putey}
 ```
@@ -79,7 +79,7 @@ EventOutChannel outChannel = JsonEventOutChannel.using(objectMapper, print);
 PersonEvents proxy = EventEmittingProxy.proxying(outChannel, PersonEvents.class);
 
 // Send an event via the proxy.
-proxy.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
+proxy.created(StreamTimestamp.now(), "id1, "Arthur Putey", LocalDate.parse("1968-05-28"));
 ```
 
 This will output JSON like the following:
@@ -87,7 +87,7 @@ This will output JSON like the following:
 ```json
 {
   "aggregateType" : "person",
-  "aggregateId" : "b449861a-0e8f-4012-bfe9-98a2a4f620f9",
+  "aggregateId" : "id1",
   "name" : "created",
   "version" : "0",
   "eventTimestamp" : 1459420919667,
@@ -109,7 +109,7 @@ InMemoryEventStore eventStore = InMemoryEventStore.empty();
 PersonEvents proxy = EventEmittingProxy.proxying(eventStore.toEventOutChannel(), PersonEvents.class);
 
 // Send an event via the proxy.
-final UUID personId = UUID.randomUUID();
+final String personId = String.randomString();
 proxy.created(StreamTimestamp.now(), personId, "Arthur Putey", LocalDate.parse("1968-05-28"));
 
 // Create an EventTypeMatcher based on the Events interface, and use it to map events back out of the store
@@ -131,7 +131,7 @@ InMemoryEventStore eventStore = InMemoryEventStore.empty();
 PersonEvents proxy = EventEmittingProxy.proxying(eventStore.toEventOutChannel(), PersonEvents.class);
 
 // Send an event via the proxy.
-UUID personId = UUID.randomUUID();
+String personId = "id1;
 proxy.created(StreamTimestamp.now(), personId, "Arthur Putey", LocalDate.parse("1968-05-28"));
 
 // Replay the stored events for the person with id=person/personId to the handler instance.
@@ -140,7 +140,7 @@ DispatchingEventSource.dispatching(EventSource.retrievingWith(eventStore), Perso
         .replayAll(handler);
 
 // Verify that the handler received the event.
-verify(handler).created(any(StreamTimestamp.class), any(UUID.class), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
+verify(handler).created(any(StreamTimestamp.class), any(String.class), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
 ```
 
 Check out the [Examples](https://github.com/opencredo/concursus/tree/master/concursus-examples/src/test/java/com/opencredo/concursus/examples) for more detailed examples, including command processing and state-building.
@@ -155,7 +155,7 @@ CREATE KEYSPACE IF NOT EXISTS concursus
 
 CREATE TABLE IF NOT EXISTS concursus.Event (
    aggregateType text,
-   aggregateId uuid,
+   aggregateId text,
    eventTimestamp timestamp,
    streamId text,
    processingId timeuuid,
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS concursus.Event (
 CREATE TABLE IF NOT EXISTS concursus.Catalogue (
     aggregateType text,
     bucket int,
-    aggregateId uuid,
+    aggregateId text,
     PRIMARY KEY ((aggregateType, bucket), aggregateId)
 ) WITH CLUSTERING ORDER BY (aggregateId DESC);
 ```

@@ -72,7 +72,7 @@ public final class EventJson {
         Function<Object, JsonNode> serialiser = objectMapper::valueToTree;
         return of(
                 event.getAggregateId().getType(),
-                event.getAggregateId().getId().toString(),
+                event.getAggregateId().getId(),
                 event.getEventName().getName(),
                 event.getEventName().getVersion(),
                 event.getEventTimestamp().getTimestamp().toEpochMilli(),
@@ -155,7 +155,7 @@ public final class EventJson {
 
         return typeMatcher.match(eventType).map(tupleSchema ->
             eventType.makeEvent(
-                    UUID.fromString(aggregateId),
+                    aggregateId,
                     StreamTimestamp.of(streamId, Instant.ofEpochMilli(eventTimestamp)),
                     tupleSchema.deserialise(deserialiser, parameters),
                     characteristics

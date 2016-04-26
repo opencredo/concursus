@@ -12,7 +12,6 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -28,7 +27,7 @@ public class EventSourceExample {
     @Test
     public void replayEventsToHandler() {
         StreamTimestamp start = StreamTimestamp.now();
-        UUID personId = UUID.randomUUID();
+        String personId = "id2";
 
         proxyingEventBus.dispatch(Person.Events.class, personEvents -> {
             personEvents.created(start.plus(3, MINUTES), personId, "Ludwig Wittgenstein", LocalDate.parse("1968-05-28"));

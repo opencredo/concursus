@@ -11,7 +11,6 @@ import com.opencredo.concursus.spring.demo.events.UserEvents;
 import com.opencredo.concursus.spring.demo.repositories.GroupState;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @CommandHandler
@@ -27,21 +26,19 @@ public class GroupCommandsProcessor implements GroupCommands {
     }
 
     @Override
-    public CompletableFuture<UUID> create(StreamTimestamp ts, UUID groupId, String groupName) {
+    public String create(StreamTimestamp ts, String groupId, String groupName) {
         proxyingEventBus.dispatch(GroupEvents.class, groupEvents -> groupEvents.created(ts, groupId, groupName));
 
-        return CompletableFuture.completedFuture(groupId);
+        return groupId;
     }
 
     @Override
-    public CompletableFuture<Void> delete(StreamTimestamp ts, UUID groupId) {
+    public void delete(StreamTimestamp ts, String groupId) {
         GroupState groupState = groupStateRepository.getState(groupId).orElseThrow(GroupNotFoundException::new);
 
         proxyingEventBus.dispatch(UserEvents.class, GroupEvents.class, (userEvents, groupEvents) -> {
             groupState.getUsers().forEach(userId -> userEvents.removedFromGroup(ts, userId, groupId));
             groupEvents.deleted(ts, groupId);
         });
-
-        return CompletableFuture.completedFuture(null);
     }
 }

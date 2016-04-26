@@ -20,12 +20,12 @@ public class EventEmittingProxyTest {
     public interface TestEvents {
 
         @Name("created")
-        void createdV1(StreamTimestamp timestamp, UUID aggregateId, String name);
+        void createdV1(StreamTimestamp timestamp, String aggregateId, String name);
 
         @Name(value="created", version="2")
-        void createdV2(StreamTimestamp timestamp, UUID aggregateId, String name, int age);
+        void createdV2(StreamTimestamp timestamp, String aggregateId, String name, int age);
 
-        void nameUpdated(StreamTimestamp timestamp, UUID aggregateId, @Name("updatedName") String newName);
+        void nameUpdated(StreamTimestamp timestamp, String aggregateId, @Name("updatedName") String newName);
     }
 
     @Test
@@ -34,8 +34,8 @@ public class EventEmittingProxyTest {
 
         TestEvents emitter = EventEmittingProxy.proxying(emittedEvents::add, TestEvents.class);
 
-        emitter.createdV2(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID(), "Arthur Putey", 41);
-        emitter.nameUpdated(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID(), "Arthur Dent");
+        emitter.createdV2(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID().toString(), "Arthur Putey", 41);
+        emitter.nameUpdated(StreamTimestamp.of("test", Instant.now()), UUID.randomUUID().toString(), "Arthur Dent");
 
         assertThat(emittedEvents.get(0).getParameters().toString(), equalTo("test/created_2{age=41, name=Arthur Putey}"));
         assertThat(emittedEvents.get(1).getParameters().toString(), equalTo("test/nameUpdated_0{updatedName=Arthur Dent}"));

@@ -6,7 +6,6 @@ import com.opencredo.concursus.mapping.annotations.HandlesEvent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 public final class MethodSelectors {
@@ -46,21 +45,21 @@ public final class MethodSelectors {
         return hasParameterType(1, expected);
     }
 
-    private static Predicate<Method> hasTimestampAndUUIDParameters = parameterCountGte(2)
+    private static Predicate<Method> hasTimestampAndIdParameters = parameterCountGte(2)
             .and(firstParameterIs(StreamTimestamp.class))
-            .and(secondParameterIs(UUID.class));
+            .and(secondParameterIs(String.class));
 
     public static final Predicate<Method> isEventEmittingMethod =
-            returnsVoid.and(isInstance).and(hasTimestampAndUUIDParameters);
+            returnsVoid.and(isInstance).and(hasTimestampAndIdParameters);
 
     public static final Predicate<Method> isFactoryMethod = handlesEvent
             .and(isStatic)
             .and(parameterCountGte(1))
-            .and(firstParameterIs(UUID.class));
+            .and(firstParameterIs(String.class));
 
     public static final Predicate<Method> isUpdateMethod = handlesEvent.and(isInstance).and(returnsVoid);
 
     public static final Predicate<Method> isCommandIssuingMethod =
-            isInstance.and(hasTimestampAndUUIDParameters);
+            isInstance.and(hasTimestampAndIdParameters);
 
 }

@@ -22,7 +22,7 @@ public class CommandProxyFactoryTest {
 
     @HandlesCommandsFor("person")
     public interface PersonCommands {
-        String create(StreamTimestamp timestamp, UUID personId, String name);
+        String create(StreamTimestamp timestamp, String personId, String name);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class CommandProxyFactoryTest {
 
         assertThat(commandProxyFactory.getProxy(PersonCommands.class).create(
                 StreamTimestamp.of("test", Instant.now()),
-                UUID.randomUUID(),
+                UUID.randomUUID().toString(),
                 "Arthur Putey"), equalTo("OK"));
     }
 
@@ -52,7 +52,7 @@ public class CommandProxyFactoryTest {
         try {
             commandProxyFactory.getProxy(PersonCommands.class).create(
                     StreamTimestamp.of("test", Instant.now()),
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "Arthur Putey");
             fail("Expected exception");
         } catch (CommandExecutionException e) {
