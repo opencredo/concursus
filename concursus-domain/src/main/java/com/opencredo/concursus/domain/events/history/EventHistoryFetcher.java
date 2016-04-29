@@ -47,7 +47,7 @@ public final class EventHistoryFetcher {
      * @param aggregateId The id of the aggregate to get the event history for.
      * @return The retrieved event history.
      */
-    public List<Event> getHistory(EventSource eventSource, UUID aggregateId) {
+    public List<Event> getHistory(EventSource eventSource, String aggregateId) {
         return getHistory(eventSource, aggregateId, TimeRange.unbounded());
     }
 
@@ -58,7 +58,7 @@ public final class EventHistoryFetcher {
      * @param timeRange the time range to restrict the event history to.
      * @return The retrieved event history.
      */
-    public List<Event> getHistory(EventSource eventSource, UUID aggregateId, TimeRange timeRange) {
+    public List<Event> getHistory(EventSource eventSource, String aggregateId, TimeRange timeRange) {
         return eventTypeBinding.replaying(eventSource, aggregateId, timeRange)
                 .inAscendingOrder(causalOrderComparator)
                 .toList();
@@ -70,7 +70,7 @@ public final class EventHistoryFetcher {
      * @param aggregateId The id of the aggregate to get the event history for.
      * @return The retrieved event history.
      */
-    public List<Event> getHistory(CachedEventSource cachedEventSource, UUID aggregateId) {
+    public List<Event> getHistory(CachedEventSource cachedEventSource, String aggregateId) {
         return getHistory(cachedEventSource, aggregateId, TimeRange.unbounded());
     }
 
@@ -81,7 +81,7 @@ public final class EventHistoryFetcher {
      * @param timeRange the time range to restrict the event history to.
      * @return The retrieved event history.
      */
-    public List<Event> getHistory(CachedEventSource cachedEventSource, UUID aggregateId, TimeRange timeRange) {
+    public List<Event> getHistory(CachedEventSource cachedEventSource, String aggregateId, TimeRange timeRange) {
         return eventTypeBinding.replaying(cachedEventSource, aggregateId, timeRange)
                 .inAscendingOrder(causalOrderComparator)
                 .toList();
@@ -93,7 +93,7 @@ public final class EventHistoryFetcher {
      * @param aggregateIds The ids of the aggregates to get event histories for.
      * @return The event histories for the requested aggregates, grouped by aggregate id.
      */
-    public Map<UUID, List<Event>> getHistories(EventSource eventSource, Collection<UUID> aggregateIds) {
+    public Map<String, List<Event>> getHistories(EventSource eventSource, Collection<String> aggregateIds) {
         return getHistories(eventSource, aggregateIds, TimeRange.unbounded());
     }
 
@@ -105,7 +105,7 @@ public final class EventHistoryFetcher {
      * @param timeRange the time range to restrict the event histories to.
      * @return The event histories for the requested aggregates, grouped by aggregate id.
      */
-    public Map<UUID, List<Event>> getHistories(EventSource eventSource, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public Map<String, List<Event>> getHistories(EventSource eventSource, Collection<String> aggregateIds, TimeRange timeRange) {
         CachedEventSource cachedEventSource = eventTypeBinding.preload(eventSource, aggregateIds, timeRange);
         return aggregateIds.stream().collect(Collectors.toMap(
                 Function.identity(),

@@ -19,7 +19,6 @@ import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateRepo
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 
 import static org.mockito.Matchers.any;
@@ -60,9 +59,9 @@ public class SubscribingExample {
         Person.Events personEvents = EventEmittingProxy.proxying(eventPublisher, Person.Events.class);
 
         Person.Commands personCommands = commandProxyFactory.getProxy(Person.Commands.class);
-        UUID personId = UUID.randomUUID();
-        UUID address1Id = UUID.randomUUID();
-        UUID address2Id = UUID.randomUUID();
+        String personId = "person1";
+        String address1Id = "address1";
+        String address2Id = "address2";
 
         personCommands.create(StreamTimestamp.now(), personId, "Arthur Daley", LocalDate.parse("1968-05-28"));
         personCommands.moveToAddress(StreamTimestamp.now(), personId, address1Id);

@@ -5,27 +5,26 @@ import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @HandlesEventsFor("group")
 public final class GroupState {
 
     @HandlesEvent
-    public static GroupState created(UUID id, String groupName) {
+    public static GroupState created(String id, String groupName) {
         return new GroupState(id, groupName);
     }
 
-    private final UUID id;
+    private final String id;
     private String name;
-    private final Set<UUID> users = new HashSet<>();
+    private final Set<String> users = new HashSet<>();
     private boolean deleted = false;
 
-    public GroupState(UUID id, String name) {
+    public GroupState(String id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
@@ -33,7 +32,7 @@ public final class GroupState {
         return name;
     }
 
-    public Set<UUID> getUsers() {
+    public Set<String> getUsers() {
         return users;
     }
 
@@ -43,7 +42,7 @@ public final class GroupState {
     }
 
     @HandlesEvent
-    public void userAdded(UUID userId) {
+    public void userAdded(String userId) {
         users.add(userId);
     }
 
@@ -53,7 +52,7 @@ public final class GroupState {
     }
 
     @HandlesEvent
-    public void userRemoved(UUID userId) {
+    public void userRemoved(String userId) {
         users.remove(userId);
     }
 

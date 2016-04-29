@@ -20,7 +20,7 @@ public class HazelcastCommandExecutorTest {
 
     @HandlesCommandsFor("test")
     public interface TestCommands {
-        String uppercase(StreamTimestamp ts, UUID id, String input);
+        String uppercase(StreamTimestamp ts, String id, String input);
     }
 
     private final CommandExecutor executor = getCommandExecutor();
@@ -44,20 +44,20 @@ public class HazelcastCommandExecutorTest {
     @Test
     public void dispatchCommand() {
         for (int i = 0; i < 100; i++) {
-            assertEquals("FOO", commandIssuingProxy.uppercase(StreamTimestamp.now(), UUID.randomUUID(), "foo"));
+            assertEquals("FOO", commandIssuingProxy.uppercase(StreamTimestamp.now(), UUID.randomUUID().toString(), "foo"));
         }
     }
 
     @HandlesCommandsFor("test")
     public interface UnhandledCommands {
-        String unhandled(StreamTimestamp ts, UUID id);
+        String unhandled(StreamTimestamp ts, String id);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void commandFailsIfNotHandled() throws Throwable {
         try {
             CommandIssuingProxy.proxying(commandBus.toCommandOutChannel(), UnhandledCommands.class)
-                    .unhandled(StreamTimestamp.now(), UUID.randomUUID());
+                    .unhandled(StreamTimestamp.now(), "id1");
         } catch (CommandExecutionException e) {
             throw e.getCause().getCause();
         }

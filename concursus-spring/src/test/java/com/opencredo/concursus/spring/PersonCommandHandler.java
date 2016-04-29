@@ -5,9 +5,6 @@ import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 import com.opencredo.concursus.spring.commands.processing.CommandHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 @CommandHandler
 public class PersonCommandHandler implements PersonCommands {
 
@@ -19,17 +16,15 @@ public class PersonCommandHandler implements PersonCommands {
     }
 
     @Override
-    public CompletableFuture<Void> create(StreamTimestamp ts, UUID personId, String name, int age) {
+    public void create(StreamTimestamp ts, String personId, String name, int age) {
         eventBus.getDispatcherFor(PersonEvents.class).created(ts, personId, name, age);
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> updateNameAndAge(StreamTimestamp ts, UUID personId, String newName, int newAge) {
+    public void updateNameAndAge(StreamTimestamp ts, String personId, String newName, int newAge) {
         eventBus.dispatch(PersonEvents.class, events -> {
             events.updatedAge(ts.subStream("age"), personId, newAge);
             events.updatedName(ts.subStream("name"), personId, newName);
         });
-        return CompletableFuture.completedFuture(null);
     }
 }

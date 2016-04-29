@@ -19,7 +19,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,8 +50,8 @@ public class CassandraIntegrationTest {
 
     @Test
     public void writeAndReadBatch() {
-        UUID personId1 = UUID.randomUUID();
-        UUID personId2 = UUID.randomUUID();
+        String personId1 = "id1";
+        String personId2 = "id2";
         Instant start = Instant.now();
 
         proxyingEventBus.dispatch(PersonEvents.class, batch -> {
@@ -114,17 +113,17 @@ public class CassandraIntegrationTest {
     private Function<Consumer<String>, PersonEvents> eventSummariser() {
         return caller -> new PersonEvents() {
             @Override
-            public void created(StreamTimestamp timestamp, UUID personId, String name, int age) {
+            public void created(StreamTimestamp timestamp, String personId, String name, int age) {
                 caller.accept(name + " was created with age " + age);
             }
 
             @Override
-            public void updatedAge(StreamTimestamp timestamp, UUID personId, int newAge) {
+            public void updatedAge(StreamTimestamp timestamp, String personId, int newAge) {
                 caller.accept("age was changed to " + newAge);
             }
 
             @Override
-            public void updatedName(StreamTimestamp timestamp, UUID personId, String newName) {
+            public void updatedName(StreamTimestamp timestamp, String personId, String newName) {
                 caller.accept("name was changed to " + newName);
             }
         };

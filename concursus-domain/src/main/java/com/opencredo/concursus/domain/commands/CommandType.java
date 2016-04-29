@@ -7,7 +7,6 @@ import com.opencredo.concursus.domain.time.StreamTimestamp;
 
 import java.lang.reflect.Type;
 import java.util.Objects;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -64,7 +63,7 @@ public final class CommandType {
      * @param resultType The {@link Type} returned by processing the command.
      * @return The constructed {@link Command}.
      */
-    public Command makeCommand(UUID aggregateId, StreamTimestamp timestamp, Tuple parameters, Type resultType) {
+    public Command makeCommand(String aggregateId, StreamTimestamp timestamp, Tuple parameters, Type resultType) {
         return Command.of(
                 AggregateId.of(aggregateType, aggregateId),
                 timestamp,

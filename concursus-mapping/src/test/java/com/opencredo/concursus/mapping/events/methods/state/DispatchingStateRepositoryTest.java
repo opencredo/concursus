@@ -15,7 +15,6 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,20 +31,20 @@ public class DispatchingStateRepositoryTest {
     public static final class PersonState {
 
         @HandlesEvent("created")
-        public static PersonState created(UUID personId, String name) {
+        public static PersonState created(String personId, String name) {
             return new PersonState(personId, name, Optional.empty());
         }
 
         @HandlesEvent(value = "created", version = "2")
-        public static PersonState created(UUID personId, String name, int age) {
+        public static PersonState created(String personId, String name, int age) {
             return new PersonState(personId, name, Optional.of(age));
         }
 
-        private final UUID id;
+        private final String id;
         private String name;
         private final Optional<Integer> age;
 
-        public PersonState(UUID id, String name, Optional<Integer> age) {
+        public PersonState(String id, String name, Optional<Integer> age) {
             this.id = id;
             this.name = name;
             this.age = age;
@@ -56,7 +55,7 @@ public class DispatchingStateRepositoryTest {
             name = updatedName;
         }
 
-        public UUID getId() {
+        public String getId() {
             return id;
         }
 
@@ -74,8 +73,8 @@ public class DispatchingStateRepositoryTest {
 
     @Test
     public void buildStates() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         StreamTimestamp createTimestamp = nextTimestamp();
         StreamTimestamp updateTimestamp = nextTimestamp();
@@ -89,7 +88,7 @@ public class DispatchingStateRepositoryTest {
 
         StateRepository<PersonState> cache = DispatchingStateRepository.using(eventSource, PersonState.class);
 
-        Map<UUID, PersonState> statesBeforeUpdate = cache.getStates(id1, id2);
+        Map<String, PersonState> statesBeforeUpdate = cache.getStates(id1, id2);
 
         assertThat(statesBeforeUpdate.get(id1).getName(), equalTo("Arthur Daley"));
         assertThat(statesBeforeUpdate.get(id2).getName(), equalTo("Arthur Mumby"));
@@ -98,7 +97,7 @@ public class DispatchingStateRepositoryTest {
             batch.nameUpdated(updateTimestamp.subStream("substream"), id2, "Arthur, King of the Britons");
         });
 
-        Map<UUID, PersonState> states = cache.getStates(id1, id2);
+        Map<String, PersonState> states = cache.getStates(id1, id2);
 
         assertThat(states.get(id1).getName(), equalTo("Arthur Daley"));
         assertThat(states.get(id2).getName(), equalTo("Arthur, King of the Britons"));

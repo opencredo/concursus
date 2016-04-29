@@ -4,7 +4,6 @@ import com.opencredo.concursus.domain.events.cataloguing.AggregateCatalogue;
 import redis.clients.jedis.Jedis;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public final class RedisAggregateCatalogue implements AggregateCatalogue {
@@ -20,17 +19,17 @@ public final class RedisAggregateCatalogue implements AggregateCatalogue {
     }
 
     @Override
-    public void add(String aggregateType, UUID aggregateId) {
-        jedis.sadd(aggregateType, aggregateId.toString());
+    public void add(String aggregateType, String aggregateId) {
+        jedis.sadd(aggregateType, aggregateId);
     }
 
     @Override
-    public void remove(String aggregateType, UUID aggregateId) {
-        jedis.srem(aggregateType, aggregateId.toString());
+    public void remove(String aggregateType, String aggregateId) {
+        jedis.srem(aggregateType, aggregateId);
     }
 
     @Override
-    public List<UUID> getUuids(String aggregateType) {
-        return jedis.smembers(aggregateType).stream().map(UUID::fromString).collect(Collectors.toList());
+    public List<String> getAggregateIds(String aggregateType) {
+        return jedis.smembers(aggregateType).stream().collect(Collectors.toList());
     }
 }

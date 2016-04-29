@@ -74,13 +74,13 @@ public class KafkaUserConsumer {
                     for (ConsumerRecord<String, String> record : records) {
                         try {
                             CreateUserRequest request = readRequest(record);
-                            UUID id = UUID.randomUUID();
+                            String id = UUID.randomUUID().toString();
                             userCommands.create(
                                     StreamTimestamp.of("admin", Instant.now()),
                                     id,
                                     request.getName(),
-                                    MessageDigest.getInstance("MD5").digest(request.getPassword().getBytes()))
-                                    .thenAccept(userId -> LOGGER.debug("user created: {}", userId));
+                                    MessageDigest.getInstance("MD5").digest(request.getPassword().getBytes()));
+                            LOGGER.debug("user created: {}", id);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (NoSuchAlgorithmException e) {

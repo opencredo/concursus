@@ -6,14 +6,11 @@ import com.opencredo.concursus.spring.demo.commands.GroupCommands;
 import com.opencredo.concursus.spring.demo.services.GroupService;
 import com.opencredo.concursus.spring.demo.views.GroupView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping(path = "/api/v1/acl/groups")
@@ -35,26 +32,24 @@ public class GroupController {
 
 
     @RequestMapping(path = "{groupId}", method = RequestMethod.GET)
-    public GroupView getGroup(@PathVariable("groupId") UUID groupId) {
+    public GroupView getGroup(@PathVariable("groupId") String groupId) {
         return groupService.getGroup(groupId).orElseThrow(GroupNotFoundException::new);
     }
 
     @RequestMapping(path = "{groupId}", method = RequestMethod.DELETE)
-    public CompletableFuture<ResponseEntity<?>> deleteGroup(@PathVariable("groupId") UUID groupId) {
-        return groupCommands.delete(
+    public void deleteGroup(@PathVariable("groupId") String groupId) {
+        groupCommands.delete(
                 StreamTimestamp.of("admin", Instant.now()),
-                groupId)
-                .thenApply(v -> ResponseEntity.ok().build());
+                groupId);
     }
 
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public CompletableFuture<ResponseEntity<?>> createGroup(@RequestBody String groupName) {
-        UUID id  = UUID.randomUUID();
-        return groupCommands.create(
+    public void createGroup(@RequestBody String groupName) {
+        String id  = UUID.randomUUID().toString();
+        groupCommands.create(
                 StreamTimestamp.of("admin", Instant.now()),
                 id,
-                groupName)
-                .thenApply(groupId -> ResponseEntity.created(URI.create("/groups/" + groupId)).build());
+                groupName);
     }
 
 }

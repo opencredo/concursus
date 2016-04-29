@@ -9,7 +9,6 @@ import org.springframework.data.cassandra.core.CassandraTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -45,27 +44,27 @@ public class CassandraAggregateCatalogue implements AggregateCatalogue {
     }
 
     @Override
-    public void add(String aggregateType, UUID aggregateId) {
+    public void add(String aggregateType, String aggregateId) {
         cassandraTemplate.execute(insertStatement.bind(aggregateType, getBucket(aggregateId), aggregateId));
     }
 
     @Override
-    public void remove(String aggregateType, UUID aggregateId) {
+    public void remove(String aggregateType, String aggregateId) {
         cassandraTemplate.execute(deleteStatement.bind(aggregateType, getBucket(aggregateId), aggregateId));
     }
 
     @Override
-    public List<UUID> getUuids(String aggregateType) {
+    public List<String> getAggregateIds(String aggregateType) {
         Select select = QueryBuilder.select("aggregateId").from("Catalogue");
         select.where(QueryBuilder.eq("aggregateType", aggregateType));
         select.where(QueryBuilder.in("bucket", IntStream.range(0, bucketCount).mapToObj(Integer::valueOf).collect(Collectors.toList())));
 
-        List<UUID> result = new ArrayList<>();
-        cassandraTemplate.query(select, (Row row) -> result.add(row.getUUID(0)));
+        List<String> result = new ArrayList<>();
+        cassandraTemplate.query(select, (Row row) -> result.add(row.getString(0)));
         return result;
     }
 
-    private int getBucket(UUID aggregateId) {
+    private int getBucket(String aggregateId) {
         return Math.abs(aggregateId.hashCode()) % bucketCount;
     }
 }

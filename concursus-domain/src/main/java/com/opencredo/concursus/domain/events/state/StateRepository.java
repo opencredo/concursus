@@ -15,14 +15,14 @@ public interface StateRepository<T> {
      * @param upTo The moment in time (exclusive) at which to obtain the aggregate's state.
      * @return The state of the aggregate, if it existed at that moment.
      */
-    Optional<T> getState(UUID aggregateId, Instant upTo);
+    Optional<T> getState(String aggregateId, Instant upTo);
 
     /**
      * Fetch an object representing the current state of the aggregate with this id.
      * @param aggregateId The aggregate id to query for.
      * @return The state of the aggregate, if it exists.
      */
-    default Optional<T> getState(UUID aggregateId) {
+    default Optional<T> getState(String aggregateId) {
         return getState(aggregateId, Instant.MAX);
     }
 
@@ -33,7 +33,7 @@ public interface StateRepository<T> {
      * @param upTo The moment in time (exclusive) at which to obtain the aggregates' state.
      * @return The aggregates' states, mapped by aggregate id.
      */
-    Map<UUID, T> getStates(Collection<UUID> aggregateIds, Instant upTo);
+    Map<String, T> getStates(Collection<String> aggregateIds, Instant upTo);
 
     /**
      * Fetch a collection of objects representing the current state of the aggregates with the requested ids.
@@ -41,7 +41,7 @@ public interface StateRepository<T> {
      * @param aggregateIds The aggregate ids to retrieve states for.
      * @return The aggregates' states, mapped by aggregate id.
      */
-    default Map<UUID, T> getStates(Collection<UUID> aggregateIds) {
+    default Map<String, T> getStates(Collection<String> aggregateIds) {
         return getStates(aggregateIds, Instant.MAX);
     }
 
@@ -51,7 +51,7 @@ public interface StateRepository<T> {
      * @param aggregateIds The aggregate ids to retrieve states for.
      * @return The aggregates' states, mapped by aggregate id.
      */
-    default Map<UUID, T> getStates(UUID...aggregateIds) {
+    default Map<String, T> getStates(String...aggregateIds) {
         return getStates(Arrays.asList(aggregateIds));
     }
 }

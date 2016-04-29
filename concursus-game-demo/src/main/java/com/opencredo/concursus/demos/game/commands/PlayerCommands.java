@@ -6,19 +6,18 @@ import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesCommandsFor;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @HandlesCommandsFor("player")
 public interface PlayerCommands {
 
-    UUID create(StreamTimestamp ts, UUID playerId, String playerName);
-    void delete(StreamTimestamp ts, UUID playerId);
-    void changeName(StreamTimestamp ts, UUID playerId, String newPlayerName);
+    String create(StreamTimestamp ts, String playerId, String playerName);
+    void delete(StreamTimestamp ts, String playerId);
+    void changeName(StreamTimestamp ts, String playerId, String newPlayerName);
 
-    UUID startGame(StreamTimestamp ts, UUID playerId, String rulesetVersion);
-    void joinGame(StreamTimestamp ts, UUID playerId, UUID gameId);
+    String startGame(StreamTimestamp ts, String playerId, String rulesetVersion);
+    void joinGame(StreamTimestamp ts, String playerId, String gameId);
 
-    void playTurn(StreamTimestamp ts, UUID playerId, UUID gameId, Card card, Optional<BoardSlot> toSlot);
+    void playTurn(StreamTimestamp ts, String playerId, String gameId, Card card, Optional<BoardSlot> toSlot);
 
-    void surrender(StreamTimestamp ts, UUID playerId, UUID gameId);
+    void surrender(StreamTimestamp ts, String playerId, String gameId);
 }

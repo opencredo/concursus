@@ -10,12 +10,12 @@ import java.util.stream.Collectors;
  */
 public final class InMemoryAggregateCatalogue implements AggregateCatalogue {
 
-    private final ConcurrentMap<String, Set<UUID>> aggregateIdsByType = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Set<String>> aggregateIdsByType = new ConcurrentHashMap<>();
 
     @Override
-    public void add(String aggregateType, UUID aggregateId) {
+    public void add(String aggregateType, String aggregateId) {
         aggregateIdsByType.compute(aggregateType, (type, set) -> {
-            Set<UUID> idSet = set == null
+            Set<String> idSet = set == null
                     ? new HashSet<>()
                     : set;
             idSet.add(aggregateId);
@@ -24,7 +24,7 @@ public final class InMemoryAggregateCatalogue implements AggregateCatalogue {
     }
 
     @Override
-    public void remove(String aggregateType, UUID aggregateId) {
+    public void remove(String aggregateType, String aggregateId) {
         aggregateIdsByType.compute(aggregateType, (type, set) -> {
             if (set == null) {
                 return null;
@@ -35,7 +35,7 @@ public final class InMemoryAggregateCatalogue implements AggregateCatalogue {
     }
 
     @Override
-    public List<UUID> getUuids(String aggregateType) {
+    public List<String> getAggregateIds(String aggregateType) {
         return aggregateIdsByType.getOrDefault(aggregateType, Collections.emptySet())
                 .stream().collect(Collectors.toList());
     }

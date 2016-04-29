@@ -18,7 +18,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping(path = "/api/v1/acl/users")
@@ -39,59 +38,60 @@ public class UserController {
     }
 
     @RequestMapping(path = "{userId}", method = RequestMethod.GET)
-    public UserView getUser(@PathVariable("userId") UUID userId) {
+    public UserView getUser(@PathVariable("userId") String userId) {
         return userService.getUser(userId).orElseThrow(UserNotFoundException::new);
     }
 
     @RequestMapping(path = "{userId}/history", method = RequestMethod.GET)
-    public List<EventView> getHistory(@PathVariable("userId") UUID userId) {
+    public List<EventView> getHistory(@PathVariable("userId") String userId) {
         return userService.getHistory(userId);
     }
 
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public CompletableFuture<ResponseEntity<?>> createUser(@RequestBody CreateUserRequest createUserRequest) throws NoSuchAlgorithmException {
-        UUID id  = UUID.randomUUID();
-        return userCommands.create(
+    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest createUserRequest) throws NoSuchAlgorithmException {
+        String id  = UUID.randomUUID().toString();
+
+        userCommands.create(
                 StreamTimestamp.of("admin", Instant.now()),
                 id,
                 createUserRequest.getName(),
-                MessageDigest.getInstance("MD5").digest(createUserRequest.getPassword().getBytes()))
-                .thenApply(userId -> ResponseEntity.created(URI.create("/users/" + userId)).build());
+                MessageDigest.getInstance("MD5").digest(createUserRequest.getPassword().getBytes()));
+
+        return ResponseEntity.created(URI.create("/users/" + id)).build();
     }
 
     @RequestMapping(path = "{userId}/name", method = RequestMethod.POST)
-    public CompletableFuture<Void> updateUsername(@PathVariable("userId") UUID userId,
+    public void updateUsername(@PathVariable("userId") String userId,
                                    @RequestBody String name) {
-        return userCommands.updateName(
+        userCommands.updateName(
                 StreamTimestamp.of("admin", Instant.now()),
                 userId,
                 name);
     }
 
     @RequestMapping(path = "{userId}/groups", method = RequestMethod.POST)
-    public CompletableFuture<Void> addUserToGroup(@PathVariable("userId") UUID userId,
-                                                  @RequestBody UUID groupId) {
-        return userCommands.addToGroup(
+    public void addUserToGroup(@PathVariable("userId") String userId,
+                                                  @RequestBody String groupId) {
+        userCommands.addToGroup(
                 StreamTimestamp.of("admin", Instant.now()),
                 userId,
                 groupId);
     }
 
     @RequestMapping(path = "{userId}/groups/{groupId}", method = RequestMethod.DELETE)
-    public CompletableFuture<Void> removeUserFromGroup(@PathVariable("userId") UUID userId,
-                                                  @PathVariable("groupId") UUID groupId) {
-        return userCommands.removeFromGroup(
+    public void removeUserFromGroup(@PathVariable("userId") String userId,
+                                                  @PathVariable("groupId") String groupId) {
+        userCommands.removeFromGroup(
                 StreamTimestamp.of("admin", Instant.now()),
                 userId,
                 groupId);
     }
 
     @RequestMapping(path = "{userId}", method = RequestMethod.DELETE)
-    public CompletableFuture<ResponseEntity<?>> deleteUser(@PathVariable("userId") UUID userId) {
-        return userCommands.delete(
+    public void deleteUser(@PathVariable("userId") String userId) {
+        userCommands.delete(
                 StreamTimestamp.of("admin", Instant.now()),
-                userId)
-                .thenApply(v -> ResponseEntity.ok().build());
+                userId);
     }
 
 }

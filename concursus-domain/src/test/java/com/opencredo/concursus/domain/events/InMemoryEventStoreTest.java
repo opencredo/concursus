@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,7 @@ public class InMemoryEventStoreTest {
 
     @Test
     public void storesEventsInTimeDescendingOrder() {
-        AggregateId aggregateId = AggregateId.of("test", UUID.randomUUID());
+        AggregateId aggregateId = AggregateId.of("test", "id1");
 
         Event created = Event.of(aggregateId, timestamp.apply(10), VersionedName.of("created"), empty);
         Event update1 = Event.of(aggregateId, timestamp.apply(20), VersionedName.of("updated"), empty);
@@ -60,7 +59,7 @@ public class InMemoryEventStoreTest {
 
     @Test
     public void filtersEventsByTimeRange() {
-        AggregateId aggregateId = AggregateId.of("test", UUID.randomUUID());
+        AggregateId aggregateId = AggregateId.of("test", "id1");
 
         Event created = Event.of(aggregateId, timestamp.apply(10), VersionedName.of("created"), empty);
         Event update1 = Event.of(aggregateId, timestamp.apply(20), VersionedName.of("updated"), empty);
@@ -96,9 +95,9 @@ public class InMemoryEventStoreTest {
 
     @Test
     public void preloadsEvents() {
-        AggregateId aggregateId1 = AggregateId.of("test", UUID.randomUUID());
-        AggregateId aggregateId2 = AggregateId.of("test", UUID.randomUUID());
-        AggregateId aggregateId3 = AggregateId.of("test", UUID.randomUUID());
+        AggregateId aggregateId1 = AggregateId.of("test", "id1");
+        AggregateId aggregateId2 = AggregateId.of("test", "id2");
+        AggregateId aggregateId3 = AggregateId.of("test", "id3");
 
         Event created1 = Event.of(aggregateId1, timestamp.apply(10), VersionedName.of("created"), empty);
         Event created2 = Event.of(aggregateId2, timestamp.apply(20), VersionedName.of("created"), empty);
@@ -124,7 +123,7 @@ public class InMemoryEventStoreTest {
 
     @Test
     public void filtersByMatchedEventTypes() {
-        AggregateId aggregateId = AggregateId.of("test", UUID.randomUUID());
+        AggregateId aggregateId = AggregateId.of("test", "id1");
 
         Event created = Event.of(aggregateId, timestamp.apply(10), VersionedName.of("created"), empty);
         Event update1 = Event.of(aggregateId, timestamp.apply(20), VersionedName.of("updated"), empty);

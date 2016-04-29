@@ -21,7 +21,7 @@ fun <E : Any> EventBus.dispatch(factory: KEventFactory<E>, writeEvents: KEventWr
 
 fun <E : Any> EventSource.getEvents(
         eventClass: KClass<E>,
-        aggregateId: UUID,
+        aggregateId: String,
         timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> =
     KEventTypeSet.forClass(eventClass).let { ets ->
         this.getEvents(
@@ -69,7 +69,7 @@ final class KEventReplayer<E : Any>(val eventTypeSet: KEventTypeSet<E>, val repl
 
 fun <E : Any> EventSource.replaying(
         eventClass: KClass<E>,
-        aggregateId: UUID,
+        aggregateId: String,
         timeRange: TimeRange = TimeRange.unbounded()): KEventReplayer<E> =
     KEventTypeSet.forClass(eventClass).let {
     return KEventReplayer(
@@ -82,18 +82,18 @@ fun <E : Any> EventSource.replaying(
 
 final class KCachedEventSource<E: Any>(val eventSource: CachedEventSource, val eventTypeSet: KEventTypeSet<E>) {
 
-    fun getEvents(aggregateId: UUID, timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> =
+    fun getEvents(aggregateId: String, timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> =
         eventSource.getEvents(AggregateId.of(eventTypeSet.aggregateType, aggregateId))
             .map { eventTypeSet.fromEvent(it) }
 
-    fun replaying(aggregateId: UUID, timeRange: TimeRange = TimeRange.unbounded()): KEventReplayer<E> =
+    fun replaying(aggregateId: String, timeRange: TimeRange = TimeRange.unbounded()): KEventReplayer<E> =
             KEventReplayer(eventTypeSet, eventSource.replaying(
                     AggregateId.of(eventTypeSet.aggregateType, aggregateId), timeRange))
 }
 
 fun <E: Any> EventSource.preload(
         eventClass: KClass<E>,
-        aggregateIds: List<UUID>,
+        aggregateIds: List<String>,
         timeRange: TimeRange = TimeRange.unbounded()) : KCachedEventSource<E> =
         KEventTypeSet.forClass(eventClass).let {
             KCachedEventSource(

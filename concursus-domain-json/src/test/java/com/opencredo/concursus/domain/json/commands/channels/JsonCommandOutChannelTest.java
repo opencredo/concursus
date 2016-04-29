@@ -14,7 +14,6 @@ import com.opencredo.concursus.mapping.commands.methods.reflection.CommandInterf
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -23,7 +22,7 @@ public class JsonCommandOutChannelTest {
 
     @HandlesCommandsFor("test")
     public interface TestCommands {
-        UUID create(StreamTimestamp ts, UUID aggregateId, String name);
+        String create(StreamTimestamp ts, String aggregateId, String name);
     }
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -52,7 +51,7 @@ public class JsonCommandOutChannelTest {
 
     @Test
     public void dispatchViaJsonChannel() {
-        UUID aggregateId = UUID.randomUUID();
+        String aggregateId = "id1";
 
         assertThat(
                 proxy.create(StreamTimestamp.of("test", Instant.now()), aggregateId, "Arthur Putey"),

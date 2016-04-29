@@ -70,7 +70,7 @@ public final class CommandJson {
         Function<Object, JsonNode> serialiser = objectMapper::valueToTree;
         return of(
                 command.getAggregateId().getType(),
-                command.getAggregateId().getId().toString(),
+                command.getAggregateId().getId(),
                 command.getCommandName().getName(),
                 command.getCommandName().getVersion(),
                 command.getCommandTimestamp().getTimestamp().toEpochMilli(),
@@ -147,7 +147,7 @@ public final class CommandJson {
 
         return typeMatcher.match(commandType).map(typeInfo ->
             commandType.makeCommand(
-                    UUID.fromString(aggregateId),
+                    aggregateId,
                     StreamTimestamp.of(streamId, Instant.ofEpochMilli(commandTimestamp)),
                     typeInfo.getTupleSchema().deserialise(deserialiser, parameters),
                     typeInfo.getReturnType()

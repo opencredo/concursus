@@ -36,24 +36,24 @@ public final class PlayerCommandProcessor implements PlayerCommands {
     }
 
     @Override
-    public UUID create(StreamTimestamp ts, UUID playerId, String playerName) {
+    public String create(StreamTimestamp ts, String playerId, String playerName) {
         eventBus.dispatch(PlayerEvents.class, player -> player.created(ts, playerId, playerName));
         return playerId;
     }
 
     @Override
-    public void delete(StreamTimestamp ts, UUID playerId) {
+    public void delete(StreamTimestamp ts, String playerId) {
         eventBus.dispatch(PlayerEvents.class, player -> player.deleted(ts, playerId));
     }
 
     @Override
-    public void changeName(StreamTimestamp ts, UUID playerId, String newPlayerName) {
+    public void changeName(StreamTimestamp ts, String playerId, String newPlayerName) {
         eventBus.dispatch(PlayerEvents.class, player -> player.changedName(ts, playerId, newPlayerName));
     }
 
     @Override
-    public UUID startGame(StreamTimestamp ts, UUID playerId, String rulesetVersion) {
-        UUID gameId = UUID.randomUUID();
+    public String startGame(StreamTimestamp ts, String playerId, String rulesetVersion) {
+        String gameId = UUID.randomUUID().toString();
 
         eventBus.dispatch(PlayerEvents.class, GameEvents.class, (player, game) -> {
             player.startedGame(ts, playerId, gameId);
@@ -64,7 +64,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
     }
 
     @Override
-    public void joinGame(StreamTimestamp ts, UUID playerId, UUID gameId) {
+    public void joinGame(StreamTimestamp ts, String playerId, String gameId) {
         GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isAwaitingSecondPlayer()) {
@@ -81,7 +81,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
     }
 
     @Override
-    public void playTurn(StreamTimestamp ts, UUID playerId, UUID gameId, Card card, Optional<BoardSlot> toSlot) {
+    public void playTurn(StreamTimestamp ts, String playerId, String gameId, Card card, Optional<BoardSlot> toSlot) {
         GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isPlayersTurn(playerId)) {
@@ -110,7 +110,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
         });
     }
 
-    private void recordVictory(StreamTimestamp ts, UUID gameId, TurnState turnState, PlayerEvents player, GameEvents game) {
+    private void recordVictory(StreamTimestamp ts, String gameId, TurnState turnState, PlayerEvents player, GameEvents game) {
         recordPoints(ts, gameId, turnState.getCurrentPlayerId(), turnState.getOpponentId(), player);
 
         if (turnState.getCurrentPlayerIndex() == PlayerIndex.PLAYER_1) {
@@ -120,7 +120,7 @@ public final class PlayerCommandProcessor implements PlayerCommands {
         }
     }
 
-    private void recordSurrender(StreamTimestamp ts, UUID gameId, TurnState turnState, PlayerEvents player, GameEvents game) {
+    private void recordSurrender(StreamTimestamp ts, String gameId, TurnState turnState, PlayerEvents player, GameEvents game) {
         recordPoints(ts, gameId, turnState.getOpponentId(), turnState.getCurrentPlayerId(), player);
 
         if (turnState.getCurrentPlayerIndex() == PlayerIndex.PLAYER_1) {
@@ -130,14 +130,14 @@ public final class PlayerCommandProcessor implements PlayerCommands {
         }
     }
 
-    private void recordPoints(StreamTimestamp ts, UUID gameId, UUID winnerId, UUID loserId, PlayerEvents player) {
+    private void recordPoints(StreamTimestamp ts, String gameId, String winnerId, String loserId, PlayerEvents player) {
         int points = pointsCalculator.calculatePoints(winnerId, loserId);
         player.wonGame(ts, winnerId, gameId, points);
         player.lostGame(ts, loserId, gameId, points);
     }
 
     @Override
-    public void surrender(StreamTimestamp ts, UUID playerId, UUID gameId) {
+    public void surrender(StreamTimestamp ts, String playerId, String gameId) {
         GameState gameState = gameStateRepository.getState(gameId).orElseThrow(NoSuchGameException::new);
 
         if (!gameState.isPlayersTurn(playerId)) {

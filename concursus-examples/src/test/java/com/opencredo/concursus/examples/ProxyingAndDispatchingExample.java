@@ -7,7 +7,6 @@ import com.opencredo.concursus.mapping.events.methods.proxying.EventEmittingProx
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -26,9 +25,9 @@ public class ProxyingAndDispatchingExample {
         Person.Events proxy = EventEmittingProxy.proxying(outChannel, Person.Events.class);
 
         // Send an event via the proxy.
-        proxy.created(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
+        proxy.created(StreamTimestamp.now(), "id1", "Arthur Putey", LocalDate.parse("1968-05-28"));
 
         // Verify that the handler received the event.
-        verify(handler).created(any(StreamTimestamp.class), any(UUID.class), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
+        verify(handler).created(any(StreamTimestamp.class), eq("id1"), eq("Arthur Putey"), eq(LocalDate.parse("1968-05-28")));
     }
 }

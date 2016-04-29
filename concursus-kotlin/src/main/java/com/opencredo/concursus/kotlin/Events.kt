@@ -22,21 +22,21 @@ annotation class Initial
 annotation class Terminal
 annotation class Order(val value: Int)
 
-data class KEvent<E : Any>(val timestamp: StreamTimestamp, val aggregateId : UUID, val data: E) {
+data class KEvent<E : Any>(val timestamp: StreamTimestamp, val aggregateId : String, val data: E) {
     fun toEvent() : Event =
             KEventTypeSet.forClass((data.javaClass.superclass as Class<E>).kotlin)
                     .toEvent(timestamp, aggregateId, data)
 }
 
 final class KEventWriter<E: Any>(val factory: KEventFactory<E>, val receiver: (Event) -> Unit) {
-    fun write(timestamp: StreamTimestamp, aggregateId: UUID, data: E): KEventWriter<E> {
+    fun write(timestamp: StreamTimestamp, aggregateId: String, data: E): KEventWriter<E> {
         receiver(factory.create(timestamp, aggregateId, data))
         return this
     }
 }
 
 open class KEventFactory<E : Any> {
-    fun create(timestamp: StreamTimestamp, aggregateId : UUID, data: E) : Event =
+    fun create(timestamp: StreamTimestamp, aggregateId : String, data: E) : Event =
             KEvent(timestamp, aggregateId, data).toEvent()
 
     fun writingTo(receiver: (Event) -> Unit): KEventWriter<E> = KEventWriter(this, receiver)
@@ -80,7 +80,7 @@ final class KEventTypeSet<E : Any>(
 
     }
 
-    fun toEvent(timestamp: StreamTimestamp, aggregateId: UUID, data: E): Event =
+    fun toEvent(timestamp: StreamTimestamp, aggregateId: String, data: E): Event =
             eventTypeByDataClass[data.javaClass]!!.toEvent(timestamp, aggregateId, data)
 
     fun fromEvent(event: Event): KEvent<E> =
@@ -111,11 +111,15 @@ data class KEventType<T: Any>(
             val parameters = getParameters(dataClass)
             val schema = getSchema(aggregateType, eventName, parameters)
             val keysByProperty = getKeysByProperty(dataClass, schema)
-            val makeTuple = getDataToTupleConverter(schema, keysByProperty)
-            val makeInstance = getTupleToDataConverter(dataClass, parameters, keysByProperty)
-            val order = getOrder(dataClass.java)
 
-            return KEventType(dataClass, order, aggregateType, eventName, schema, makeTuple, makeInstance)
+            return KEventType(
+                    dataClass,
+                    getOrder(dataClass.java),
+                    aggregateType,
+                    eventName,
+                    schema,
+                    getDataToTupleConverter(schema, keysByProperty),
+                    getTupleToDataConverter(dataClass, parameters, keysByProperty))
         }
 
         private fun <T : Any> getOrder(dataClass: Class<T>): Int {
@@ -175,7 +179,7 @@ data class KEventType<T: Any>(
         return 0
     }
 
-    fun toEvent(timestamp: StreamTimestamp, aggregateId: UUID, data: T): Event =
+    fun toEvent(timestamp: StreamTimestamp, aggregateId: String, data: T): Event =
             Event.of(AggregateId.of(aggregateType, aggregateId), timestamp, eventName, makeTuple(data),
                     characteristics())
 

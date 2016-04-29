@@ -8,7 +8,6 @@ import com.opencredo.concursus.domain.time.TimeRange;
 import com.opencredo.concursus.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
 
 import java.util.Comparator;
-import java.util.UUID;
 
 /**
  * Wraps a {@link CachedEventSource}, and dispatches retrieved events to an appropriate handler.
@@ -38,7 +37,7 @@ public final class DispatchingCachedEventSource<T> {
      * @param timeRange The {@link TimeRange} to restrict results to.
      * @return A {@link DispatchingEventReplayer} for the retrieved {@link Event}s.
      */
-    public DispatchingEventReplayer<T> replaying(UUID aggregateId, TimeRange timeRange) {
+    public DispatchingEventReplayer<T> replaying(String aggregateId, TimeRange timeRange) {
         return DispatchingEventReplayer.dispatching(causalOrderComparator, eventDispatcher, typeBinding.replaying(cachedEventSource, aggregateId, timeRange));
     }
 
@@ -47,7 +46,7 @@ public final class DispatchingCachedEventSource<T> {
      * @param aggregateId The {@link AggregateId} to replay events for.
      * @return A {@link DispatchingEventReplayer} for the retrieved {@link Event}s.
      */
-    public DispatchingEventReplayer<T> replaying(UUID aggregateId) {
+    public DispatchingEventReplayer<T> replaying(String aggregateId) {
         return replaying(aggregateId, TimeRange.unbounded());
     }
 }

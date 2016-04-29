@@ -62,7 +62,7 @@ final class EventTranslator implements RowCallbackHandler {
         Tuple parameters = tupleSchema.deserialise(deserialiser, parameterData);
 
         Event event = Event.of(
-                AggregateId.of(aggregateType, row.getUUID(AGGREGATE_ID)),
+                AggregateId.of(aggregateType, row.getString(AGGREGATE_ID)),
                 StreamTimestamp.of(row.getString(STREAM_ID), row.getDate(EVENT_TIMESTAMP).toInstant()),
                 row.getUUID(PROCESSING_ID),
                 versionedName,

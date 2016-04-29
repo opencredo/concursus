@@ -3,15 +3,14 @@ package com.opencredo.concursus.mapping.events.pojos;
 import com.opencredo.concursus.data.tuples.TupleSchema;
 import com.opencredo.concursus.data.tuples.TupleSlot;
 import com.opencredo.concursus.domain.common.AggregateId;
-import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.domain.common.VersionedName;
 import com.opencredo.concursus.domain.events.Event;
+import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.Name;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -54,19 +53,19 @@ public class PojoEventConverterTest {
                 Created.class, AddedItem.class, Purchased.class, PurchasedV2.class);
 
         Event createdEvent = Event.of(
-                AggregateId.of("order", UUID.randomUUID()),
+                AggregateId.of("order", "id1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("created", "0"),
                 created.makeWith("session1"));
 
         Event addedItemEvent = Event.of(
-                AggregateId.of("order", UUID.randomUUID()),
+                AggregateId.of("order", "id1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("addedItem", "0"),
                 addedItem.makeWith("itemId1", new BigDecimal("12.5"), 3));
 
         Event purchasedEvent = Event.of(
-                AggregateId.of("order", UUID.randomUUID()),
+                AggregateId.of("order", "id1"),
                 StreamTimestamp.of("test", Instant.now()),
                 VersionedName.of("purchased", "2"),
                 purchasedV2.makeWith(new BigDecimal("20.0")));

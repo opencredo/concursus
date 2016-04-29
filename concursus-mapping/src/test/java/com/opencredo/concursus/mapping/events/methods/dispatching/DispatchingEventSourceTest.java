@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -28,7 +27,7 @@ public class DispatchingEventSourceTest {
     public interface CreatedEventReceiver {
 
         @Name(value = "created", version = "2")
-        void created(StreamTimestamp timestamp, UUID aggregateId, String name, int age);
+        void created(StreamTimestamp timestamp, String aggregateId, String name, int age);
 
     }
 
@@ -40,17 +39,17 @@ public class DispatchingEventSourceTest {
     private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
     private final Function<Consumer<String>, PersonEvents> nameCollector = caller -> new PersonEvents() {
         @Override
-        public void createdV1(StreamTimestamp timestamp, UUID aggregateId, String name) {
+        public void createdV1(StreamTimestamp timestamp, String aggregateId, String name) {
             caller.accept(name);
         }
 
         @Override
-        public void createdV2(StreamTimestamp timestamp, UUID aggregateId, String name, int age) {
+        public void createdV2(StreamTimestamp timestamp, String aggregateId, String name, int age) {
             caller.accept(name);
         }
 
         @Override
-        public void nameUpdated(StreamTimestamp timestamp, UUID aggregateId, @Name("updatedName") String newName) {
+        public void nameUpdated(StreamTimestamp timestamp, String aggregateId, @Name("updatedName") String newName) {
             caller.accept(newName);
         }
     };
@@ -60,8 +59,8 @@ public class DispatchingEventSourceTest {
 
     @Test
     public void replayAndCollectFirst() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
@@ -79,8 +78,8 @@ public class DispatchingEventSourceTest {
 
     @Test
     public void replayAndCollectAll() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
@@ -97,8 +96,8 @@ public class DispatchingEventSourceTest {
 
     @Test
     public void preloadThenReplayAndCollectOne() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
@@ -118,8 +117,8 @@ public class DispatchingEventSourceTest {
 
     @Test
     public void preloadThenReplayAndCollectAll() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);

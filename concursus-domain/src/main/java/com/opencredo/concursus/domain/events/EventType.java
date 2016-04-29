@@ -6,7 +6,6 @@ import com.opencredo.concursus.domain.common.VersionedName;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 
 import java.util.Objects;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -62,7 +61,7 @@ public final class EventType {
      * @param characteristics The characteristics of the event.
      * @return The constructed {@link Event}.
      */
-    public Event makeEvent(UUID aggregateId, StreamTimestamp streamTimestamp, Tuple parameters, int...characteristics) {
+    public Event makeEvent(String aggregateId, StreamTimestamp streamTimestamp, Tuple parameters, int...characteristics) {
         return Event.of(
                 AggregateId.of(aggregateType, aggregateId),
                 streamTimestamp,

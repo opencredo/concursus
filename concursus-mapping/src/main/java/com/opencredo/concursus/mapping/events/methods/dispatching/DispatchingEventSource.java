@@ -1,16 +1,15 @@
 package com.opencredo.concursus.mapping.events.methods.dispatching;
 
 import com.opencredo.concursus.domain.events.Event;
+import com.opencredo.concursus.domain.events.binding.EventTypeBinding;
 import com.opencredo.concursus.domain.events.sourcing.EventSource;
 import com.opencredo.concursus.domain.time.TimeRange;
 import com.opencredo.concursus.mapping.events.methods.reflection.EmitterInterfaceInfo;
-import com.opencredo.concursus.domain.events.binding.EventTypeBinding;
 import com.opencredo.concursus.mapping.events.methods.reflection.dispatching.MultiTypeEventDispatcher;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -60,7 +59,7 @@ public class DispatchingEventSource<T> {
      * @param timeRange The {@link TimeRange} to restrict events to.
      * @return The constructed {@link DispatchingEventReplayer}.
      */
-    public DispatchingEventReplayer<T> replaying(UUID aggregateId, TimeRange timeRange) {
+    public DispatchingEventReplayer<T> replaying(String aggregateId, TimeRange timeRange) {
         return DispatchingEventReplayer.dispatching(
                 causalOrderComparator,
                 eventDispatcher,
@@ -72,7 +71,7 @@ public class DispatchingEventSource<T> {
      * @param aggregateId The aggregate id to replay events for.
      * @return The constructed {@link DispatchingEventReplayer}.
      */
-    public DispatchingEventReplayer<T> replaying(UUID aggregateId) {
+    public DispatchingEventReplayer<T> replaying(String aggregateId) {
         return replaying(aggregateId, TimeRange.unbounded());
     }
 
@@ -82,7 +81,7 @@ public class DispatchingEventSource<T> {
      * @param timeRange The {@link TimeRange} to restrict the preloaded events to.
      * @return A constructed {@link DispatchingCachedEventSource} caching the preloaded events.
      */
-    public DispatchingCachedEventSource<T> preload(Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public DispatchingCachedEventSource<T> preload(Collection<String> aggregateIds, TimeRange timeRange) {
         return DispatchingCachedEventSource.dispatching(
                 eventDispatcher,
                 causalOrderComparator,
@@ -95,7 +94,7 @@ public class DispatchingEventSource<T> {
      * @param aggregateIds The aggregate ids to preload events for.
      * @return A constructed {@link DispatchingCachedEventSource} caching the preloaded events.
      */
-    public DispatchingCachedEventSource<T> preload(Collection<UUID> aggregateIds) {
+    public DispatchingCachedEventSource<T> preload(Collection<String> aggregateIds) {
         return preload(aggregateIds, TimeRange.unbounded());
     }
 
@@ -104,7 +103,7 @@ public class DispatchingEventSource<T> {
      * @param aggregateIds The aggregate ids to preload events for.
      * @return A constructed {@link DispatchingCachedEventSource} caching the preloaded events.
      */
-    public DispatchingCachedEventSource<T> preload(UUID...aggregateIds) {
+    public DispatchingCachedEventSource<T> preload(String...aggregateIds) {
         return preload(Arrays.asList(aggregateIds));
     }
 }

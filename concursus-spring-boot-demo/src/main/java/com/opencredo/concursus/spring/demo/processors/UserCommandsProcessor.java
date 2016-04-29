@@ -11,9 +11,6 @@ import com.opencredo.concursus.spring.demo.events.UserEvents;
 import com.opencredo.concursus.spring.demo.repositories.UserState;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 @CommandHandler
 public class UserCommandsProcessor implements UserCommands {
 
@@ -27,47 +24,39 @@ public class UserCommandsProcessor implements UserCommands {
     }
 
     @Override
-    public CompletableFuture<UUID> create(StreamTimestamp ts, UUID userId, String userName, byte[] passwordHash) {
+    public String create(StreamTimestamp ts, String userId, String userName, byte[] passwordHash) {
         proxyingEventBus.dispatch(UserEvents.class, userEvents -> userEvents.created(ts, userId, userName, new String(passwordHash)));
-        return CompletableFuture.completedFuture(userId);
+        return userId;
     }
 
     @Override
-    public CompletableFuture<Void> updateName(StreamTimestamp ts, UUID userId, String newName) {
+    public void updateName(StreamTimestamp ts, String userId, String newName) {
         proxyingEventBus.dispatch(UserEvents.class, userEvents -> userEvents.changedName(ts, userId, newName));
-
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> addToGroup(StreamTimestamp ts, UUID userId, UUID groupId) {
+    public void addToGroup(StreamTimestamp ts, String userId, String groupId) {
         proxyingEventBus.dispatch(UserEvents.class, GroupEvents.class, (userEvents, groupEvents) -> {
             userEvents.addedToGroup(ts, userId, groupId);
             groupEvents.userAdded(ts, groupId, userId);
         });
-
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> removeFromGroup(StreamTimestamp ts, UUID userId, UUID groupId) {
+    public void removeFromGroup(StreamTimestamp ts, String userId, String groupId) {
         proxyingEventBus.dispatch(UserEvents.class, GroupEvents.class, (userEvents, groupEvents) -> {
             userEvents.removedFromGroup(ts, userId, groupId);
             groupEvents.userRemoved(ts, groupId, userId);
         });
-
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public CompletableFuture<Void> delete(StreamTimestamp ts, UUID userId) {
+    public void delete(StreamTimestamp ts, String userId) {
         UserState userState = userStateRepository.getState(userId).orElseThrow(UserNotFoundException::new);
 
         proxyingEventBus.dispatch(UserEvents.class, GroupEvents.class, (userEvents, groupEvents) -> {
             userState.getGroupIds().forEach(groupId -> groupEvents.userRemoved(ts, groupId, userId));
             userEvents.deleted(ts, userId);
         });
-
-        return CompletableFuture.completedFuture(null);
     }
 }

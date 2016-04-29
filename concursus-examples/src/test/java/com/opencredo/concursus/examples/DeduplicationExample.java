@@ -17,7 +17,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,7 @@ public class DeduplicationExample {
 
         // Write some events
         StreamTimestamp ts = StreamTimestamp.now();
-        UUID personId = UUID.randomUUID();
+        String personId = "id1";
         proxyingEventBus.dispatch(Person.Events.class, personEvents -> {
             personEvents.created(ts, personId, "Arthur Putey", LocalDate.parse("1968-05-28"));
             personEvents.changedName(ts.plus(1, ChronoUnit.MILLIS), personId, "Arthur Daley");

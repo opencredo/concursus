@@ -18,7 +18,6 @@ import com.opencredo.concursus.mapping.events.methods.state.DispatchingStateRepo
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,14 +49,14 @@ public class CommandProcessingExample {
     public void issueCommands() {
         Person.Commands personCommands = commandProxyFactory.getProxy(Person.Commands.class);
 
-        Person createdPerson = personCommands.create(StreamTimestamp.now(), UUID.randomUUID(), "Arthur Putey", LocalDate.parse("1968-05-28"));
+        Person createdPerson = personCommands.create(StreamTimestamp.now(), "id1", "Arthur Putey", LocalDate.parse("1968-05-28"));
 
         assertThat(createdPerson.getName(), equalTo("Arthur Putey"));
 
         Person updatedPerson = personCommands.changeName(StreamTimestamp.now(), createdPerson.getId(), "Arthur Mumby");
         assertThat(updatedPerson.getName(), equalTo("Arthur Mumby"));
 
-        Person movedPerson = personCommands.moveToAddress(StreamTimestamp.now(), createdPerson.getId(), UUID.randomUUID());
+        Person movedPerson = personCommands.moveToAddress(StreamTimestamp.now(), createdPerson.getId(), "id2");
 
         assertThat(movedPerson.getCurrentAddressId(), not(equalTo(updatedPerson.getCurrentAddressId())));
     }

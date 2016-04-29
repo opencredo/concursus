@@ -34,7 +34,7 @@ public final class EventSourcingStateRepository<T> implements StateRepository<T>
     }
 
     @Override
-    public Optional<T> getState(UUID aggregateId, Instant upTo) {
+    public Optional<T> getState(String aggregateId, Instant upTo) {
         return getState(typeBinding.replaying(eventSource, aggregateId, TimeRange.fromUnbounded().toExclusive(upTo)));
     }
 
@@ -45,7 +45,7 @@ public final class EventSourcingStateRepository<T> implements StateRepository<T>
     }
 
     @Override
-    public Map<UUID, T> getStates(Collection<UUID> aggregateIds, Instant upTo) {
+    public Map<String, T> getStates(Collection<String> aggregateIds, Instant upTo) {
         final CachedEventSource preloaded = typeBinding.preload(eventSource, aggregateIds, TimeRange.fromUnbounded().toExclusive(upTo));
         return aggregateIds.stream().flatMap(id ->
                 getState(typeBinding.replaying(preloaded, id, TimeRange.unbounded()))

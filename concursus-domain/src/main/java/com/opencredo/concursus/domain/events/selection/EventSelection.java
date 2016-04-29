@@ -37,7 +37,7 @@ public final class EventSelection {
                 .orElseGet(Collections::emptyList);
     }
 
-    public static Map<AggregateId, List<Event>> selectEvents(Map<AggregateId, ? extends Collection<Event>> events, Predicate<Event> filter, String aggregateType, Collection<UUID> aggregateIds) {
+    public static Map<AggregateId, List<Event>> selectEvents(Map<AggregateId, ? extends Collection<Event>> events, Predicate<Event> filter, String aggregateType, Collection<String> aggregateIds) {
         Set<AggregateId> aggregateIdSet = aggregateIds.stream()
                 .map(id -> AggregateId.of(aggregateType, id))
                 .collect(Collectors.toSet());

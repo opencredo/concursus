@@ -1,7 +1,6 @@
 package com.opencredo.concursus.domain.common;
 
 import java.util.Objects;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -16,7 +15,7 @@ public final class AggregateId {
      * @param id The id of the aggregate.
      * @return The constructed {@link AggregateId}
      */
-    public static AggregateId of(String type, UUID id) {
+    public static AggregateId of(String type, String id) {
         checkNotNull(type, "type must not be null");
         checkNotNull(id, "id must not be null");
 
@@ -24,9 +23,9 @@ public final class AggregateId {
     }
 
     private final String type;
-    private final UUID id;
+    private final String id;
 
-    private AggregateId(String type, UUID id) {
+    private AggregateId(String type, String id) {
         this.type = type;
         this.id = id;
     }
@@ -40,10 +39,10 @@ public final class AggregateId {
     }
 
     /**
-     * Get the {@link UUID} of the aggregate bearing this id.
-     * @return The {@link UUID} of the aggregate bearing this id.
+     * Get the aggregate id of the aggregate bearing this id.
+     * @return The aggregate id of the aggregate bearing this id.
      */
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 

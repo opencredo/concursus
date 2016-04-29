@@ -70,7 +70,7 @@ public final class CassandraEventRetriever implements EventRetriever {
     }
 
     @Override
-    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange) {
         final Select select = selectFromEvent();
 
         select.where(QueryBuilder.eq("aggregateType", aggregateType))

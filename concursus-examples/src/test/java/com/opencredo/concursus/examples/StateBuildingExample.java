@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,7 +20,7 @@ public class StateBuildingExample {
         StateBuilder<Person> personStateBuilder = DispatchingStateBuilder.dispatchingTo(Person.class);
         Person.Events proxy = EventEmittingProxy.proxying(personStateBuilder, Person.Events.class);
 
-        UUID personId = UUID.randomUUID();
+        String personId = "person1";
         proxy.created(StreamTimestamp.now(), personId, "Arthur Putey", LocalDate.parse("1968-05-28"));
         proxy.changedName(StreamTimestamp.now(), personId, "Arthur Daley");
 
@@ -33,12 +32,12 @@ public class StateBuildingExample {
         assertThat(person.getName(), equalTo("Arthur Daley"));
 
         // Move in to an address
-        UUID address1Id = UUID.randomUUID();
+        String address1Id = "address1";
         proxy.movedToAddress(StreamTimestamp.now(), personId, address1Id);
         assertThat(person.getCurrentAddressId(), equalTo(Optional.of(address1Id)));
 
         // Change address
-        UUID address2Id = UUID.randomUUID();
+        String address2Id = "address2";
         proxy.movedToAddress(StreamTimestamp.now(), personId, address2Id);
         assertThat(person.getCurrentAddressId(), equalTo(Optional.of(address2Id)));
     }

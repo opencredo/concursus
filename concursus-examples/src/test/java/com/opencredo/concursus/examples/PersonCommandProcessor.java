@@ -6,8 +6,6 @@ import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public final class PersonCommandProcessor implements Person.Commands {
 
@@ -20,7 +18,7 @@ public final class PersonCommandProcessor implements Person.Commands {
     }
 
     @Override
-    public Person create(StreamTimestamp ts, UUID personId, String name, LocalDate dob) {
+    public Person create(StreamTimestamp ts, String personId, String name, LocalDate dob) {
         Optional<Person> person = eventBus.creating(Person.class, bus -> {
             bus.dispatch(Person.Events.class, e -> e.created(ts, personId, name, dob));
         });
@@ -29,7 +27,7 @@ public final class PersonCommandProcessor implements Person.Commands {
     }
 
     @Override
-    public Person changeName(StreamTimestamp ts, UUID personId, String newName) {
+    public Person changeName(StreamTimestamp ts, String personId, String newName) {
         Person person = personStateRepository.getState(personId).orElseThrow(IllegalArgumentException::new);
 
         eventBus.updating(person, bus -> {
@@ -40,7 +38,7 @@ public final class PersonCommandProcessor implements Person.Commands {
     }
 
     @Override
-    public Person moveToAddress(StreamTimestamp ts, UUID personId, UUID addressId) {
+    public Person moveToAddress(StreamTimestamp ts, String personId, String addressId) {
         Person person = personStateRepository.getState(personId).orElseThrow(IllegalArgumentException::new);
 
         eventBus.updating(personId, person, bus ->
@@ -57,7 +55,7 @@ public final class PersonCommandProcessor implements Person.Commands {
     }
 
     @Override
-    public void delete(StreamTimestamp ts, UUID personId) {
+    public void delete(StreamTimestamp ts, String personId) {
         eventBus.dispatch(Person.Events.class, e -> e.deleted(ts, personId));
     }
 }

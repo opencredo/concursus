@@ -3,21 +3,19 @@ package com.opencredo.concursus.demos.game.states;
 import com.opencredo.concursus.mapping.annotations.HandlesEvent;
 import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
 
-import java.util.UUID;
-
 @HandlesEventsFor("player")
 public final class PlayerState {
 
     @HandlesEvent
-    public static PlayerState created(UUID playerId, String playerName) {
+    public static PlayerState created(String playerId, String playerName) {
         return new PlayerState(playerId, playerName);
     }
 
     private int rating = 0;
-    private final UUID id;
+    private final String id;
     private String name;
 
-    public PlayerState(UUID id, String name) {
+    public PlayerState(String id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -32,12 +30,12 @@ public final class PlayerState {
     }
 
     @HandlesEvent
-    public void wonGame(UUID gameId, int ratingIncrease) {
+    public void wonGame(String gameId, int ratingIncrease) {
         rating += ratingIncrease;
     }
 
     @HandlesEvent
-    public void lostGame(UUID gameId, int ratingDecrease) {
+    public void lostGame(String gameId, int ratingDecrease) {
         rating -= ratingDecrease;
     }
 }

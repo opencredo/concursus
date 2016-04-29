@@ -8,7 +8,6 @@ import com.opencredo.concursus.domain.time.TimeRange;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * A means of retrieving {@link Event}s for a given aggregate or group of aggregates.
@@ -32,6 +31,6 @@ public interface EventRetriever {
      * @param timeRange The {@link TimeRange} to restrict returned events to.
      * @return The retrieved events, grouped by {@link AggregateId}.
      */
-    Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange);
+    Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange);
 
 }

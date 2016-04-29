@@ -22,8 +22,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -66,10 +64,10 @@ public class PlayerCommandsTest {
 
     @Test
     public void playAGame() {
-        UUID playerOneId = cmd.create(now(), UUID.randomUUID(), "Player 1");
-        UUID playerTwoId = cmd.create(now(), UUID.randomUUID(), "Player 2");
+        String playerOneId = cmd.create(now(), "id1", "Player 1");
+        String playerTwoId = cmd.create(now(), "id2", "Player 2");
 
-        UUID gameId = cmd.startGame(now(), playerOneId, "0.0.1");
+        String gameId = cmd.startGame(now(), playerOneId, "0.0.1");
 
         cmd.joinGame(now(), playerTwoId, gameId);
 

@@ -17,7 +17,6 @@ import org.junit.Test;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -26,7 +25,7 @@ public class JsonEventOutChannelTest {
 
     @HandlesEventsFor("test")
     public interface TestEvents {
-        void created(StreamTimestamp ts, UUID id, String name);
+        void created(StreamTimestamp ts, String id, String name);
     }
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -55,7 +54,7 @@ public class JsonEventOutChannelTest {
     @Test
     public void transmitsEventsOverJsonTransport() {
         StreamTimestamp ts = StreamTimestamp.of("test", Instant.now());
-        UUID id = UUID.randomUUID();
+        String id = "id1";
 
         proxyingEventBus.dispatch(TestEvents.class, e -> e.created(ts, id, "Arthur Mumby"));
 

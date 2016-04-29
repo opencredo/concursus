@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static java.time.temporal.ChronoUnit.*;
@@ -39,29 +38,29 @@ public class LightbulbExample {
     @HandlesEventsFor("lightbulb")
     public interface LightbulbEvents {
         @Initial
-        void created(StreamTimestamp timestamp, UUID id, int wattage);
-        void screwedIn(StreamTimestamp timestamp, UUID id, String location);
-        void switchedOn(StreamTimestamp timestamp, UUID id);
-        void switchedOff(StreamTimestamp timestamp, UUID id);
-        void unscrewed(StreamTimestamp timestamp, UUID id);
+        void created(StreamTimestamp timestamp, String id, int wattage);
+        void screwedIn(StreamTimestamp timestamp, String id, String location);
+        void switchedOn(StreamTimestamp timestamp, String id);
+        void switchedOff(StreamTimestamp timestamp, String id);
+        void unscrewed(StreamTimestamp timestamp, String id);
         @Terminal
-        void blown(StreamTimestamp timestamp, UUID id);
+        void blown(StreamTimestamp timestamp, String id);
     }
 
     @HandlesEventsFor("lightbulb")
     public static final class LightbulbState {
 
         @HandlesEvent
-        public static LightbulbState created(UUID id, int wattage) {
+        public static LightbulbState created(String id, int wattage) {
             return new LightbulbState(id, wattage);
         }
 
-        private final UUID id;
+        private final String id;
         private final int wattage;
         private Optional<String> screwedInLocation = Optional.empty();
         private boolean switchedOn = false;
 
-        public LightbulbState(UUID id, int wattage) {
+        public LightbulbState(String id, int wattage) {
             this.id = id;
             this.wattage = wattage;
         }
@@ -86,7 +85,7 @@ public class LightbulbExample {
             switchedOn = false;
         }
 
-        public UUID getId() {
+        public String getId() {
             return id;
         }
 
@@ -117,7 +116,7 @@ public class LightbulbExample {
 
     @Test
     public void createAndRetrieveState() {
-        UUID lightbulbId = UUID.randomUUID();
+        String lightbulbId = "id1";
         Instant start = Instant.now().minus(3, DAYS);
 
         recordEventHistory(lightbulbId, start);
@@ -131,7 +130,7 @@ public class LightbulbExample {
 
     @Test
     public void timeTravelling() {
-        UUID lightbulbId = UUID.randomUUID();
+        String lightbulbId = "id1";
         Instant start = Instant.now().minus(3, DAYS);
 
         recordEventHistory(lightbulbId, start);
@@ -144,7 +143,7 @@ public class LightbulbExample {
         assertThat(lightbulbState.getScrewedInLocation(), equalTo(Optional.of("kitchen")));
     }
 
-    private void recordEventHistory(UUID lightbulbId, Instant start) {
+    private void recordEventHistory(String lightbulbId, Instant start) {
         eventBus.dispatch(LightbulbEvents.class, lightbulb -> {
             // The lightbulb is created.
             lightbulb.created(StreamTimestamp.of(start), lightbulbId, 60);
@@ -172,7 +171,7 @@ public class LightbulbExample {
                 collectedEvents::add,
                 LightbulbEvents.class);
 
-        UUID lightbulbId = UUID.randomUUID();
+        String lightbulbId = "id1";
         StreamTimestamp start = StreamTimestamp.now();
         events.created(start, lightbulbId, 60);
         events.screwedIn(start.plus(1, MINUTES), lightbulbId, "hallway");
@@ -195,32 +194,32 @@ public class LightbulbExample {
         private Optional<Instant> lastSwitchedOn;
 
         @Override
-        public void created(StreamTimestamp timestamp, UUID id, int wattage) {
+        public void created(StreamTimestamp timestamp, String id, int wattage) {
             this.wattage = wattage;
         }
 
         @Override
-        public void screwedIn(StreamTimestamp timestamp, UUID id, String location) {
+        public void screwedIn(StreamTimestamp timestamp, String id, String location) {
 
         }
 
         @Override
-        public void switchedOn(StreamTimestamp timestamp, UUID id) {
+        public void switchedOn(StreamTimestamp timestamp, String id) {
             lastSwitchedOn = Optional.of(timestamp.getTimestamp());
         }
 
         @Override
-        public void switchedOff(StreamTimestamp timestamp, UUID id) {
+        public void switchedOff(StreamTimestamp timestamp, String id) {
             lastSwitchedOn.ifPresent(switchedOnTime -> millisecondsUsage += Duration.between(timestamp.getTimestamp(), switchedOnTime).toMillis());
         }
 
         @Override
-        public void unscrewed(StreamTimestamp timestamp, UUID id) {
+        public void unscrewed(StreamTimestamp timestamp, String id) {
 
         }
 
         @Override
-        public void blown(StreamTimestamp timestamp, UUID id) {
+        public void blown(StreamTimestamp timestamp, String id) {
 
         }
 

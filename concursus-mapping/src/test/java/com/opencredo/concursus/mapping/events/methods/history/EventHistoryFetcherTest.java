@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,8 +31,8 @@ public class EventHistoryFetcherTest {
 
     @Test
     public void obtainsEventHistoryInAscendingOrder() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
@@ -42,7 +41,7 @@ public class EventHistoryFetcherTest {
             batch.nameUpdated(nextTimestamp(), id2, "Arthur Mumby");
         });
 
-        Map<UUID, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
+        Map<String, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
                 .getHistories(eventSource, Arrays.asList(id1, id2));
 
         assertThat(histories.get(id1).get(0).getParameters().get("name"),
@@ -57,8 +56,8 @@ public class EventHistoryFetcherTest {
 
     @Test
     public void causallyOrdersEvents() {
-        UUID id1 = UUID.randomUUID();
-        UUID id2 = UUID.randomUUID();
+        String id1 = "id1";
+        String id2 = "id2";
 
         eventBus.dispatch(PersonEvents.class, batch -> {
             batch.nameUpdated(nextTimestamp(), id1, "Arthur Daley");
@@ -67,7 +66,7 @@ public class EventHistoryFetcherTest {
             batch.createdV2(nextTimestamp(), id1, "Arthur Putey", 41);
         });
 
-        Map<UUID, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
+        Map<String, List<Event>> histories = MappingEventHistoryFetcher.mapping(PersonEvents.class)
                 .getHistories(eventSource, Arrays.asList(id1, id2));
 
         assertThat(histories.get(id1).get(0).getParameters().get("name"),

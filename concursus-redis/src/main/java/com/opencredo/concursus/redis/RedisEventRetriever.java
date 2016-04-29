@@ -52,7 +52,7 @@ public class RedisEventRetriever implements EventRetriever {
     }
 
     @Override
-    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<UUID> aggregateIds, TimeRange timeRange) {
+    public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange) {
         Function<String, Optional<Event>> deserialiser = eventJson -> EventJson.fromString(eventJson, matcher, objectMapper);
         Pipeline pipeline = jedis.pipelined();
 
