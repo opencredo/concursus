@@ -5,7 +5,7 @@
     <groupId>com.opencredo</groupId>
     <artifactId>concursus</artifactId>
     <packaging>pom</packaging>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.6</version>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -24,56 +24,56 @@
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-data</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-domain</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-domain-json</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-mapping</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-spring</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-cassandra</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-redis</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-spring-cassandra</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
                 <groupId>com.opencredo</groupId>
                 <artifactId>concursus-spring-redis</artifactId>
-                <version>0.6-SNAPSHOT</version>
+                <version>0.6</version>
             </dependency>
 
             <dependency>
