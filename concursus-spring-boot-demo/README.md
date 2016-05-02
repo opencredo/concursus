@@ -16,7 +16,7 @@ Running Kafka in Docker
 
   ```shell
     $ git submodule init
-    $ git update
+    $ git submodule update
   ```
   
 - start Kafka and Zookeeper with `docker-compose`:
