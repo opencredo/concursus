@@ -23,7 +23,7 @@ public interface StateRepository<T> {
      * @return The state of the aggregate, if it exists.
      */
     default Optional<T> getState(String aggregateId) {
-        return getState(aggregateId, Instant.MAX);
+        return getState(aggregateId, Instant.now());
     }
 
     /**
@@ -42,7 +42,7 @@ public interface StateRepository<T> {
      * @return The aggregates' states, mapped by aggregate id.
      */
     default Map<String, T> getStates(Collection<String> aggregateIds) {
-        return getStates(aggregateIds, Instant.MAX);
+        return getStates(aggregateIds, Instant.now());
     }
 
     /**
