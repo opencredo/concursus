@@ -14,9 +14,6 @@ import java.time.temporal.ChronoUnit.HOURS
 import java.time.temporal.ChronoUnit.MILLIS
 
 sealed class LightbulbEvent {
-
-    companion object Factory : KEventFactory<LightbulbEvent>()
-
     @Initial class Created(val wattage: Int) : LightbulbEvent()
     class ScrewedIn(val location: String) : LightbulbEvent()
     class Unscrewed() : LightbulbEvent()
@@ -24,8 +21,14 @@ sealed class LightbulbEvent {
     class SwitchedOff() : LightbulbEvent()
 }
 
+interface EventData<E : EventData<E>> {
+    infix fun at(timestamp: StreamTimestamp): TimestampedData<E> =
+            TimestampedData(timestamp, this as E, this.javaClass.kotlin)
+}
+
 data class LightbulbState(val wattage: Int, val location: String?, val isSwitchedOn: Boolean,
                           val switchedOnAt: Instant?, val millisecondsActive: Long) {
+
     companion object LightbulbTransitions : Transitions<LightbulbState, LightbulbEvent> {
 
         override fun initial(timestamp: StreamTimestamp, data: LightbulbEvent): LightbulbState? = when(data) {
@@ -72,26 +75,28 @@ fun main(args: Array<String>) {
     val eventSource = EventSource.retrievingWith(eventStore)
 
     val lightbulbId = "id1"
-    var start = StreamTimestamp.now()
+    val start = StreamTimestamp.now()
 
-    eventBus.dispatch(LightbulbEvent.Factory) {
-        write(start.plus(1, MILLIS), lightbulbId, Created(wattage = 100))
-        write(start,                 lightbulbId, ScrewedIn(location = "hallway"))
-        write(start.plus(2, MILLIS), lightbulbId, SwitchedOn())
-        write(start.plus(1, HOURS),  lightbulbId, SwitchedOff())
-        write(start.plus(3, HOURS),  lightbulbId, SwitchedOn())
-    }
+    eventBus.dispatchTo(lightbulbId,
+        Created(wattage = 100) at start.plus(1, MILLIS),
+        ScrewedIn(location = "hallway") at start,
+        SwitchedOn() at start.plus(2, MILLIS),
+        SwitchedOff() at start.plus(1, HOURS),
+        SwitchedOn() at start.plus(3, HOURS)
+    )
 
     eventSource.replaying(
-            KEventTypeSet.forClass(LightbulbEvent::class).eventTypeMatcher, AggregateId.of("lightbulb", lightbulbId))
+            KEventTypeSet.forSuperClass(LightbulbEvent::class).eventTypeMatcher, AggregateId.of("lightbulb", lightbulbId))
             .replayAll { println(it) }
+
+    eventSource.replaying(LightbulbEvent::class, lightbulbId).replayAll { println(it) }
 
     val cached = eventSource.preload(LightbulbEvent::class, arrayListOf(lightbulbId))
 
     val messages = cached.replaying(lightbulbId)
             .inAscendingCausalOrder()
             .collectAll { event ->
-                event.data.let {
+                event.timestampedData.data.let {
                     when (it) {
                         is Created -> "Lightbulb created with wattage " + it.wattage
                         is ScrewedIn -> "Lightbulb screwed in @ " + it.location
@@ -99,14 +104,12 @@ fun main(args: Array<String>) {
                         is SwitchedOn -> "Lightbulb switched on"
                         is SwitchedOff -> "Lightbulb switched off"
                     }
-                } + " at " + event.timestamp.timestamp
+                } + " at " + event.timestampedData.timestamp.timestamp
     }
 
     messages.forEach { println(it) }
 
     val state = cached.replaying(lightbulbId).buildState(LightbulbTransitions)
-
-    println(state)
 
     println("Usage after 4 hours: " + state!!.kwhAt(start.plus(4, HOURS).timestamp) + " kw/h")
 }

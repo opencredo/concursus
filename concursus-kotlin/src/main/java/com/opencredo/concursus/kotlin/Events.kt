@@ -22,45 +22,43 @@ annotation class Initial
 annotation class Terminal
 annotation class Order(val value: Int)
 
-data class KEvent<E : Any>(val timestamp: StreamTimestamp, val aggregateId : String, val data: E) {
+data class KEvent<E : Any>(val aggregateId : String, val timestampedData: TimestampedData<E>) {
     fun toEvent() : Event =
-            KEventTypeSet.forClass((data.javaClass.superclass as Class<E>).kotlin)
-                    .toEvent(timestamp, aggregateId, data)
+            KEventTypeSet
+                    .forClass(timestampedData.dataClass)
+                    .toEvent(timestampedData.timestamp, aggregateId, timestampedData.data, timestampedData.dataClass)
 }
 
-final class KEventWriter<E: Any>(val factory: KEventFactory<E>, val receiver: (Event) -> Unit) {
-    fun write(timestamp: StreamTimestamp, aggregateId: String, data: E): KEventWriter<E> {
-        receiver(factory.create(timestamp, aggregateId, data))
-        return this
-    }
+data class TimestampedData<E : Any>(val timestamp: StreamTimestamp, val data: E, val dataClass: KClass<E>) {
+    infix fun to(aggregateId: String): KEvent<E> = KEvent(aggregateId, this)
 }
 
-open class KEventFactory<E : Any> {
-    fun create(timestamp: StreamTimestamp, aggregateId : String, data: E) : Event =
-            KEvent(timestamp, aggregateId, data).toEvent()
+inline infix fun <reified E : Any> E.at(timestamp: StreamTimestamp): TimestampedData<E> =
+        TimestampedData(timestamp, this, E::class)
 
-    fun writingTo(receiver: (Event) -> Unit): KEventWriter<E> = KEventWriter(this, receiver)
-}
-
-final class KEventTypeSet<E : Any>(
+class KEventTypeSet<E : Any>(
         val aggregateType: String,
-        val eventTypeByName: Map<VersionedName, KEventType<E>>,
-        val eventTypeByDataClass: Map<Class<E>, KEventType<E>>,
-        val eventTypeMap: Map<EventType, TupleSchema>) {
+        val eventTypeByName: Map<VersionedName, KEventType<out E>>,
+        val eventTypeByDataClass: Map<KClass<out E>, KEventType<out E>>,
+        eventTypeMap: Map<EventType, TupleSchema>) {
 
     companion object Factory {
 
         val cache = ConcurrentHashMap<KClass<*>, KEventTypeSet<*>>()
 
-        fun <E : Any> forClass(eventSuperclass: KClass<E>): KEventTypeSet<E> =
-                cache.computeIfAbsent(eventSuperclass, { forClassUncached(it) }) as KEventTypeSet<E>
+        fun <E : Any> forClass(eventClass : KClass<E>): KEventTypeSet<in E> {
+            return forSuperClass((eventClass.java.superclass as Class<*>).kotlin)as KEventTypeSet<in E>
+        }
 
-        private fun <E : Any> forClassUncached(eventSuperclass: KClass<E>): KEventTypeSet<E> {
+        fun <E : Any> forSuperClass(eventSuperclass: KClass<E>): KEventTypeSet<E> =
+                cache.computeIfAbsent(eventSuperclass, { forSuperClassUncached(it) }) as KEventTypeSet<E>
+
+        private fun <E : Any> forSuperClassUncached(eventSuperclass: KClass<E>): KEventTypeSet<E> {
             val aggregateType = getAggregateType(eventSuperclass)
             val eventTypes = getEventTypes(aggregateType, eventSuperclass)
 
             val eventTypeByName = eventTypes.associateBy { it.eventName }
-            val eventTypeByDataClass = eventTypes.associateBy { it.dataClass.java }
+            val eventTypeByDataClass = eventTypes.associateBy { it.dataClass }
 
             val schemasByEventType = eventTypes.associateBy(
                     { EventType.of(aggregateType, it.eventName) },
@@ -75,15 +73,16 @@ final class KEventTypeSet<E : Any>(
 
         private fun <E : Any> getEventTypes(
                 aggregateType: String,
-                eventSuperclass: KClass<E>): List<KEventType<E>> =
-                eventSuperclass.nestedClasses.map { KEventType.forDataClass(it, aggregateType) as KEventType<E> }
-
+                eventSuperclass: KClass<E>): List<KEventType<out E>> =
+                eventSuperclass.nestedClasses.map { KEventType.forClass(it, aggregateType) as KEventType<out E> }
     }
 
-    fun toEvent(timestamp: StreamTimestamp, aggregateId: String, data: E): Event =
-            eventTypeByDataClass[data.javaClass]!!.toEvent(timestamp, aggregateId, data)
+    private fun <T : E> getEventType(dataClass: KClass<T>): KEventType<T> = eventTypeByDataClass[dataClass]!! as KEventType<T>
 
-    fun fromEvent(event: Event): KEvent<E> =
+    fun <T : E> toEvent(timestamp: StreamTimestamp, aggregateId: String, data: T, dataClass: KClass<T>): Event =
+            getEventType(dataClass).toEvent(timestamp, aggregateId, data)
+
+    fun fromEvent(event: Event): KEvent<out E> =
             eventTypeByName[event.eventName]!!.fromEvent(event)
 
     val eventTypeMatcher = EventTypeMatcher.matchingAgainst(eventTypeMap)
@@ -106,7 +105,7 @@ data class KEventType<T: Any>(
         var terminal = Int.MAX_VALUE
         var preterminal = terminal - 1
 
-        fun <E : Any, T : E> forDataClass(dataClass: KClass<T>, aggregateType: String): KEventType<T> {
+        fun <T : Any> forClass(dataClass: KClass<T>, aggregateType: String): KEventType<T> {
             val eventName = getEventName(dataClass)
             val parameters = getParameters(dataClass)
             val schema = getSchema(aggregateType, eventName, parameters)
@@ -184,23 +183,5 @@ data class KEventType<T: Any>(
                     characteristics())
 
     fun fromEvent(event: Event): KEvent<T> =
-            KEvent(event.eventTimestamp, event.aggregateId.id, makeInstance(event.parameters))
-}
-
-
-interface Transitions<S, E : Any> {
-
-    fun update(previousState: S?, event: KEvent<E>): S? =
-            if (previousState == null) initial(event.timestamp, event.data)
-            else next(previousState, event.timestamp, event.data)
-
-    fun initial(timestamp: StreamTimestamp, data: E): S?
-
-    fun next(previousState: S, timestamp: StreamTimestamp, data: E): S
-
-    fun runAll(events: List<KEvent<E>>, initialState: S? = null): S? {
-        var workingState: S? = initialState
-        events.forEach { workingState = update(workingState, it) }
-        return workingState
-    }
+            KEvent(event.aggregateId.id, TimestampedData(event.eventTimestamp, makeInstance(event.parameters), dataClass))
 }

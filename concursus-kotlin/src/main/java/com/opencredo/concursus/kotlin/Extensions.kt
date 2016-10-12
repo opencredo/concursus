@@ -14,16 +14,19 @@ import kotlin.reflect.KClass
  * Extension methods to core domain classes, supporting Kotlin mappings
  */
 
-fun <E : Any> Event.toKEvent(eventSuperclass: KClass<E>): KEvent<E> = KEventTypeSet.forClass(eventSuperclass).fromEvent(this)
+fun <E : Any> Event.toKEvent(eventSuperclass: KClass<E>): KEvent<out E> = KEventTypeSet.forSuperClass(eventSuperclass).fromEvent(this)
 
-fun <E : Any> EventBus.dispatch(factory: KEventFactory<E>, writeEvents: KEventWriter<E>.() -> Unit): Unit =
-        this.dispatch { batch -> factory.writingTo { batch.accept( it ) }.writeEvents() }
+fun EventBus.dispatch(vararg events: KEvent<*>): Unit =
+    this.dispatch { batch -> events.forEach { batch.accept(it.toEvent()) } }
+
+fun <E: Any> EventBus.dispatchTo(aggregateId: String, vararg timestampedData: TimestampedData<out E>): Unit =
+    this.dispatch { batch -> timestampedData.forEach { batch.accept((it to aggregateId).toEvent()) } }
 
 fun <E : Any> EventSource.getEvents(
         eventClass: KClass<E>,
         aggregateId: String,
-        timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> =
-    KEventTypeSet.forClass(eventClass).let { ets ->
+        timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<out E>> =
+    KEventTypeSet.forSuperClass(eventClass).let { ets ->
         this.getEvents(
                 ets.eventTypeMatcher,
                 AggregateId.of(ets.aggregateType, aggregateId),
@@ -32,7 +35,7 @@ fun <E : Any> EventSource.getEvents(
     }
 
 
-final class KEventReplayer<E : Any>(val eventTypeSet: KEventTypeSet<E>, val replayer: EventReplayer) {
+class KEventReplayer<E : Any>(val eventTypeSet: KEventTypeSet<E>, val replayer: EventReplayer) {
 
     fun inAscendingOrder(): KEventReplayer<E> = KEventReplayer(eventTypeSet, replayer.inAscendingOrder())
 
@@ -51,27 +54,27 @@ final class KEventReplayer<E : Any>(val eventTypeSet: KEventTypeSet<E>, val repl
     fun filtering(predicate: (Event) -> Boolean): KEventReplayer<E> =
             KEventReplayer(eventTypeSet, replayer.filter(predicate))
 
-    fun replayAll(handler: (KEvent<E>) -> Unit): Unit = replayer.replayAll { handler(eventTypeSet.fromEvent(it)) }
+    fun replayAll(handler: (KEvent<out E>) -> Unit): Unit = replayer.replayAll { handler(eventTypeSet.fromEvent(it)) }
 
-    fun replayFirst(handler: (KEvent<E>) -> Unit): Unit = replayer.replayFirst { handler(eventTypeSet.fromEvent(it)) }
+    fun replayFirst(handler: (KEvent<out E>) -> Unit): Unit = replayer.replayFirst { handler(eventTypeSet.fromEvent(it)) }
 
-    fun <T> collectAll(collector: (KEvent<E>) -> T): List<T> = replayer.toList()
+    fun <T> collectAll(collector: (KEvent<out E>) -> T): List<T> = replayer.toList()
             .map { collector(eventTypeSet.fromEvent(it)) }
 
-    fun <T> collectFirst(collector: (KEvent<E>) -> T): T? =
+    fun <T> collectFirst(collector: (KEvent<out E>) -> T): T? =
         replayer.toList().first()?.let { collector(eventTypeSet.fromEvent(it)) }
 
-    fun toList(): List<KEvent<E>> = replayer.toList().map { eventTypeSet.fromEvent(it) }
+    fun toList(): List<KEvent<out E>> = replayer.toList().map { eventTypeSet.fromEvent(it) }
 
     fun <S> buildState(transitions: Transitions<S, E>, initialState: S? = null): S? =
-            transitions.runAll(inAscendingCausalOrder().toList(), initialState)
+            transitions.runAll(inAscendingCausalOrder().toList().map { it.timestampedData }, initialState)
 }
 
 fun <E : Any> EventSource.replaying(
         eventClass: KClass<E>,
         aggregateId: String,
         timeRange: TimeRange = TimeRange.unbounded()): KEventReplayer<E> =
-    KEventTypeSet.forClass(eventClass).let {
+    KEventTypeSet.forSuperClass(eventClass).let {
     return KEventReplayer(
             it,
             this.replaying(
@@ -80,9 +83,9 @@ fun <E : Any> EventSource.replaying(
                     timeRange))
     }
 
-final class KCachedEventSource<E: Any>(val eventSource: CachedEventSource, val eventTypeSet: KEventTypeSet<E>) {
+class KCachedEventSource<E: Any>(val eventSource: CachedEventSource, val eventTypeSet: KEventTypeSet<E>) {
 
-    fun getEvents(aggregateId: String, timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<E>> =
+    fun getEvents(aggregateId: String, timeRange: TimeRange = TimeRange.unbounded()): List<KEvent<out E>> =
         eventSource.getEvents(AggregateId.of(eventTypeSet.aggregateType, aggregateId))
             .map { eventTypeSet.fromEvent(it) }
 
@@ -95,7 +98,7 @@ fun <E: Any> EventSource.preload(
         eventClass: KClass<E>,
         aggregateIds: List<String>,
         timeRange: TimeRange = TimeRange.unbounded()) : KCachedEventSource<E> =
-        KEventTypeSet.forClass(eventClass).let {
+        KEventTypeSet.forSuperClass(eventClass).let {
             KCachedEventSource(
                 this.preload(it.eventTypeMatcher, it.aggregateType, aggregateIds, timeRange),
                 it)
