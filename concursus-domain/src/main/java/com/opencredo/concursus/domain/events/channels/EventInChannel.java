@@ -41,4 +41,8 @@ public interface EventInChannel<I> extends Consumer<I> {
         return inputs -> inputs.forEach(this::accept);
     }
 
+    default <T> EventInChannel<T> map(Function<T, I> mapper) {
+        return t -> accept(mapper.apply(t));
+    }
+
 }

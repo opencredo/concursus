@@ -6,6 +6,7 @@ import com.opencredo.concursus.domain.common.VersionedName;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -20,19 +21,43 @@ public final class EventType {
      * @param eventName The name of the event.
      * @return The constructed {@link EventType}.
      */
-    public static EventType of(String aggregateType, VersionedName eventName) {
+    public static EventType of(String aggregateType, VersionedName eventName, int...characteristics) {
         checkNotNull(aggregateType, "aggregateType must not be null");
         checkNotNull(eventName, "eventName must not be null");
 
-        return new EventType(aggregateType, eventName);
+        return new EventType(aggregateType, eventName, IntStream.of(characteristics).reduce((l, r) -> l & r).orElse(0));
     }
 
     private final String aggregateType;
     private final VersionedName eventName;
+    private final int characteristics;
 
-    private EventType(String aggregateType, VersionedName eventName) {
+    private EventType(String aggregateType, VersionedName eventName, int characteristics) {
         this.aggregateType = aggregateType;
         this.eventName = eventName;
+        this.characteristics = characteristics;
+        System.out.println(this);
+    }
+
+    public String getAggregateType() {
+        return aggregateType;
+    }
+
+    public VersionedName getEventName() {
+        return eventName;
+    }
+
+    public int getCharacteristics() {
+        return characteristics;
+    }
+
+    /**
+     * Test whether the event type has the given characteristic.
+     * @param characteristic The characteristic to test for.
+     * @return True if the event type has the given characteristic, false otherwise.
+     */
+    public boolean hasCharacteristic(int characteristic) {
+        return (characteristics & characteristic) > 0;
     }
 
     @Override
@@ -50,7 +75,7 @@ public final class EventType {
 
     @Override
     public String toString() {
-        return aggregateType + "/" + eventName.getFormatted();
+        return String.format("%s/%s", aggregateType, eventName.getFormatted());
     }
 
     /**
@@ -58,15 +83,13 @@ public final class EventType {
      * @param aggregateId The aggregate id of the event.
      * @param streamTimestamp The {@link StreamTimestamp} of the event.
      * @param parameters The event parameters.
-     * @param characteristics The characteristics of the event.
      * @return The constructed {@link Event}.
      */
-    public Event makeEvent(String aggregateId, StreamTimestamp streamTimestamp, Tuple parameters, int...characteristics) {
+    public Event makeEvent(String aggregateId, StreamTimestamp streamTimestamp, Tuple parameters) {
         return Event.of(
-                AggregateId.of(aggregateType, aggregateId),
-                streamTimestamp,
-                eventName,
-                parameters,
-                characteristics);
+                EventMetadata.of(
+                        this,
+                        EventIdentity.of(AggregateId.of(aggregateType, aggregateId), streamTimestamp)),
+                        parameters);
     }
 }

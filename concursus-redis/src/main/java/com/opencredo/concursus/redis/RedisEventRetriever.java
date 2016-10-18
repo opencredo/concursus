@@ -35,7 +35,9 @@ public class RedisEventRetriever implements EventRetriever {
 
     @Override
     public List<Event> getEvents(EventTypeMatcher matcher, AggregateId aggregateId, TimeRange timeRange) {
-        Function<String, Optional<Event>> deserialiser = eventJson -> EventJson.fromString(eventJson, matcher, objectMapper);
+        Function<String, Optional<Event>> deserialiser = eventJson -> EventJson
+                .fromJsonString(eventJson, objectMapper)
+                .toEvent(matcher, objectMapper);
 
         final Set<String> eventsForId = jedis.smembers(aggregateId.toString());
         return deserialiseAll(timeRange, deserialiser, eventsForId);
@@ -53,7 +55,10 @@ public class RedisEventRetriever implements EventRetriever {
 
     @Override
     public Map<AggregateId, List<Event>> getEvents(EventTypeMatcher matcher, String aggregateType, Collection<String> aggregateIds, TimeRange timeRange) {
-        Function<String, Optional<Event>> deserialiser = eventJson -> EventJson.fromString(eventJson, matcher, objectMapper);
+        Function<String, Optional<Event>> deserialiser = eventJson -> EventJson
+                .fromJsonString(eventJson, objectMapper)
+                .toEvent(matcher, objectMapper);
+
         Pipeline pipeline = jedis.pipelined();
 
         final Map<AggregateId, Response<Set<String>>> responses = aggregateIds.stream()

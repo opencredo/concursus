@@ -4,13 +4,9 @@ import com.opencredo.concursus.data.tuples.Tuple;
 import com.opencredo.concursus.domain.common.AggregateId;
 import com.opencredo.concursus.domain.common.VersionedName;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
-import com.opencredo.concursus.domain.time.TimeUUID;
 
-import java.time.Instant;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -18,7 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * An event in the system.
  */
-public final class Event {
+public final class Event implements EventRepresentation<Tuple> {
 
     /**
      * Create a processed {@link Event} with the supplied properties.
@@ -32,10 +28,12 @@ public final class Event {
      * @return The constructed {@link Event}.
      */
     public static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, UUID processingId, VersionedName eventName, Tuple parameters, int...characteristics) {
-        checkNotNull(processingId, "processingId must not be null");
-        checkArgument(processingId.version() == 1, "processingId must be type 1 UUID");
-
-        return of(aggregateId, eventTimestamp, Optional.of(processingId), eventName, parameters, characteristics);
+        return of(
+                EventMetadata.of(
+                        EventType.of(aggregateId.getType(), eventName, characteristics),
+                        EventIdentity.of(aggregateId, eventTimestamp),
+                        processingId),
+                parameters);
     }
 
     /**
@@ -48,51 +46,32 @@ public final class Event {
      * @return The constructed {@link Event}.
      */
     public static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, VersionedName eventName, Tuple parameters, int...characteristics) {
-        return of(aggregateId, eventTimestamp, Optional.empty(), eventName, parameters, characteristics);
+        return of(
+                EventMetadata.of(
+                        EventType.of(aggregateId.getType(), eventName, characteristics),
+                        EventIdentity.of(aggregateId, eventTimestamp)),
+                parameters);
     }
 
-    private static Event of(AggregateId aggregateId, StreamTimestamp eventTimestamp, Optional<UUID> processingId, VersionedName eventName, Tuple parameters, int...characteristics) {
-        checkNotNull(aggregateId, "aggregateId must not be null");
-        checkNotNull(eventTimestamp, "eventTimestamp must not be null");
-        checkNotNull(eventName, "eventName must not be null");
+    /**
+     * Create an {@link Event} with the supplied metadata and parameters.
+     * @param eventMetadata The {@link EventMetadata} of the event.
+     * @param parameters The {@link Tuple} of event parameters.
+     * @return The constructed {@link Event}.
+     */
+    public static Event of(EventMetadata eventMetadata, Tuple parameters) {
+        checkNotNull(eventMetadata, "eventMetadata must not be null");
         checkNotNull(parameters, "parameters must not be null");
 
-        return new Event(aggregateId, eventTimestamp, processingId, eventName, parameters, IntStream.of(characteristics).reduce((l, r) -> l & r).orElse(0));
+        return new Event(eventMetadata, parameters);
     }
 
-    private final AggregateId aggregateId;
-    private final StreamTimestamp eventTimestamp;
-
-    private final Optional<UUID> processingId;
-
-    private final VersionedName eventName;
+    private final EventMetadata eventMetadata;
     private final Tuple parameters;
 
-    private final int characteristics;
-
-    private Event(AggregateId aggregateId, StreamTimestamp eventTimestamp, Optional<UUID> processingId, VersionedName eventName, Tuple parameters, int characteristics) {
-        this.aggregateId = aggregateId;
-        this.eventTimestamp = eventTimestamp;
-        this.processingId = processingId;
-        this.eventName = eventName;
+    private Event(EventMetadata eventMetadata, Tuple parameters) {
+        this.eventMetadata = eventMetadata;
         this.parameters = parameters;
-        this.characteristics = characteristics;
-    }
-
-    /**
-     * Get the {@link EventType} of this event.
-     * @return The {@link EventType} of this event.
-     */
-    public EventType getType() {
-        return EventType.of(aggregateId.getType(), eventName);
-    }
-
-    /**
-     * Get the {@link EventIdentity} of this event.
-     * @return The {@link EventIdentity} of this event.
-     */
-    public EventIdentity getIdentity() {
-        return EventIdentity.of(aggregateId, eventTimestamp);
     }
 
     /**
@@ -105,51 +84,8 @@ public final class Event {
         checkNotNull(processingId, "processingId must not be null");
         checkArgument(processingId.version() == 1, "processingId must be type 1 UUID");
 
-        return new Event(aggregateId, eventTimestamp, Optional.of(processingId), eventName, parameters, characteristics);
+        return new Event(eventMetadata.processed(processingId), parameters);
     }
-
-    /**
-     * Get the processing time of this event.
-     * @return An {@link Optional} containing {@link Instant} at which the event was processed, or
-     * {@link Optional}::empty if it has not.
-     */
-    public Optional<Instant> getProcessingTime() {
-        return processingId.map(TimeUUID::getInstant);
-    }
-
-    /**
-     * Get the {@link AggregateId} of the aggregate to which this event occurred.
-     * @return The {@link AggregateId} of the aggregate to which this event occurred.
-     */
-    public AggregateId getAggregateId() {
-        return aggregateId;
-    }
-
-    /**
-     * Get the {@link StreamTimestamp} of the time at which this event occurred.
-     * @return The {@link StreamTimestamp} of the time at which this event occurred.
-     */
-    public StreamTimestamp getEventTimestamp() {
-        return eventTimestamp;
-    }
-
-    /**
-     * Get the processing ID of this event (if it has been processed).
-     * @return An {@link Optional} containing the event's processing {@link UUID} if it has been processed, or
-     * {@link Optional}::empty if it has not.
-     */
-    public Optional<UUID> getProcessingId() {
-        return processingId;
-    }
-
-    /**
-     * Get the {@link VersionedName} of the event.
-     * @return The {@link VersionedName} of the event
-     */
-    public VersionedName getEventName() {
-        return eventName;
-    }
-
     /**
      * Get the event's parameters.
      * @return The event's parameters, encoded as a {@link Tuple}.
@@ -158,48 +94,37 @@ public final class Event {
         return parameters;
     }
 
-    /**
-     * Get the event's characteristics.
-     * @return The event's characteristics, encoded as an {@link int} bitfield.
-     */
-    public int getCharacteristics() {
-        return characteristics;
-    }
-
-    /**
-     * Test whether the event has the given characteristic.
-     * @param characteristic The characteristic to test for.
-     * @return True if the event has the given characteristic, false otherwise.
-     */
-    public boolean hasCharacteristic(int characteristic) {
-        return (characteristics & characteristic) > 0;
-    }
-
     @Override
     public boolean equals(Object o) {
         return this == o || (o instanceof Event && equals(Event.class.cast(o)));
     }
 
     private boolean equals(Event o) {
-        return aggregateId.equals(o.aggregateId)
-                && eventTimestamp.equals(o.eventTimestamp)
-                && processingId.equals(o.processingId)
-                && eventName.equals(o.eventName)
-                && parameters.equals(o.parameters)
-                && characteristics == o.characteristics;
+        return eventMetadata.equals(o.eventMetadata)
+                && parameters.equals(o.parameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregateId, eventTimestamp, processingId, eventName, parameters, characteristics);
+        return Objects.hash(eventMetadata, parameters);
     }
 
     @Override
     public String toString() {
         return getProcessingTime().map(processingTime ->
-                String.format("%s %s\nat %s\nwith %s\nprocessed at %s",
-                        aggregateId, eventName, eventTimestamp, parameters, processingTime))
-                .orElseGet(() -> String.format("%s %s\nat %s\nwith %s",
-                        aggregateId, eventName, eventTimestamp, parameters));
+                String.format("%s\nwith %s\nprocessed at %s",
+                        eventMetadata, parameters, processingTime))
+                .orElseGet(() -> String.format("%s\nwith %s",
+                        eventMetadata, parameters));
+    }
+
+    @Override
+    public EventMetadata getMetadata() {
+        return eventMetadata;
+    }
+
+    @Override
+    public Tuple getData() {
+        return parameters;
     }
 }

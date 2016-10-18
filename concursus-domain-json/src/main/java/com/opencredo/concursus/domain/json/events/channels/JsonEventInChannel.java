@@ -11,7 +11,10 @@ import java.util.function.Consumer;
 /**
  * A channel through which events encoded as JSON can be passed into the system.
  */
-public final class JsonEventInChannel implements EventInChannel<String> {
+public final class JsonEventInChannel {
+
+    private JsonEventInChannel() {
+    }
 
     /**
      * Creates an {@link EventInChannel} through which events encoded as JSON can be passed into the system.
@@ -22,22 +25,8 @@ public final class JsonEventInChannel implements EventInChannel<String> {
      * @param eventConsumer The {@link Consumer} to pass deserialised {@link Event}s through to.
      * @return The constructed {@link EventInChannel}.
      */
-    public static JsonEventInChannel using(ObjectMapper objectMapper, EventTypeMatcher typeMatcher, Consumer<Event> eventConsumer) {
-        return new JsonEventInChannel(objectMapper, typeMatcher, eventConsumer);
-    }
-
-    private final ObjectMapper objectMapper;
-    private final EventTypeMatcher typeMatcher;
-    private final Consumer<Event> outChannel;
-
-    private JsonEventInChannel(ObjectMapper objectMapper, EventTypeMatcher typeMatcher, Consumer<Event> outChannel) {
-        this.objectMapper = objectMapper;
-        this.typeMatcher = typeMatcher;
-        this.outChannel = outChannel;
-    }
-
-    @Override
-    public void accept(String input) {
-        EventJson.fromString(input, typeMatcher, objectMapper).ifPresent(outChannel::accept);
+    public static EventInChannel<String> using(ObjectMapper objectMapper, EventTypeMatcher typeMatcher, Consumer<Event> eventConsumer) {
+        return JsonRepresentationEventInChannel.using(objectMapper, typeMatcher, eventConsumer)
+                .map(eventJson -> EventJson.fromJsonString(eventJson, objectMapper).toRepresentation());
     }
 }

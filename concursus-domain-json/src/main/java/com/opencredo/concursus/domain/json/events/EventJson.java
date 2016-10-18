@@ -9,20 +9,16 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.opencredo.concursus.domain.common.VersionedName;
 import com.opencredo.concursus.domain.events.Event;
+import com.opencredo.concursus.domain.events.EventRepresentation;
 import com.opencredo.concursus.domain.events.EventType;
 import com.opencredo.concursus.domain.events.matching.EventTypeMatcher;
-import com.opencredo.concursus.domain.time.StreamTimestamp;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Representation of an {@link Event}'s data in JSON-serialisable form.
@@ -30,14 +26,13 @@ import java.util.function.Function;
 public final class EventJson {
 
     /**
-     * Serialise the supplied {@link Event} to a string using the supplied {@link ObjectMapper}.
-     * @param event The {@link Event} to serialise.
+     * Serialise to a string using the supplied {@link ObjectMapper}.
      * @param objectMapper The {@link ObjectMapper} to use.
-     * @return The JSON-serialised {@link Event}, as a string.
+     * @return The JSON-serialised {@link EventJson}, as a string.
      */
-    public static String toString(Event event, ObjectMapper objectMapper) {
+    public String toJsonString(ObjectMapper objectMapper) {
         try {
-            return objectMapper.writeValueAsString(of(event, objectMapper));
+            return objectMapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -47,15 +42,13 @@ public final class EventJson {
      * Deserialised the supplied JSON event string to an {@link Event}, using the supplied {@link EventTypeMatcher} and
      * {@link ObjectMapper}.
      * @param eventString The JSON event string to deserialise.
-     * @param eventTypeMatcher The {@link EventTypeMatcher} to use to resolve {@link EventType}s to
      * {@link com.opencredo.concursus.data.tuples.TupleSchema}s
      * @param objectMapper The {@link ObjectMapper} to use to deserialise event parameters.
      * @return The converted {@link Event}, iff the {@link EventTypeMatcher} matches its type.
      */
-    public static Optional<Event> fromString(String eventString, EventTypeMatcher eventTypeMatcher, ObjectMapper objectMapper) {
+    public static EventJson fromJsonString(String eventString, ObjectMapper objectMapper) {
         try {
-            EventJson eventJson = objectMapper.readValue(eventString, EventJson.class);
-            return eventJson.toEvent(eventTypeMatcher, objectMapper);
+            return objectMapper.readValue(eventString, EventJson.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -68,76 +61,41 @@ public final class EventJson {
      * @param objectMapper The {@link ObjectMapper} to use to serialise the event's parameters to JSON nodes.
      * @return The mapped {@link EventJson}.
      */
-    public static EventJson of(Event event, ObjectMapper objectMapper) {
-        Function<Object, JsonNode> serialiser = objectMapper::valueToTree;
-        return of(
-                event.getAggregateId().getType(),
-                event.getAggregateId().getId(),
-                event.getEventName().getName(),
-                event.getEventName().getVersion(),
-                event.getEventTimestamp().getTimestamp().toEpochMilli(),
-                event.getEventTimestamp().getStreamId(),
-                event.getProcessingId().map(UUID::toString).orElse(""),
-                event.getCharacteristics(),
-                event.getParameters().serialise(serialiser)
-        );
+    public static EventJson fromEvent(Event event, ObjectMapper objectMapper) {
+        return of(EventMetadataJson.from(event.getMetadata()), TupleToJsonMapper.using(objectMapper).apply(event.getData()));
+    }
+
+    public static EventJson fromRepresentation(EventRepresentation<Map<String, JsonNode>> representation) {
+        return of(EventMetadataJson.from(representation.getMetadata()), representation.getData());
     }
 
     /**
      * Create an {@link EventJson} object from its properties. Used by Jackson to deserialise event JSON.
-     * @param aggregateType
-     * @param aggregateId
-     * @param name
-     * @param version
-     * @param eventTimestamp
-     * @param streamId
-     * @param processingId
-     * @param characteristics
+     * @param metadata
      * @param parameters
      * @return The constructed {@link EventJson} object.
      */
     @JsonCreator
-    public static EventJson of(String aggregateType, String aggregateId, String name, String version, long eventTimestamp, String streamId, String processingId, int characteristics, Map<String, JsonNode> parameters) {
-        return new EventJson(aggregateType, aggregateId, name, version, eventTimestamp, streamId, processingId, characteristics, parameters);
+    public static EventJson of(EventMetadataJson metadata, Map<String, JsonNode> parameters) {
+        return new EventJson(metadata, parameters);
     }
 
     @JsonProperty
-    private final String aggregateType;
-
-    @JsonProperty
-    private final String aggregateId;
-
-    @JsonProperty
-    private final String name;
-
-    @JsonProperty
-    private final String version;
-
-    @JsonProperty
-    private final long eventTimestamp;
-
-    @JsonProperty
-    private final String streamId;
-
-    @JsonProperty
-    private final String processingId;
-
-    @JsonProperty
-    private final int characteristics;
+    private final EventMetadataJson metadata;
 
     @JsonProperty
     private final Map<String, JsonNode> parameters;
 
-    private EventJson(String aggregateType, String aggregateId, String name, String version, long eventTimestamp, String streamId, String processingId, int characteristics, Map<String, JsonNode> parameters) {
-        this.aggregateType = aggregateType;
-        this.aggregateId = aggregateId;
-        this.name = name;
-        this.version = version;
-        this.eventTimestamp = eventTimestamp;
-        this.streamId = streamId;
-        this.processingId = processingId;
-        this.characteristics = characteristics;
+    private EventJson(EventMetadataJson metadata, Map<String, JsonNode> parameters) {
+        this.metadata = metadata;
         this.parameters = parameters;
+    }
+
+    public EventRepresentation<Map<String, JsonNode>> toRepresentation() {
+        return EventRepresentation.of(
+                metadata.toEventMetadata(),
+                parameters
+        );
     }
 
     /**
@@ -149,19 +107,10 @@ public final class EventJson {
      * @return The converted {@link Event}, iff the {@link EventTypeMatcher} matches its type.
      */
     public Optional<Event> toEvent(EventTypeMatcher typeMatcher, ObjectMapper objectMapper) {
-        EventType eventType = EventType.of(aggregateType, VersionedName.of(name, version));
-
         BiFunction<JsonNode, Type, Object> deserialiser = makeDeserialiser(objectMapper);
 
-        return typeMatcher.match(eventType).map(tupleSchema ->
-            eventType.makeEvent(
-                    aggregateId,
-                    StreamTimestamp.of(streamId, Instant.ofEpochMilli(eventTimestamp)),
-                    tupleSchema.deserialise(deserialiser, parameters),
-                    characteristics
-            ))
-            .map(event -> processingId.isEmpty() ? event : event.processed(UUID.fromString(processingId))
-        );
+        return toRepresentation().toEvent(typeMatcher, (schema, nodeMap)
+                -> schema.deserialise(deserialiser, nodeMap));
     }
 
     private BiFunction<JsonNode, Type, Object> makeDeserialiser(ObjectMapper mapper) {

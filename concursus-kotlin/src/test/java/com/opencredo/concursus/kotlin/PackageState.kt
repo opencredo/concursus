@@ -13,9 +13,9 @@ sealed class ParcelEvent {
 }
 
 fun describeEvent(event: ParcelEvent): Unit = when (event) {
-    is ReceivedAtDepot -> println("Received at depot: " + event.depotId)
-    is LoadedOntoTruck -> println("Loaded onto truck: " + event.truckId)
-    is Delivered -> println("Delivered to: " + event.destinationId)
+    is ReceivedAtDepot -> println("Received at depot: ${event.depotId}")
+    is LoadedOntoTruck -> println("Loaded onto truck: ${event.truckId}")
+    is Delivered -> println("Delivered to: ${event.destinationId}")
     is DeliveryFailed -> println("Delivery failed")
 }
 

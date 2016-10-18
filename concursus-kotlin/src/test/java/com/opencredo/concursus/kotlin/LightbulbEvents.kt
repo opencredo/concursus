@@ -23,7 +23,7 @@ sealed class LightbulbEvent {
 
 interface EventData<E : EventData<E>> {
     infix fun at(timestamp: StreamTimestamp): TimestampedData<E> =
-            TimestampedData(timestamp, this as E, this.javaClass.kotlin)
+            TimestampedData(timestamp, this as E)
 }
 
 data class LightbulbState(val wattage: Int, val location: String?, val isSwitchedOn: Boolean,

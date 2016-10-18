@@ -31,7 +31,7 @@ public final class EventsJson {
         try {
             return objectMapper.writeValueAsString(
                     events.stream()
-                        .map(event -> EventJson.of(event, objectMapper))
+                        .map(event -> EventJson.fromEvent(event, objectMapper))
                         .collect(toList()));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

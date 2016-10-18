@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 public class RedisEventLog implements EventLog {
 
     public static RedisEventLog create(Jedis jedis, ObjectMapper objectMapper) {
-        return new RedisEventLog(jedis, evt -> EventJson.toString(evt, objectMapper));
+        return new RedisEventLog(jedis, evt -> EventJson.fromEvent(evt, objectMapper).toJsonString(objectMapper));
     }
 
     private final Jedis jedis;

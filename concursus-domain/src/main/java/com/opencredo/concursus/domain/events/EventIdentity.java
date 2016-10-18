@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public final class EventIdentity {
 
-    static EventIdentity of(AggregateId aggregateId, StreamTimestamp streamTimestamp) {
+    public static EventIdentity of(AggregateId aggregateId, StreamTimestamp streamTimestamp) {
         return new EventIdentity(aggregateId, streamTimestamp);
     }
 

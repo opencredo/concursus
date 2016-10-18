@@ -82,8 +82,7 @@ public enum EventMethodType implements BiFunction<Event, TupleKey[], Object[]> {
                 tupleSchema,
                 tupleKeys,
                 EventMethodReflection.getOrdering(method),
-                this,
-                EventMethodReflection.getCharacteristics(method));
+                this);
     }
 
 }

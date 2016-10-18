@@ -45,15 +45,13 @@ public final class EventMethodMapping {
     private final TupleKey[] tupleKeys;
     private final int causalOrder;
     private final EventMethodType eventMethodType;
-    private final int characteristics;
 
-    EventMethodMapping(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys, int causalOrder, EventMethodType eventMethodType, int characteristics) {
+    EventMethodMapping(EventType eventType, TupleSchema tupleSchema, TupleKey[] tupleKeys, int causalOrder, EventMethodType eventMethodType) {
         this.eventType = eventType;
         this.tupleSchema = tupleSchema;
         this.tupleKeys = tupleKeys;
         this.causalOrder = causalOrder;
         this.eventMethodType = eventMethodType;
-        this.characteristics = characteristics;
     }
 
     public EventType getEventType() {
@@ -79,7 +77,7 @@ public final class EventMethodMapping {
         checkArgument(args[1] instanceof String, "second argument %s is not a String", args[1]);
         checkArgument(args[0] instanceof StreamTimestamp, "first argument %s is not a StreamTimestamp", args[0]);
 
-        return eventType.makeEvent((String) args[1], (StreamTimestamp) args[0], makeTupleFromArgs(args), characteristics);
+        return eventType.makeEvent((String) args[1], (StreamTimestamp) args[0], makeTupleFromArgs(args));
     }
 
     private Tuple makeTupleFromArgs(Object[] args) {

@@ -15,7 +15,7 @@ final class EventMethodReflection {
     }
 
     static EventType getEventType(String aggregateType, Method method) {
-        return EventType.of(aggregateType, getEventName(method));
+        return EventType.of(aggregateType, getEventName(method), getCharacteristics(method));
     }
 
     static VersionedName getEventName(Method method) {

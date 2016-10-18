@@ -6,6 +6,7 @@ import com.opencredo.concursus.domain.events.sourcing.EventSource;
 import com.opencredo.concursus.domain.events.storage.InMemoryEventStore;
 import com.opencredo.concursus.domain.time.StreamTimestamp;
 import com.opencredo.concursus.mapping.annotations.HandlesEventsFor;
+import com.opencredo.concursus.mapping.annotations.Initial;
 import com.opencredo.concursus.mapping.annotations.Name;
 import com.opencredo.concursus.mapping.events.methods.helper.PersonEvents;
 import com.opencredo.concursus.mapping.events.methods.proxying.ProxyingEventBus;
@@ -26,6 +27,7 @@ public class DispatchingEventSourceTest {
     @HandlesEventsFor("person")
     public interface CreatedEventReceiver {
 
+        @Initial
         @Name(value = "created", version = "2")
         void created(StreamTimestamp timestamp, String aggregateId, String name, int age);
 
@@ -35,7 +37,7 @@ public class DispatchingEventSourceTest {
 
     private final EventSource eventSource = EventSource.retrievingWith(eventStore);
     private final DispatchingEventSource<PersonEvents> testEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(PersonEvents.class);
-    private final DispatchingEventSource<CreatedEventReceiver> creadedEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(CreatedEventReceiver.class);
+    private final DispatchingEventSource<CreatedEventReceiver> createdEventDispatchingEventSource = DispatchingEventSourceFactory.dispatching(eventSource).dispatchingTo(CreatedEventReceiver.class);
     private final ProxyingEventBus eventBus = ProxyingEventBus.proxying(EventBus.processingWith(EventBatchProcessor.forwardingTo(eventStore)));
     private final Function<Consumer<String>, PersonEvents> nameCollector = caller -> new PersonEvents() {
         @Override
@@ -69,10 +71,10 @@ public class DispatchingEventSourceTest {
             batch.nameUpdated(nextTimestamp(), id2, "Arthur Mumby");
         });
 
-        assertThat(creadedEventDispatchingEventSource.replaying(id1).<String>collectFirst(
+        assertThat(createdEventDispatchingEventSource.replaying(id1).<String>collectFirst(
                 caller -> (ts, id, n, age) -> caller.accept(n)), equalTo(Optional.of("Arthur Putey")));
 
-        assertThat(creadedEventDispatchingEventSource.replaying(id2).<String>collectFirst(
+        assertThat(createdEventDispatchingEventSource.replaying(id2).<String>collectFirst(
                 caller -> (ts, id, n, age) -> caller.accept(n)), equalTo(Optional.empty()));
     }
 
@@ -106,7 +108,7 @@ public class DispatchingEventSourceTest {
             batch.nameUpdated(nextTimestamp(), id2, "Arthur Mumby");
         });
 
-        DispatchingCachedEventSource<CreatedEventReceiver> cached = creadedEventDispatchingEventSource.preload(id1, id2);
+        DispatchingCachedEventSource<CreatedEventReceiver> cached = createdEventDispatchingEventSource.preload(id1, id2);
 
         assertThat(cached.replaying(id1).<String>collectFirst(
                 caller -> (ts, id, n, age) -> caller.accept(n)), equalTo(Optional.of("Arthur Putey")));

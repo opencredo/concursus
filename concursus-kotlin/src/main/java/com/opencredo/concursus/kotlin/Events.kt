@@ -23,18 +23,21 @@ annotation class Terminal
 annotation class Order(val value: Int)
 
 data class KEvent<E : Any>(val aggregateId : String, val timestampedData: TimestampedData<E>) {
-    fun toEvent() : Event =
+    fun toEvent() : Event = timestampedData.data.javaClass.kotlin.let { kclass ->
             KEventTypeSet
-                    .forClass(timestampedData.dataClass)
-                    .toEvent(timestampedData.timestamp, aggregateId, timestampedData.data, timestampedData.dataClass)
+                    .forClass(kclass)
+                    .toEvent(timestampedData.timestamp, aggregateId, timestampedData.data, kclass) }
 }
 
-data class TimestampedData<E : Any>(val timestamp: StreamTimestamp, val data: E, val dataClass: KClass<E>) {
+data class TimestampedData<E : Any>(val timestamp: StreamTimestamp, val data: E) {
     infix fun to(aggregateId: String): KEvent<E> = KEvent(aggregateId, this)
 }
 
-inline infix fun <reified E : Any> E.at(timestamp: StreamTimestamp): TimestampedData<E> =
-        TimestampedData(timestamp, this, E::class)
+infix fun <E : Any> E.at(timestamp: StreamTimestamp): TimestampedData<E> =
+        TimestampedData(timestamp, this)
+
+val lowercased = listOf("foo", "bar", "baz")
+val uppercased = lowercased.map { it.toUpperCase() }
 
 class KEventTypeSet<E : Any>(
         val aggregateType: String,
@@ -183,5 +186,5 @@ data class KEventType<T: Any>(
                     characteristics())
 
     fun fromEvent(event: Event): KEvent<T> =
-            KEvent(event.aggregateId.id, TimestampedData(event.eventTimestamp, makeInstance(event.parameters), dataClass))
+            KEvent(event.aggregateId.id, TimestampedData(event.eventTimestamp, makeInstance(event.parameters)))
 }
