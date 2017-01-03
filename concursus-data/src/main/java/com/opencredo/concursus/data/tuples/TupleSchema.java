@@ -1,7 +1,5 @@
 package com.opencredo.concursus.data.tuples;
 
-import com.google.common.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -9,8 +7,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -24,13 +20,13 @@ public final class TupleSchema {
      * @return The created TupleSchema.
      */
     public static TupleSchema of(String name, TupleSlot...slots) {
-        checkNotNull(name, "name must not be null");
-        checkNotNull(slots, "slots must not be null");
+        if (name == null) throw new IllegalArgumentException("name must not be null");
+        if (slots == null) throw new IllegalArgumentException("slots must not be null");
 
         Map<String, Integer> slotLookup = IntStream.range(0, slots.length)
                 .collect(HashMap::new, (m, i) -> m.put(slots[i].getName(), i), Map::putAll);
 
-        checkArgument(slots.length == slotLookup.size(), "Slot names are not unique");
+        if (slots.length != slotLookup.size()) throw new IllegalArgumentException("Slot names are not unique");
         return new TupleSchema(name, slots, slotLookup);
     }
 
@@ -63,9 +59,10 @@ public final class TupleSchema {
      * @return The created Tuple.
      */
     public Tuple make(Object[] values) {
-        checkNotNull(values, "value must not be null");
-        checkArgument(values.length == slots.length,
-                "Expected %s values, but received %s", slots.length, values.length);
+        if (values == null) throw new IllegalArgumentException("value must not be null");
+        if (values.length != slots.length)
+                throw new IllegalArgumentException(
+                        String.format("Expected %s values, but received %s", slots.length, values.length));
         if (!typesMatch(values)) {
             throw new IllegalArgumentException(describeTypeMismatches(values));
         }
@@ -79,7 +76,7 @@ public final class TupleSchema {
      * @return The created Tuple.
      */
     public Tuple make(TupleKeyValue...keyValues) {
-        checkNotNull(keyValues, "keyValues must not be null");
+        if (keyValues == null) throw new IllegalArgumentException("keyValues must not be null");
         if (!Stream.of(keyValues).allMatch(kv -> kv.belongsToSchema(this))) {
             throw new IllegalArgumentException(String.format(
                     "Keys %s do not all belong to schema %s",
@@ -120,7 +117,7 @@ public final class TupleSchema {
      * @return The created tuple.
      */
     public Tuple make(Map<String, Object> values) {
-        checkNotNull(values, "values must not be null");
+        if (values == null) throw new IllegalArgumentException("values must not be null");
         checkMatchingKeys(values);
 
         Object[] valueArray = new Object[slots.length];
@@ -137,8 +134,8 @@ public final class TupleSchema {
      * @return The created tuple.
      */
     public <V> Tuple deserialise(BiFunction<V, Type, Object> deserialiser, Map<String, V> values) {
-        checkNotNull(deserialiser, "deserialiser must not be null");
-        checkNotNull(values, "values must not be null");
+        if (deserialiser == null) throw new IllegalArgumentException("deserialiser must not be null");
+        if (values == null) throw new IllegalArgumentException("values must not be null");
         checkMatchingKeys(values);
 
         Object[] valueArray = new Object[slots.length];
@@ -148,13 +145,15 @@ public final class TupleSchema {
     }
 
     private void checkMatchingKeys(Map<String, ?> values) {
-        checkArgument(values.keySet().equals(slotLookup.keySet()),
-                "Expected keys %s, but were %s", slotLookup.keySet(), values.keySet());
+        if (!values.keySet().equals(slotLookup.keySet()))
+                throw new IllegalArgumentException(String.format(
+                        "Expected keys %s, but were %s", slotLookup.keySet(), values.keySet()));
     }
 
     Object get(String name, Object[] values) {
         Integer valueIndex = slotLookup.get(name);
-        checkArgument(valueIndex != null, "Schema %s does not have a slot named '%s'", this, name);
+        if (valueIndex == null) throw new IllegalArgumentException(
+                String.format("Schema %s does not have a slot named '%s'", this, name));
 
         return values[valueIndex];
     }
@@ -209,29 +208,6 @@ public final class TupleSchema {
     }
 
     /**
-     * Get a key which can be used to retrieve a value from a tuple in a type-safe way, without having to do an index lookup.
-     * @param name The name of the slot to get a key for.
-     * @param klass The class of the value to retrieve with the key.
-     * @param <T> The type of the value to retrieve with the key.
-     * @return The created key.
-     */
-    public <T> TupleKey<T> getKey(String name, Class<T> klass) {
-        return getKey(name, TypeToken.of(klass));
-    }
-
-
-    /**
-     * Get a key which can be used to retrieve a value from a tuple in a type-safe way, without having to do an index lookup.
-     * @param name The name of the slot to get a key for.
-     * @param type The type of the value to retrieve with the key.
-     * @return The created key.
-     */
-    @SuppressWarnings("unchecked")
-    public <T> TupleKey<T> getKey(String name, Type type) {
-        return getKey(name, (TypeToken<T>) TypeToken.of(type));
-    }
-
-    /**
      * Get a key which can be used to retrieve an Optional value from a tuple in a type-safe way, without having to do an index lookup.
      * @param name The name of the slot to get a key for.
      * @param valueType The class of the Optional value to retrieve with the key.
@@ -269,20 +245,20 @@ public final class TupleSchema {
     /**
      * Get a key which can be used to retrieve a value from a tuple in a type-safe way, without having to do an index lookup.
      * @param name The name of the slot to get a key for.
-     * @param typeToken The class of the value to retrieve with the key.
+     * @param type The type of the value to retrieve with the key.
      * @param <T> The type of the value to retrieve with the key.
      * @return The created key.
      */
-    private <T> TupleKey<T> getKey(String name, TypeToken<T> typeToken) {
-        checkNotNull(name, "name must not be null");
-        checkNotNull(typeToken, "typeToken must not be null");
+    public <T> TupleKey<T> getKey(String name, Type type) {
+        if (name == null) throw new IllegalArgumentException("name must not be null");
+        if (type == null) throw new IllegalArgumentException("type must not be null");
 
         Integer valueIndex = slotLookup.get(name);
-        checkNotNull(valueIndex, "Schema %s does not have a slot named '%s'", this, name);
+        if (valueIndex == null) throw new IllegalArgumentException(name);
 
         TupleSlot slot = slots[valueIndex];
-        checkArgument(slot.acceptsType(typeToken.getType()),
-                "Slot " + name + " does not accept type " + typeToken);
+        if (!slot.acceptsType(type))
+                throw new IllegalArgumentException("Slot " + name + " does not accept type " + type);
 
         return new TupleKey<>(this, name, valueIndex);
     }

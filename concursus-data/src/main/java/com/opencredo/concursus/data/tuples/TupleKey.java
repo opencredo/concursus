@@ -1,10 +1,6 @@
 package com.opencredo.concursus.data.tuples;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * A key that can be used to retrieve a value directly from a tuple, in a type-safe way.
@@ -41,11 +37,10 @@ public class TupleKey<T> {
      * @return The tuple builder.
      */
     public TupleKeyValue of(T value) {
-        checkNotNull(value, "value must not be null");
+        if (value == null) throw new IllegalArgumentException("value must not be null");
         return new TupleKeyValue(this, value);
     }
 
-    @VisibleForTesting
     public String getName() {
         return name;
     }

@@ -5,9 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * An immutable tuple of named and typed values, conforming to a TupleSchema.
  */
@@ -27,7 +24,7 @@ public final class Tuple {
      * @return The value stored in that slot.
      */
     public Object get(String name) {
-        checkNotNull(name, "name must not be null");
+        if (name == null) throw new IllegalArgumentException("name must not be null");
         return schema.get(name, values);
     }
 
@@ -38,9 +35,9 @@ public final class Tuple {
      * @return The value stored in the slot.
      */
     public <T> T get(TupleKey<T> key) {
-        checkNotNull(key, "key must not be null");
-        checkArgument(key.belongsToSchema(schema),
-                "key %s does not belong to schema %s", key, schema);
+        if (key == null) throw new IllegalArgumentException("key must not be null");
+        if (!key.belongsToSchema(schema)) throw new IllegalArgumentException(
+                String.format("key %s does not belong to schema %s", key, schema));
 
         return key.get(values);
     }

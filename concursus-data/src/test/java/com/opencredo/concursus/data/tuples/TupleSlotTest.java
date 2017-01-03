@@ -62,16 +62,16 @@ public class TupleSlotTest {
     public void testsListTypesForConformity() {
         TupleSlot slot = TupleSlot.ofList("things", String.class);
 
-        assertTrue(slot.acceptsType(Types.listOf(String.class).getType()));
-        assertFalse(slot.acceptsType(Types.listOf(Integer.class).getType()));
+        assertTrue(slot.acceptsType(Types.listOf(String.class)));
+        assertFalse(slot.acceptsType(Types.listOf(Integer.class)));
     }
 
     @Test
     public void testsMapTypesForConformity() {
         TupleSlot slot = TupleSlot.ofMap("things", String.class, Integer.class);
 
-        assertTrue(slot.acceptsType(Types.mapOf(String.class, Integer.class).getType()));
-        assertFalse(slot.acceptsType(Types.mapOf(String.class, String.class).getType()));
+        assertTrue(slot.acceptsType(Types.mapOf(String.class, Integer.class)));
+        assertFalse(slot.acceptsType(Types.mapOf(String.class, String.class)));
     }
 
     @Test
@@ -80,7 +80,6 @@ public class TupleSlotTest {
         assertTrue(TupleSlot.of("long", long.class).accepts(1L));
         assertTrue(TupleSlot.of("short", short.class).accepts(Short.valueOf("1")));
         assertTrue(TupleSlot.of("byte", byte.class).accepts(Byte.valueOf("1")));
-        assertTrue(TupleSlot.of("boolean", boolean.class).accepts(true));
         assertTrue(TupleSlot.of("boolean", boolean.class).accepts(true));
         assertTrue(TupleSlot.of("char", char.class).accepts('c'));
         assertTrue(TupleSlot.of("double", double.class).accepts(1.0));
