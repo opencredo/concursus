@@ -1,5 +1,8 @@
 # Concursus
 
+> [!NOTE]
+> This repo has been archived and is no longer under development. OpenCredo is now part of [Trifork](https://github.com/trifork).
+
 [![Maven Central](https://img.shields.io/maven-central/v/com.opencredo/concursus.svg)](http://search.maven.org/#search%7Cga%7C1%7Cconcursus)
 [![Build Status](https://travis-ci.org/opencredo/concursus.svg?branch=master)](https://travis-ci.org/opencredo/concursus)
 
